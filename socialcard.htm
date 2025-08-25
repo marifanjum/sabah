@@ -92,6 +92,10 @@
       <input type="range" id="strokeWidth" min="0" max="10" value="2">
     </div>
     <div class="control-group">
+      <label>Shadow</label>
+      <input type="checkbox" id="shadow" checked>
+    </div>
+    <div class="control-group">
       <label>First Line Word Count</label>
       <input type="number" id="firstLineCount" min="1" max="30" value="15">
     </div>
@@ -99,8 +103,12 @@
       <label>Headline Y Position</label>
       <input type="range" id="headlineY" min="700" max="1050" value="750">
     </div>
+    <!-- NEW TOGGLES -->
     <div class="control-group">
       <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
+    </div>
+    <div class="control-group">
+      <label><input type="checkbox" id="toggleLogo" checked> Show Logo</label>
     </div>
   </div>
 
@@ -117,10 +125,14 @@
     const lineHeightControl = document.getElementById("lineHeight");
     const wordSpacingControl = document.getElementById("wordSpacing");
     const strokeWidthControl = document.getElementById("strokeWidth");
+    const shadowControl = document.getElementById("shadow");
     const firstLineCountControl = document.getElementById("firstLineCount");
     const headlineYControl = document.getElementById("headlineY");
-    const toggleBorder = document.getElementById("toggleBorder");
     const downloadBtn = document.getElementById("downloadBtn");
+
+    // NEW TOGGLES
+    const toggleBorder = document.getElementById("toggleBorder");
+    const toggleLogo = document.getElementById("toggleLogo");
 
     let mainImage = null;
     let bgImage = new Image();
@@ -135,8 +147,8 @@
     imageLoader.addEventListener("change", handleImage, false);
     [
       headlineInput, fontSizeControl, lineHeightControl, wordSpacingControl,
-      strokeWidthControl, firstLineCountControl, headlineYControl,
-      imageZoomControl, toggleBorder
+      strokeWidthControl, shadowControl, firstLineCountControl, headlineYControl,
+      imageZoomControl, toggleBorder, toggleLogo
     ].forEach(ctrl => ctrl.addEventListener("input", draw));
 
     function handleImage(e) {
@@ -144,6 +156,7 @@
       reader.onload = function(event) {
         mainImage = new Image();
         mainImage.onload = function() {
+          // Fit logic
           const targetWidth = 1080, targetHeight = 648;
           const scaleX = targetWidth / mainImage.width;
           const scaleY = targetHeight / mainImage.height;
@@ -170,6 +183,7 @@
       const lineHeight = parseInt(lineHeightControl.value);
       const wordSpacing = parseInt(wordSpacingControl.value);
       const strokeWidth = parseInt(strokeWidthControl.value);
+      const shadow = shadowControl.checked;
       const firstLineCount = parseInt(firstLineCountControl.value);
       const baseY = parseInt(headlineYControl.value);
 
@@ -179,6 +193,15 @@
       ctx.lineWidth = strokeWidth;
       ctx.strokeStyle = "#fff403";
       ctx.fillStyle = "#fff403";
+
+      if (shadow) {
+        ctx.shadowColor = "transparent";
+      } else {
+        ctx.shadowColor = "white";
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetX = 4;
+        ctx.shadowOffsetY = 4;
+      }
 
       const words = splitWords(text);
       const lines = [words.slice(0, firstLineCount), words.slice(firstLineCount)];
@@ -195,35 +218,54 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (bgImage.complete) ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
 
-      // Draw main image
-      if (mainImage) {
-        const targetWidth = 1080, targetHeight = 648;
-        const scaledWidth = mainImage.width * imageZoom;
-        const scaledHeight = mainImage.height * imageZoom;
-        const drawX = (targetWidth - scaledWidth) / 2 + imageOffsetX;
-        const drawY = (targetHeight - scaledHeight) / 2 + imageOffsetY;
+      // Draw main image with optional border
+    // Draw main image
+if (mainImage) {
+  const targetWidth = 1080, targetHeight = 648;
+  const scaledWidth = mainImage.width * imageZoom;
+  const scaledHeight = mainImage.height * imageZoom;
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(0, 0, targetWidth, targetHeight);
-        ctx.clip();
-        ctx.drawImage(mainImage, drawX, drawY, scaledWidth, scaledHeight);
-        ctx.restore();
-      }
+  const drawX = (targetWidth - scaledWidth) / 2 + imageOffsetX;
+  const drawY = (targetHeight - scaledHeight) / 2 + imageOffsetY;
 
-      // Draw border
-      if (toggleBorder.checked) {
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(10, 10, 1060, 628);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, targetWidth, targetHeight);
+  ctx.clip();
+  ctx.drawImage(mainImage, drawX, drawY, scaledWidth, scaledHeight);
+  ctx.restore();
+}
 
-        ctx.strokeStyle = "#ccc";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(14, 14, 1052, 620);
-      }
+// Border should be inside the fixed 1080×648 frame, not tied to the image
+if (toggleBorder.checked) {
+  const frameX = 0, frameY = 0;
+  const frameWidth = 1080, frameHeight = 648;
 
-      // Always draw logo
-      if (logoImage.complete) {
+  // Outer border (white), inset 10px
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(
+    frameX + 10,
+    frameY + 10,
+    frameWidth - 20,
+    frameHeight - 20
+  );
+
+  // Inner border (grey), inset 14px
+  ctx.strokeStyle = "#ccc";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(
+    frameX + 14,
+    frameY + 14,
+    frameWidth - 28,
+    frameHeight - 28
+  );
+}
+
+
+
+      // Draw logo if enabled
+      if (toggleLogo.checked && logoImage.complete) {
         ctx.drawImage(logoImage, canvas.width - 131, 20, 120, 100);
       }
 
