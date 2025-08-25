@@ -26,7 +26,9 @@
       margin-bottom: 20px;
       cursor: grab;
     }
-    #canvas:active { cursor: grabbing; }
+    #canvas:active {
+      cursor: grabbing;
+    }
     .controls {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -61,20 +63,52 @@
 </head>
 <body>
   <input id="headlineInput" type="text" placeholder="Enter headline text here">
+
   <canvas id="canvas" width="1080" height="1080"></canvas>
 
   <div class="controls">
-    <div class="control-group"><label>Upload Main Image</label><input type="file" id="imageLoader" accept="image/*"></div>
-    <div class="control-group"><label>Image Zoom</label><input type="range" id="imageZoom" min="0.5" max="3" step="0.1" value="1"></div>
-    <div class="control-group"><label>Font Size</label><input type="range" id="fontSize" min="30" max="120" value="80"></div>
-    <div class="control-group"><label>Line Height</label><input type="range" id="lineHeight" min="40" max="150" value="100"></div>
-    <div class="control-group"><label>Word Spacing</label><input type="range" id="wordSpacing" min="0" max="40" value="0"></div>
-    <div class="control-group"><label>Stroke Width</label><input type="range" id="strokeWidth" min="0" max="10" value="2"></div>
-    <div class="control-group"><label>Shadow</label><input type="checkbox" id="shadow" checked></div>
-    <div class="control-group"><label>First Line Word Count</label><input type="number" id="firstLineCount" min="1" max="30" value="15"></div>
-    <div class="control-group"><label>Headline Y Position</label><input type="range" id="headlineY" min="700" max="1050" value="750"></div>
-    <div class="control-group"><label><input type="checkbox" id="toggleBorder" checked> Show Border</label></div>
-    <div class="control-group"><label><input type="checkbox" id="toggleLogo" checked> Show Logo</label></div>
+    <div class="control-group">
+      <label>Upload Main Image</label>
+      <input type="file" id="imageLoader" accept="image/*">
+    </div>
+    <div class="control-group">
+      <label>Image Zoom</label>
+      <input type="range" id="imageZoom" min="0.5" max="3" step="0.1" value="1">
+    </div>
+    <div class="control-group">
+      <label>Font Size</label>
+      <input type="range" id="fontSize" min="30" max="120" value="80">
+    </div>
+    <div class="control-group">
+      <label>Line Height</label>
+      <input type="range" id="lineHeight" min="40" max="150" value="100">
+    </div>
+    <div class="control-group">
+      <label>Word Spacing</label>
+      <input type="range" id="wordSpacing" min="0" max="40" value="0">
+    </div>
+    <div class="control-group">
+      <label>Stroke Width</label>
+      <input type="range" id="strokeWidth" min="0" max="10" value="2">
+    </div>
+    <div class="control-group">
+      <label>Shadow</label>
+      <input type="checkbox" id="shadow" checked>
+    </div>
+    <div class="control-group">
+      <label>First Line Word Count</label>
+      <input type="number" id="firstLineCount" min="1" max="30" value="15">
+    </div>
+    <div class="control-group">
+      <label>Headline Y Position</label>
+      <input type="range" id="headlineY" min="700" max="1050" value="750">
+    </div>
+    <div class="control-group">
+      <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
+    </div>
+    <div class="control-group">
+      <label><input type="checkbox" id="toggleLogo" checked> Show Logo</label>
+    </div>
   </div>
 
   <button id="downloadBtn">Download Final Image</button>
@@ -93,4 +127,172 @@
     const shadowControl = document.getElementById("shadow");
     const firstLineCountControl = document.getElementById("firstLineCount");
     const headlineYControl = document.getElementById("headlineY");
-    const downloadB
+    const downloadBtn = document.getElementById("downloadBtn");
+    const toggleBorder = document.getElementById("toggleBorder");
+    const toggleLogo = document.getElementById("toggleLogo");
+
+    let mainImage = null;
+    let bgImage = new Image();
+    let logoImage = new Image();
+    bgImage.src = "bg.png";           // ✅ make sure file exists in repo with exact case
+    logoImage.src = "sabah-logo.png"; // ✅ exact match to repo filename
+
+    let imageZoom = 1;
+    let imageOffsetX = 0, imageOffsetY = 0;
+    let isDragging = false, dragStartX = 0, dragStartY = 0;
+
+    // Events
+    imageLoader.addEventListener("change", handleImage, false);
+    [
+      headlineInput, fontSizeControl, lineHeightControl, wordSpacingControl,
+      strokeWidthControl, shadowControl, firstLineCountControl, headlineYControl,
+      imageZoomControl, toggleBorder, toggleLogo
+    ].forEach(ctrl => ctrl.addEventListener("input", draw));
+
+    function handleImage(e) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        mainImage = new Image();
+        mainImage.onload = function() {
+          const targetWidth = 1080, targetHeight = 648;
+          const scaleX = targetWidth / mainImage.width;
+          const scaleY = targetHeight / mainImage.height;
+          imageZoom = Math.min(scaleX, scaleY);
+          imageOffsetX = 0;
+          imageOffsetY = 0;
+          imageZoomControl.value = imageZoom.toFixed(2);
+          draw();
+        };
+        mainImage.src = event.target.result;
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+
+    function splitWords(text) {
+      return text.match(/<[^>]+>|[^<>؀-ۿ]+|[؀-ۿ]+/g) || [];
+    }
+
+    function drawHeadline() {
+      const text = headlineInput.value;
+      if (!text) return;
+
+      const fontSize = parseInt(fontSizeControl.value);
+      const lineHeight = parseInt(lineHeightControl.value);
+      const wordSpacing = parseInt(wordSpacingControl.value);
+      const strokeWidth = parseInt(strokeWidthControl.value);
+      const shadow = shadowControl.checked;
+      const firstLineCount = parseInt(firstLineCountControl.value);
+      const baseY = parseInt(headlineYControl.value);
+
+      ctx.font = `${fontSize}px 'Jameel Noori Nastaleeq', serif`;
+      ctx.textAlign = "center";
+      ctx.direction = "rtl";
+      ctx.lineWidth = strokeWidth;
+      ctx.strokeStyle = "#fff403";
+      ctx.fillStyle = "#fff403";
+
+      if (shadow) {
+        ctx.shadowColor = "white";
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetX = 4;
+        ctx.shadowOffsetY = 4;
+      } else {
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+      }
+
+      const words = splitWords(text);
+      const lines = [words.slice(0, firstLineCount), words.slice(firstLineCount)];
+
+      lines.forEach((line, lineIndex) => {
+        if (line.length === 0) return;
+        const lineText = line.join(" ".repeat(Math.max(1, wordSpacing / 4)));
+        const y = baseY + lineIndex * lineHeight;
+        ctx.fillText(lineText, canvas.width / 2, y);
+        ctx.strokeText(lineText, canvas.width / 2, y);
+      });
+
+      // reset shadow so logo/border unaffected
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (bgImage) ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+
+      // Draw main image
+      if (mainImage) {
+        const targetWidth = 1080, targetHeight = 648;
+        const scaledWidth = mainImage.width * imageZoom;
+        const scaledHeight = mainImage.height * imageZoom;
+        const drawX = (targetWidth - scaledWidth) / 2 + imageOffsetX;
+        const drawY = (targetHeight - scaledHeight) / 2 + imageOffsetY;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, targetWidth, targetHeight);
+        ctx.clip();
+        ctx.drawImage(mainImage, drawX, drawY, scaledWidth, scaledHeight);
+        ctx.restore();
+      }
+
+      // Border
+      if (toggleBorder.checked) {
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, 10, 1060, 628);
+        ctx.strokeStyle = "#ccc";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(14, 14, 1052, 620);
+      }
+
+      // Logo
+      if (toggleLogo.checked) {
+        try {
+          ctx.drawImage(logoImage, canvas.width - 131, 20, 120, 100);
+        } catch (e) {
+          console.warn("Logo not loaded yet:", e);
+        }
+      }
+
+      // Headline always last
+      drawHeadline();
+    }
+
+    // Image zoom
+    imageZoomControl.addEventListener("input", () => {
+      imageZoom = parseFloat(imageZoomControl.value);
+      draw();
+    });
+
+    // Dragging
+    canvas.addEventListener("mousedown", e => {
+      if (e.offsetY <= 648) {
+        isDragging = true;
+        dragStartX = e.offsetX - imageOffsetX;
+        dragStartY = e.offsetY - imageOffsetY;
+      }
+    });
+    canvas.addEventListener("mousemove", e => {
+      if (isDragging) {
+        imageOffsetX = e.offsetX - dragStartX;
+        imageOffsetY = e.offsetY - dragStartY;
+        draw();
+      }
+    });
+    canvas.addEventListener("mouseup", () => isDragging = false);
+    canvas.addEventListener("mouseleave", () => isDragging = false);
+
+    downloadBtn.addEventListener("click", () => {
+      const link = document.createElement("a");
+      link.download = "final-image.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+
+    // Redraw once assets are loaded
+    bgImage.onload = draw;
+    logoImage.onload = draw;
+  </script>
+</body>
+</html>
