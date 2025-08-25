@@ -210,48 +210,53 @@
       });
     }
 
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (bgImage.complete) ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+   function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (bgImage.complete) ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
 
-      // Draw main image
-      if (mainImage) {
-        const targetWidth = 1080, targetHeight = 648;
-        const scaledWidth = mainImage.width * imageZoom;
-        const scaledHeight = mainImage.height * imageZoom;
+  // Draw main image
+  if (mainImage) {
+    const targetWidth = 1080, targetHeight = 648;
+    const scaledWidth = mainImage.width * imageZoom;
+    const scaledHeight = mainImage.height * imageZoom;
 
-        const drawX = (targetWidth - scaledWidth) / 2 + imageOffsetX;
-        const drawY = (targetHeight - scaledHeight) / 2 + imageOffsetY;
+    const drawX = (targetWidth - scaledWidth) / 2 + imageOffsetX;
+    const drawY = (targetHeight - scaledHeight) / 2 + imageOffsetY;
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(0, 0, targetWidth, targetHeight);
-        ctx.clip();
-        ctx.drawImage(mainImage, drawX, drawY, scaledWidth, scaledHeight);
-        ctx.restore();
-      }
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, targetWidth, targetHeight);
+    ctx.clip();
+    ctx.drawImage(mainImage, drawX, drawY, scaledWidth, scaledHeight);
+    ctx.restore();
+  }
 
-      // Border inside fixed frame
-      if (toggleBorder.checked) {
-        const frameX = 0, frameY = 0;
-        const frameWidth = 1080, frameHeight = 648;
+  // Border inside fixed frame
+  if (toggleBorder.checked) {
+    const frameX = 0, frameY = 0;
+    const frameWidth = 1080, frameHeight = 648;
 
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(frameX + 10, frameY + 10, frameWidth - 20, frameHeight - 20);
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(frameX + 10, frameY + 10, frameWidth - 20, frameHeight - 20);
 
-        ctx.strokeStyle = "#ccc";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(frameX + 14, frameY + 14, frameWidth - 28, frameHeight - 28);
-      }
+    ctx.strokeStyle = "#ccc";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(frameX + 14, frameY + 14, frameWidth - 28, frameHeight - 28);
+  }
 
-      // Always show logo
-      if (logoImage.complete) {
-        ctx.drawImage(logoImage, canvas.width - 131, 20, 120, 100);
-      }
+  // ✅ Draw headline first
+  drawHeadline();
 
-      drawHeadline();
-    }
+  // ✅ Then draw logo (always on top-right, never overlapping text in middle/bottom)
+  if (toggleLogo.checked && logoImage.complete) {
+    ctx.save();
+    ctx.shadowColor = "transparent"; // prevent shadow carryover
+    ctx.drawImage(logoImage, canvas.width - 131, 20, 120, 100);
+    ctx.restore();
+  }
+}
+
 
     // Zoom control
     imageZoomControl.addEventListener("input", () => {
@@ -291,3 +296,4 @@
   </script>
 </body>
 </html>
+
