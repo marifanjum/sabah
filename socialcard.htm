@@ -211,9 +211,16 @@
     toggleLogo.addEventListener("change", draw);
     headlineInput.addEventListener("input", draw);
 
+    logoImage.onload = () => {
+  draw();
+  drawHeadline(); // ensure headline is always re-drawn after logo
+};
+
+
     // Draw when assets load
     bgImage.onload = draw;
     logoImage.onload = draw;
   </script>
 </body>
 </html>
+
