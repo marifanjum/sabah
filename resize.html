@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Manipulation</title>
+<style>
+body {
+  margin: 5px;
+}
+button {
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 24px;  
+  margin: 10px; 
+}
+#canvasContainer {
+  position: relative;
+  width: 1200px;
+  height: 720px;
+  border: 2px solid black;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+#canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: move;
+}
+label {
+  font-size: 18px;
+  margin-right: 15px;
+}
+</style>
+</head>
+<body>
+  
+  <div id="canvasContainer">
+    <canvas id="canvas" width="1200" height="720"></canvas>
+  </div>
+
+  <button id="stretchButton">Fit by Stretch</button>
+  <button id="fitLongestSideButton">Fit on Longest Side</button>
+  <button id="centerButton">Center Image</button>
+  <br /><br />
+  <button id="downloadCanvasButton">Download Resized Image</button>
+  <br /><br />
+
+  <!-- Controls for toggling -->
+  <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
+  <label><input type="checkbox" id="toggleLogo" checked> Show Logo</label>
+  <br /><br />
+
+  <input type="file" id="imageInput" accept="image/*">
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const imageInput = document.getElementById('imageInput');
+    const stretchButton = document.getElementById('stretchButton');
+    const fitLongestSideButton = document.getElementById('fitLongestSideButton');
+    const centerButton = document.getElementById('centerButton');
+    const downloadCanvasButton = document.getElementById('downloadCanvasButton');
+    const toggleBorder = document.getElementById('toggleBorder');
+    const toggleLogo = document.getElementById('toggleLogo');
+
+    let image = null;
+    let logo = new Image();
+    logo.src = "sabah-logo.PNG"; // logo in root directory
+
+    let offsetX = 0;
+    let offsetY = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let scale = 1;
+
+    let lastTouchDistance = 0;
+    let lastTouchX = 0;
+    let lastTouchY = 0;
+
+    // Function to handle file selection event
+    const handleFileChange = event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        loadImage(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    };
+
+    // Function to load image onto canvas
+    const loadImage = src => {
+      image = new Image();
+      image.onload = function() {
+        fitImageToCanvas();
+      };
+      image.src = src;
+    };
+
+    // Function to draw everything on canvas
+    const drawImage = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (image) {
+        ctx.drawImage(image, offsetX, offsetY, image.width * scale, image.height * scale);
+      }
+
+      // Draw border if enabled
+      if (toggleBorder.checked) {
+        ctx.strokeStyle = "grey";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+        ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 28);
+      }
+
+      // Draw logo if enabled
+      if (toggleLogo.checked && logo.complete) {
+        let logoWidth = 120;
+        let logoHeight = 60;
+        ctx.drawImage(logo, canvas.width - logoWidth - 20, 50, logoWidth, logoHeight);
+      }
+    };
+
+    // Fit functions
+    const fitImageToCanvas = () => {
+      offsetX = 0;
+      offsetY = 0;
+      scale = Math.min(canvas.width / image.width, canvas.height / image.height);
+      drawImage();
+    };
+
+    const fitByStretch = () => {
+      offsetX = 0;
+      offsetY = 0;
+      scale = Math.min(canvas.width / image.width, canvas.height / image.height);
+      drawImage();
+    };
+
+    const fitOnLongestSide = () => {
+      offsetX = 0;
+      offsetY = 0;
+      if (image.width > image.height) {
+        scale = canvas.width / image.width;
+      } else {
+        scale = canvas.height / image.height;
+      }
+      drawImage();
+    };
+
+    const centerImage = () => {
+      offsetX = (canvas.width - image.width * scale) / 2;
+      offsetY = (canvas.height - image.height * scale) / 2;
+      drawImage();
+    };
+
+    // Mouse events
+    const handleMouseDown = event => {
+      isDragging = true;
+      startX = event.clientX - offsetX;
+      startY = event.clientY - offsetY;
+    };
+
+    const handleMouseMove = event => {
+      if (!isDragging) return;
+      offsetX = event.clientX - startX;
+      offsetY = event.clientY - startY;
+      drawImage();
+    };
+
+    const handleMouseUp = () => {
+      isDragging = false;
+    };
+
+    const handleMouseWheel = event => {
+      event.preventDefault();
+      const delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
+      const zoomSpeed = 0.1;
+      const zoomFactor = 1 + zoomSpeed * delta;
+      scale *= zoomFactor;
+      drawImage();
+    };
+
+    // Touch events
+    const handleTouchStart = event => {
+      if (event.touches.length === 1) {
+        lastTouchX = event.touches[0].clientX;
+        lastTouchY = event.touches[0].clientY;
+      } else if (event.touches.length === 2) {
+        lastTouchDistance = Math.hypot(
+          event.touches[0].clientX - event.touches[1].clientX,
+          event.touches[0].clientY - event.touches[1].clientY
+        );
+      }
+    };
+
+    const handleTouchMove = event => {
+      event.preventDefault();
+      if (event.touches.length === 1 && !isDragging) {
+        const touchX = event.touches[0].clientX;
+        const touchY = event.touches[0].clientY;
+        offsetX += touchX - lastTouchX;
+        offsetY += touchY - lastTouchY;
+        lastTouchX = touchX;
+        lastTouchY = touchY;
+        drawImage();
+      } else if (event.touches.length === 2) {
+        const touchDistance = Math.hypot(
+          event.touches[0].clientX - event.touches[1].clientX,
+          event.touches[0].clientY - event.touches[1].clientY
+        );
+        const zoomFactor = touchDistance / lastTouchDistance;
+        scale *= zoomFactor;
+        lastTouchDistance = touchDistance;
+        drawImage();
+      }
+    };
+
+    const handleTouchEnd = () => {
+      lastTouchDistance = 0;
+    };
+
+    const downloadCanvas = () => {
+      const link = document.createElement('a');
+      link.download = 'resized.webp';
+      link.href = canvas.toDataURL('image/webp', 0.5);
+      link.click();
+    };
+
+    // Add event listeners
+    imageInput.addEventListener('change', handleFileChange);
+    canvas.addEventListener('mousedown', handleMouseDown);
+    canvas.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('mousewheel', handleMouseWheel);
+    canvas.addEventListener('DOMMouseScroll', handleMouseWheel);
+    canvas.addEventListener('touchstart', handleTouchStart);
+    canvas.addEventListener('touchmove', handleTouchMove);
+    canvas.addEventListener('touchend', handleTouchEnd);
+    stretchButton.addEventListener('click', fitByStretch);
+    fitLongestSideButton.addEventListener('click', fitOnLongestSide);
+    centerButton.addEventListener('click', centerImage);
+    downloadCanvasButton.addEventListener('click', downloadCanvas);
+
+    // Redraw when toggles change
+    toggleBorder.addEventListener('change', drawImage);
+    toggleLogo.addEventListener('change', drawImage);
+  </script>
+</body>
+</html>

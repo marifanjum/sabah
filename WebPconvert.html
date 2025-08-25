@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Paste and Download as WebP</title>
+</head>
+<body>
+  <p style="font-size:30px"> Copy the image and paste here. It will be automatically converted into webp and downloaded to your hard disk. </p>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Function to handle paste event
+    const handlePaste = event => {
+      const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+      for (let index in items) {
+        const item = items[index];
+        if (item.kind === 'file' && item.type.includes('image')) {
+          const blob = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+              canvas.width = img.width;
+              canvas.height = img.height;
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              ctx.drawImage(img, 0, 0);
+              downloadAsWebP();
+            };
+            img.src = event.target.result;
+          };
+          reader.readAsDataURL(blob);
+          break;
+        }
+      }
+    };
+
+    // Function to download canvas as WebP
+    const downloadAsWebP = () => {
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = 'coverted_image.webp';
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+      }, 'image/webp', 0.5); // Quality set to 0.5
+    };
+
+    // Add event listener for paste event
+    document.addEventListener('paste', handlePaste);
+  </script>
+</body>
+</html>
