@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Social Card Generator</title>
+  <title>Social Media Image Generator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,164 +11,260 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
       padding: 20px;
     }
-    canvas {
-      border: 2px solid #fff;
-      margin-top: 20px;
-      max-width: 100%;
-      height: auto;
+    #headlineInput {
+      width: 90%;
+      font-size: 20px;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: none;
+      border-radius: 6px;
+    }
+    #canvas {
+      border: 2px solid #444;
+      margin-bottom: 20px;
+      cursor: grab;
+    }
+    #canvas:active {
+      cursor: grabbing;
     }
     .controls {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-width: 600px;
-      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      width: 90%;
+    }
+    .control-group {
+      background: #222;
+      padding: 10px;
+      border-radius: 8px;
     }
     label {
+      display: block;
+      margin-bottom: 5px;
       font-size: 14px;
-      margin-top: 5px;
     }
-    input[type="text"],
-    input[type="file"],
-    input[type="number"],
-    input[type="color"] {
-      padding: 6px;
-      border-radius: 4px;
-      border: none;
+    input[type="range"], input[type="file"], input[type="number"] {
       width: 100%;
     }
     button {
-      padding: 10px;
-      background: #28a745;
+      padding: 12px;
+      margin-top: 20px;
+      background: #fff403;
       border: none;
-      color: #fff;
       border-radius: 6px;
-      cursor: pointer;
       font-size: 16px;
-      margin-top: 10px;
-    }
-    button:hover {
-      background: #218838;
+      font-weight: bold;
+      cursor: pointer;
+      width: 200px;
     }
   </style>
 </head>
 <body>
-  <h1>Social Card Generator</h1>
+  <input id="headlineInput" type="text" placeholder="Enter headline text here">
+
+  <canvas id="canvas" width="1080" height="1080"></canvas>
+
   <div class="controls">
-    <label>Upload Main Image:
-      <input type="file" id="uploadImage">
-    </label>
-    <label>Headline:
-      <input type="text" id="headline" placeholder="Enter your headline">
-    </label>
-    <label>Font Size:
-      <input type="number" id="fontSize" value="40">
-    </label>
-    <label>Text Color:
-      <input type="color" id="textColor" value="#ffffff">
-    </label>
-    <label>Word Spacing:
-      <input type="number" id="wordSpacing" value="0">
-    </label>
-    <button id="downloadBtn">Download Image</button>
+    <div class="control-group">
+      <label>Upload Main Image</label>
+      <input type="file" id="imageLoader" accept="image/*">
+    </div>
+    <div class="control-group">
+      <label>Image Zoom</label>
+      <input type="range" id="imageZoom" min="0.5" max="3" step="0.1" value="1">
+    </div>
+    <div class="control-group">
+      <label>Font Size</label>
+      <input type="range" id="fontSize" min="30" max="120" value="80">
+    </div>
+    <div class="control-group">
+      <label>Line Height</label>
+      <input type="range" id="lineHeight" min="40" max="150" value="100">
+    </div>
+    <div class="control-group">
+      <label>Word Spacing</label>
+      <input type="range" id="wordSpacing" min="0" max="40" value="0">
+    </div>
+    <div class="control-group">
+      <label>Stroke Width</label>
+      <input type="range" id="strokeWidth" min="0" max="10" value="2">
+    </div>
+    <div class="control-group">
+      <label>First Line Word Count</label>
+      <input type="number" id="firstLineCount" min="1" max="30" value="15">
+    </div>
+    <div class="control-group">
+      <label>Headline Y Position</label>
+      <input type="range" id="headlineY" min="700" max="1050" value="750">
+    </div>
+    <div class="control-group">
+      <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
+    </div>
   </div>
 
-  <canvas id="canvas" width="1200" height="630"></canvas>
+  <button id="downloadBtn">Download Final Image</button>
 
   <script>
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
 
-    const uploadImage = document.getElementById("uploadImage");
-    const headlineInput = document.getElementById("headline");
-    const fontSizeInput = document.getElementById("fontSize");
-    const textColorInput = document.getElementById("textColor");
-    const wordSpacingInput = document.getElementById("wordSpacing");
+    const headlineInput = document.getElementById("headlineInput");
+    const imageLoader = document.getElementById("imageLoader");
+    const imageZoomControl = document.getElementById("imageZoom");
+    const fontSizeControl = document.getElementById("fontSize");
+    const lineHeightControl = document.getElementById("lineHeight");
+    const wordSpacingControl = document.getElementById("wordSpacing");
+    const strokeWidthControl = document.getElementById("strokeWidth");
+    const firstLineCountControl = document.getElementById("firstLineCount");
+    const headlineYControl = document.getElementById("headlineY");
+    const toggleBorder = document.getElementById("toggleBorder");
     const downloadBtn = document.getElementById("downloadBtn");
 
-    const bgImage = new Image();
-    bgImage.src = "bg.png"; // Make sure file name matches exactly
-    const logoImage = new Image();
-    logoImage.src = "sabah-logo.png"; // Always show logo
-
     let mainImage = null;
+    let bgImage = new Image();
+    let logoImage = new Image();
+    bgImage.src = "bg.png";
+    logoImage.src = "sabah-logo.png";
 
-    // Redraw everything
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let imageZoom = 1;
+    let imageOffsetX = 0, imageOffsetY = 0;
+    let isDragging = false, dragStartX = 0, dragStartY = 0;
 
-      // Draw background
-      if (bgImage.complete) {
-        ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
-      }
+    imageLoader.addEventListener("change", handleImage, false);
+    [
+      headlineInput, fontSizeControl, lineHeightControl, wordSpacingControl,
+      strokeWidthControl, firstLineCountControl, headlineYControl,
+      imageZoomControl, toggleBorder
+    ].forEach(ctrl => ctrl.addEventListener("input", draw));
 
-      // Draw uploaded main image
-      if (mainImage) {
-        const ratio = Math.min(canvas.width / mainImage.width, canvas.height / mainImage.height);
-        const w = mainImage.width * ratio;
-        const h = mainImage.height * ratio;
-        const x = (canvas.width - w) / 2;
-        const y = (canvas.height - h) / 2;
-        ctx.drawImage(mainImage, x, y, w, h);
-      }
-
-      // Draw logo (always on top left corner)
-      if (logoImage.complete) {
-        ctx.drawImage(logoImage, 20, 20, 120, 100);
-      }
-
-      // Draw headline
-      const headline = headlineInput.value;
-      if (headline) {
-        const fontSize = parseInt(fontSizeInput.value, 10) || 40;
-        ctx.font = `bold ${fontSize}px Arial`;
-        ctx.fillStyle = textColorInput.value;
-
-        const words = headline.split(/\s+/);
-        let x = 50;
-        let y = canvas.height - 100;
-        const spacing = parseInt(wordSpacingInput.value, 10) || 0;
-
-        words.forEach(word => {
-          const width = ctx.measureText(word).width;
-          ctx.fillText(word, x, y);
-          x += width + spacing;
-        });
-      }
+    function handleImage(e) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        mainImage = new Image();
+        mainImage.onload = function() {
+          const targetWidth = 1080, targetHeight = 648;
+          const scaleX = targetWidth / mainImage.width;
+          const scaleY = targetHeight / mainImage.height;
+          imageZoom = Math.min(scaleX, scaleY);
+          imageOffsetX = 0;
+          imageOffsetY = 0;
+          imageZoomControl.value = imageZoom.toFixed(2);
+          draw();
+        };
+        mainImage.src = event.target.result;
+      };
+      reader.readAsDataURL(e.target.files[0]);
     }
 
-    // Event listeners
-    uploadImage.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-          mainImage = new Image();
-          mainImage.onload = draw;
-          mainImage.src = evt.target.result;
-        };
-        reader.readAsDataURL(file);
+    function splitWords(text) {
+      return text.match(/<[^>]+>|[^<>؀-ۿ]+|[؀-ۿ]+/g) || [];
+    }
+
+    function drawHeadline() {
+      const text = headlineInput.value;
+      if (!text) return;
+
+      const fontSize = parseInt(fontSizeControl.value);
+      const lineHeight = parseInt(lineHeightControl.value);
+      const wordSpacing = parseInt(wordSpacingControl.value);
+      const strokeWidth = parseInt(strokeWidthControl.value);
+      const firstLineCount = parseInt(firstLineCountControl.value);
+      const baseY = parseInt(headlineYControl.value);
+
+      ctx.font = `${fontSize}px 'Jameel Noori Nastaleeq', serif`;
+      ctx.textAlign = "center";
+      ctx.direction = "rtl";
+      ctx.lineWidth = strokeWidth;
+      ctx.strokeStyle = "#fff403";
+      ctx.fillStyle = "#fff403";
+
+      const words = splitWords(text);
+      const lines = [words.slice(0, firstLineCount), words.slice(firstLineCount)];
+
+      lines.forEach((line, lineIndex) => {
+        const lineText = line.join(" ".repeat(Math.max(1, wordSpacing / 4)));
+        const y = baseY + lineIndex * lineHeight;
+        ctx.fillText(lineText, canvas.width / 2, y);
+        ctx.strokeText(lineText, canvas.width / 2, y);
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (bgImage.complete) ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+
+      // Draw main image
+      if (mainImage) {
+        const targetWidth = 1080, targetHeight = 648;
+        const scaledWidth = mainImage.width * imageZoom;
+        const scaledHeight = mainImage.height * imageZoom;
+        const drawX = (targetWidth - scaledWidth) / 2 + imageOffsetX;
+        const drawY = (targetHeight - scaledHeight) / 2 + imageOffsetY;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, targetWidth, targetHeight);
+        ctx.clip();
+        ctx.drawImage(mainImage, drawX, drawY, scaledWidth, scaledHeight);
+        ctx.restore();
+      }
+
+      // Draw border
+      if (toggleBorder.checked) {
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, 10, 1060, 628);
+
+        ctx.strokeStyle = "#ccc";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(14, 14, 1052, 620);
+      }
+
+      // Always draw logo
+      if (logoImage.complete) {
+        ctx.drawImage(logoImage, canvas.width - 131, 20, 120, 100);
+      }
+
+      drawHeadline();
+    }
+
+    // Zoom control
+    imageZoomControl.addEventListener("input", () => {
+      imageZoom = parseFloat(imageZoomControl.value);
+      draw();
+    });
+
+    // Dragging to move image
+    canvas.addEventListener("mousedown", e => {
+      if (e.offsetY <= 648) {
+        isDragging = true;
+        dragStartX = e.offsetX - imageOffsetX;
+        dragStartY = e.offsetY - imageOffsetY;
       }
     });
 
-    [headlineInput, fontSizeInput, textColorInput, wordSpacingInput].forEach(input => {
-      input.addEventListener("input", draw);
+    canvas.addEventListener("mousemove", e => {
+      if (isDragging) {
+        imageOffsetX = e.offsetX - dragStartX;
+        imageOffsetY = e.offsetY - dragStartY;
+        draw();
+      }
+    });
+
+    canvas.addEventListener("mouseup", () => { isDragging = false; });
+    canvas.addEventListener("mouseleave", () => { isDragging = false; });
+
+    downloadBtn.addEventListener("click", () => {
+      const link = document.createElement("a");
+      link.download = "final-image.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
     });
 
     bgImage.onload = draw;
     logoImage.onload = draw;
-
-    downloadBtn.addEventListener("click", () => {
-      const link = document.createElement("a");
-      link.download = "social-card.png";
-      link.href = canvas.toDataURL();
-      link.click();
-    });
   </script>
 </body>
 </html>
