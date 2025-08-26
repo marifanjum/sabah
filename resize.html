@@ -230,6 +230,24 @@ label {
       link.href = canvas.toDataURL('image/webp', 0.5);
       link.click();
     };
+	
+	// Handle image paste from clipboard
+const handlePaste = event => {
+  const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+  for (let index in items) {
+    const item = items[index];
+    if (item.kind === 'file' && item.type.includes('image')) {
+      const blob = item.getAsFile();
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        loadImage(event.target.result); // use your existing loadImage
+      };
+      reader.readAsDataURL(blob);
+      break;
+    }
+  }
+};
+
 
     // Add event listeners
     imageInput.addEventListener('change', handleFileChange);
@@ -241,10 +259,12 @@ label {
     canvas.addEventListener('touchstart', handleTouchStart);
     canvas.addEventListener('touchmove', handleTouchMove);
     canvas.addEventListener('touchend', handleTouchEnd);
+	
     stretchButton.addEventListener('click', fitByStretch);
     fitLongestSideButton.addEventListener('click', fitOnLongestSide);
     centerButton.addEventListener('click', centerImage);
     downloadCanvasButton.addEventListener('click', downloadCanvas);
+document.addEventListener('paste', handlePaste);
 
     // Redraw when toggles change
     toggleBorder.addEventListener('change', drawImage);
