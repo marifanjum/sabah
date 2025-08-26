@@ -62,7 +62,6 @@
   </style>
 </head>
 <body>
-  <h2> Social Card English </h2>
   <input id="headlineInput" type="text" placeholder="Enter headline text here">
 
   <canvas id="canvas" width="1080" height="1080"></canvas>
@@ -85,24 +84,20 @@
       <input type="range" id="lineHeight" min="40" max="150" value="100">
     </div>
     <div class="control-group">
-      <label>Word Spacing</label>
-      <input type="range" id="wordSpacing" min="0" max="40" value="0">
+      <label>Letter Spacing</label>
+      <input type="range" id="letterSpacing" min="0" max="20" value="0">
     </div>
     <div class="control-group">
       <label>Stroke Width</label>
       <input type="range" id="strokeWidth" min="0" max="10" value="2">
     </div>
     <div class="control-group">
-      <label>Shadow</label>
-      <input type="checkbox" id="shadow" checked>
-    </div>
-    <div class="control-group">
-      <label>First Line Word Count</label>
-      <input type="number" id="firstLineCount" min="1" max="30" value="15">
-    </div>
-    <div class="control-group">
       <label>Headline Y Position</label>
       <input type="range" id="headlineY" min="700" max="1050" value="750">
+    </div>
+    <div class="control-group">
+      <label>Number of Lines</label>
+      <input type="number" id="numLines" min="1" max="4" value="2">
     </div>
     <div class="control-group">
       <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
@@ -123,11 +118,10 @@
     const imageZoomControl = document.getElementById("imageZoom");
     const fontSizeControl = document.getElementById("fontSize");
     const lineHeightControl = document.getElementById("lineHeight");
-    const wordSpacingControl = document.getElementById("wordSpacing");
+    const letterSpacingControl = document.getElementById("letterSpacing");
     const strokeWidthControl = document.getElementById("strokeWidth");
-    const shadowControl = document.getElementById("shadow");
-    const firstLineCountControl = document.getElementById("firstLineCount");
     const headlineYControl = document.getElementById("headlineY");
+    const numLinesControl = document.getElementById("numLines");
     const downloadBtn = document.getElementById("downloadBtn");
 
     const toggleBorder = document.getElementById("toggleBorder");
@@ -145,9 +139,9 @@
 
     imageLoader.addEventListener("change", handleImage, false);
     [
-      headlineInput, fontSizeControl, lineHeightControl, wordSpacingControl,
-      strokeWidthControl, shadowControl, firstLineCountControl, headlineYControl,
-      imageZoomControl, toggleBorder, toggleLogo
+      headlineInput, fontSizeControl, lineHeightControl, letterSpacingControl,
+      strokeWidthControl, headlineYControl,
+      imageZoomControl, toggleBorder, toggleLogo, numLinesControl
     ].forEach(ctrl => ctrl.addEventListener("input", draw));
 
     function handleImage(e) {
@@ -169,47 +163,66 @@
       reader.readAsDataURL(e.target.files[0]);
     }
 
-    function splitWords(text) {
-      return text.split(/\s+/);
-    }
-
     function drawHeadline() {
       const text = headlineInput.value;
       if (!text) return;
 
-      const fontSize = parseInt(fontSizeControl.value);
       const lineHeight = parseInt(lineHeightControl.value);
-      const wordSpacing = parseInt(wordSpacingControl.value);
       const strokeWidth = parseInt(strokeWidthControl.value);
-      const shadow = shadowControl.checked;
-      const firstLineCount = parseInt(firstLineCountControl.value);
       const baseY = parseInt(headlineYControl.value);
+      const numLines = Math.min(Math.max(parseInt(numLinesControl.value), 1), 4);
+      const letterSpacing = parseInt(letterSpacingControl.value);
 
-      ctx.font = `${fontSize}px Arial, sans-serif`;
-      ctx.textAlign = "center";
+      let fontSize = parseInt(fontSizeControl.value);
+      ctx.textAlign = "left";
       ctx.direction = "ltr";
       ctx.lineWidth = strokeWidth;
       ctx.strokeStyle = "#fff403";
       ctx.fillStyle = "#fff403";
 
-      if (shadow) {
-        ctx.shadowColor = "white";
-        ctx.shadowBlur = 5;
-        ctx.shadowOffsetX = 4;
-        ctx.shadowOffsetY = 4;
-      } else {
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur = 0;
+      const words = text.split(/\s+/);
+
+      // Split words evenly across lines
+      const lines = [];
+      let start = 0;
+      for (let i = 0; i < numLines; i++) {
+        const remainingWords = words.length - start;
+        const remainingLines = numLines - i;
+        const wordsInLine = Math.ceil(remainingWords / remainingLines);
+        lines.push(words.slice(start, start + wordsInLine).join(" "));
+        start += wordsInLine;
       }
 
-      const words = splitWords(text);
-      const lines = [words.slice(0, firstLineCount), words.slice(firstLineCount)];
+      // Auto scale font size to fit all lines
+      while (true) {
+        let fits = true;
+        for (let line of lines) {
+          const lineWidth = ctx.measureText(line).width + (line.length - 1) * letterSpacing;
+          if (lineWidth > canvas.width * 0.9) { // leave 10% margin
+            fits = false;
+            break;
+          }
+        }
+        if (!fits && fontSize > 10) {
+          fontSize -= 1;
+          ctx.font = `${fontSize}px Arial, sans-serif`;
+        } else {
+          break;
+        }
+      }
 
-      lines.forEach((line, lineIndex) => {
-        const lineText = line.join(" ".repeat(Math.max(1, wordSpacing / 4)));
+      ctx.font = `${fontSize}px Arial, sans-serif`;
+
+      // Draw each line with proper centering
+      lines.forEach((lineText, lineIndex) => {
+        let totalWidth = ctx.measureText(lineText).width + (lineText.length - 1) * letterSpacing;
+        let startX = canvas.width / 2 - totalWidth / 2;
         const y = baseY + lineIndex * lineHeight;
-        ctx.fillText(lineText, canvas.width / 2, y);
-        ctx.strokeText(lineText, canvas.width / 2, y);
+        for (let char of lineText) {
+          ctx.fillText(char, startX, y);
+          ctx.strokeText(char, startX, y);
+          startX += ctx.measureText(char).width + letterSpacing;
+        }
       });
     }
 
@@ -289,4 +302,3 @@
   </script>
 </body>
 </html>
-
