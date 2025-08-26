@@ -1,310 +1,337 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Image Manipulation</title>
 <style>
-body {
-  margin: 5px;
-}
-button {
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 24px;  
-  margin: 10px; 
-}
-#canvasContainer {
-  position: relative;
-  width: 1200px;
-  height: 720px;
-  border: 2px solid black;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-#canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  cursor: move;
-}
-label {
-  font-size: 18px;
-  margin-right: 15px;
-}
+  body { margin: 5px; font-family: Arial, sans-serif; }
+  button { padding: 12px 20px; margin: 8px; font-size: 18px; }
+  #canvasContainer { position: relative; width: 1200px; height: 720px; border: 2px solid black; overflow: hidden; margin-bottom: 20px; }
+  #canvas { position: absolute; top: 0; left: 0; cursor: move; }
+  label { font-size: 16px; margin-right: 12px; display: inline-block; }
+  .small { font-size: 14px; margin-left: 6px; }
+  .controls-row { margin-bottom: 10px; }
 </style>
 </head>
 <body>
-  
+
   <div id="canvasContainer">
     <canvas id="canvas" width="1200" height="720"></canvas>
   </div>
 
-  <button id="stretchButton">Fit by Stretch</button>
-  <button id="fitLongestSideButton">Fit on Longest Side</button>
-  <button id="centerButton">Center Image</button>
-  <button id="forceStretchButton">Force Stretch to Fit</button>
-  <br /><br />
-  <button id="downloadCanvasButton">Download Resized Image</button>
-  <br /><br />
+  <div class="controls-row">
+    <button id="stretchButton">Fit by Stretch</button>
+    <button id="fitLongestSideButton">Fit on Longest Side</button>
+    <button id="centerButton">Center Image</button>
+    <button id="forceStretchButton">Force Stretch to Canvas</button>
+    <button id="downloadCanvasButton">Download Resized Image</button>
+  </div>
 
-  <!-- Controls for toggling -->
-  <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
-  <label><input type="checkbox" id="toggleLogo" checked> Show Logo</label>
-  <label><input type="checkbox" id="toggleBg" checked> Show Background</label>
-  <br /><br />
+  <div class="controls-row">
+    <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
+    <label><input type="checkbox" id="toggleLogo" checked> Show Logo</label>
+    <label><input type="checkbox" id="toggleBg" checked> Show Background</label>
+    <label><input type="checkbox" id="toggleGradient"> Use Gradient Background</label>
+  </div>
 
-  <input type="file" id="imageInput" accept="image/*">
+  <div class="controls-row">
+    <label>Gradient Color 1: <input type="color" id="gradColor1" value="#000000"></label>
+    <label>Gradient Color 2: <input type="color" id="gradColor2" value="#ffffff"></label>
+    <label>Direction:
+      <select id="gradDirection" class="small">
+        <option value="top-bottom">Top → Bottom</option>
+        <option value="bottom-top">Bottom → Top</option>
+        <option value="left-right">Left → Right</option>
+        <option value="right-left">Right → Left</option>
+        <option value="tl-br">Top-Left → Bottom-Right</option>
+        <option value="tr-bl">Top-Right → Bottom-Left</option>
+        <option value="bl-tr">Bottom-Left → Top-Right</option>
+        <option value="br-tl">Bottom-Right → Top-Left</option>
+      </select>
+    </label>
+  </div>
 
-  <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const imageInput = document.getElementById('imageInput');
-    const stretchButton = document.getElementById('stretchButton');
-    const fitLongestSideButton = document.getElementById('fitLongestSideButton');
-    const centerButton = document.getElementById('centerButton');
-    const forceStretchButton = document.getElementById('forceStretchButton');
-    const downloadCanvasButton = document.getElementById('downloadCanvasButton');
-    const toggleBorder = document.getElementById('toggleBorder');
-    const toggleLogo = document.getElementById('toggleLogo');
-    const toggleBg = document.getElementById('toggleBg');
+  <div class="controls-row">
+    <input type="file" id="imageInput" accept="image/*">
+  </div>
 
-    let image = null;
-    let logo = new Image();
-    logo.src = "sabah-logo.PNG"; // logo in root directory
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-    // background image
-    let bgImage = new Image();
-    bgImage.src = "image-bg.png"; // background in root directory
+const imageInput = document.getElementById('imageInput');
+const stretchButton = document.getElementById('stretchButton');
+const fitLongestSideButton = document.getElementById('fitLongestSideButton');
+const centerButton = document.getElementById('centerButton');
+const forceStretchButton = document.getElementById('forceStretchButton');
+const downloadCanvasButton = document.getElementById('downloadCanvasButton');
 
-    let offsetX = 0;
-    let offsetY = 0;
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let scale = 1;
-    let forceStretchMode = false; // track force stretch mode
+const toggleBorder = document.getElementById('toggleBorder');
+const toggleLogo = document.getElementById('toggleLogo');
+const toggleBg = document.getElementById('toggleBg');
+const toggleGradient = document.getElementById('toggleGradient');
 
-    let lastTouchDistance = 0;
-    let lastTouchX = 0;
-    let lastTouchY = 0;
+const gradColor1 = document.getElementById('gradColor1');
+const gradColor2 = document.getElementById('gradColor2');
+const gradDirection = document.getElementById('gradDirection');
 
-    // Function to handle file selection event
-    const handleFileChange = event => {
-      const file = event.target.files[0];
-      if (!file) return;
+let image = null;
+let logo = new Image();
+logo.src = "sabah-logo.PNG"; // keep as before
+
+let bgImage = new Image();
+bgImage.src = "image-bg.png"; // background filename you requested
+
+let offsetX = 0, offsetY = 0;
+let isDragging = false;
+let startX = 0, startY = 0;
+let scale = 1;
+let forceStretchMode = false;
+
+let lastTouchDistance = 0;
+let lastTouchX = 0;
+let lastTouchY = 0;
+
+// --- image load / paste handlers ---
+const handleFileChange = e => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => loadImage(ev.target.result);
+  reader.readAsDataURL(file);
+};
+
+const loadImage = src => {
+  image = new Image();
+  image.onload = function() {
+    fitImageToCanvas();
+  };
+  image.src = src;
+};
+
+const handlePaste = event => {
+  const items = (event.clipboardData || event.originalEvent && event.originalEvent.clipboardData).items;
+  for (let i=0; i<items.length; i++){
+    const item = items[i];
+    if (item.kind === 'file' && item.type.indexOf('image') !== -1){
+      const blob = item.getAsFile();
       const reader = new FileReader();
-      reader.onload = function(event) {
-        loadImage(event.target.result);
-      };
-      reader.readAsDataURL(file);
-    };
+      reader.onload = ev => loadImage(ev.target.result);
+      reader.readAsDataURL(blob);
+      break;
+    }
+  }
+};
 
-    // Function to load image onto canvas
-    const loadImage = src => {
-      image = new Image();
-      image.onload = function() {
-        fitImageToCanvas();
-      };
-      image.src = src;
-    };
+// --- utility: create a canvas gradient from direction ---
+function createCanvasGradient(direction, colorA, colorB) {
+  let x0=0, y0=0, x1=0, y1=0;
+  switch (direction) {
+    case 'top-bottom':     x0 = 0; y0 = 0; x1 = 0; y1 = canvas.height; break;
+    case 'bottom-top':     x0 = 0; y0 = canvas.height; x1 = 0; y1 = 0; break;
+    case 'left-right':     x0 = 0; y0 = 0; x1 = canvas.width; y1 = 0; break;
+    case 'right-left':     x0 = canvas.width; y0 = 0; x1 = 0; y1 = 0; break;
+    case 'tl-br':          x0 = 0; y0 = 0; x1 = canvas.width; y1 = canvas.height; break;
+    case 'tr-bl':          x0 = canvas.width; y0 = 0; x1 = 0; y1 = canvas.height; break;
+    case 'bl-tr':          x0 = 0; y0 = canvas.height; x1 = canvas.width; y1 = 0; break;
+    case 'br-tl':          x0 = canvas.width; y0 = canvas.height; x1 = 0; y1 = 0; break;
+    default:               x0 = 0; y0 = 0; x1 = 0; y1 = canvas.height;
+  }
+  const g = ctx.createLinearGradient(x0, y0, x1, y1);
+  g.addColorStop(0, colorA);
+  g.addColorStop(1, colorB);
+  return g;
+}
 
-    // Function to draw everything on canvas
-    const drawImage = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+// --- draw all layers ---
+const drawImage = () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // draw background first (if enabled)
-      if (toggleBg.checked && bgImage.complete) {
-        ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
-      }
+  // 1) draw background image if enabled
+  if (toggleBg.checked && bgImage.complete) {
+    ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+  }
+  // 2) otherwise if gradient enabled -> draw gradient using direction
+  else if (!toggleBg.checked && toggleGradient.checked) {
+    ctx.fillStyle = createCanvasGradient(gradDirection.value, gradColor1.value, gradColor2.value);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+  // else leave transparent/cleared canvas (so border/logo may show)
 
-      if (image) {
-        if (forceStretchMode) {
-          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-        } else {
-          ctx.drawImage(image, offsetX, offsetY, image.width * scale, image.height * scale);
-        }
-      }
+  // 3) draw user image (respecting forceStretchMode)
+  if (image) {
+    if (forceStretchMode) {
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.drawImage(image, offsetX, offsetY, image.width * scale, image.height * scale);
+    }
+  }
 
-      // Draw border if enabled
-      if (toggleBorder.checked) {
-        ctx.strokeStyle = "grey";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-        ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 28);
-      }
+  // 4) border
+  if (toggleBorder.checked) {
+    ctx.strokeStyle = "grey";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+    ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 28);
+  }
 
-      // Draw logo if enabled
-      if (toggleLogo.checked && logo.complete) {
-        let logoWidth = 120;
-        let logoHeight = 60;
-        ctx.drawImage(logo, canvas.width - logoWidth - 20, 50, logoWidth, logoHeight);
-      }
-    };
+  // 5) logo
+  if (toggleLogo.checked && logo.complete) {
+    const logoWidth = 120, logoHeight = 60;
+    ctx.drawImage(logo, canvas.width - logoWidth - 20, 50, logoWidth, logoHeight);
+  }
+};
 
-    // Fit functions
-    const fitImageToCanvas = () => {
-      offsetX = 0;
-      offsetY = 0;
-      scale = Math.min(canvas.width / image.width, canvas.height / image.height);
-      forceStretchMode = false;
-      drawImage();
-    };
+// --- fit / layout functions ---
+const fitImageToCanvas = () => {
+  if (!image) return;
+  offsetX = 0; offsetY = 0;
+  scale = Math.min(canvas.width / image.width, canvas.height / image.height);
+  forceStretchMode = false;
+  drawImage();
+};
 
-    const fitByStretch = () => {
-      offsetX = 0;
-      offsetY = 0;
-      scale = Math.min(canvas.width / image.width, canvas.height / image.height);
-      forceStretchMode = false;
-      drawImage();
-    };
+const fitByStretch = () => {
+  if (!image) return;
+  // keep aspect fit (same as fitImageToCanvas in your previous code)
+  offsetX = 0; offsetY = 0;
+  scale = Math.min(canvas.width / image.width, canvas.height / image.height);
+  forceStretchMode = false;
+  drawImage();
+};
 
-    const fitOnLongestSide = () => {
-      offsetX = 0;
-      offsetY = 0;
-      if (image.width > image.height) {
-        scale = canvas.width / image.width;
-      } else {
-        scale = canvas.height / image.height;
-      }
-      forceStretchMode = false;
-      drawImage();
-    };
+const fitOnLongestSide = () => {
+  if (!image) return;
+  offsetX = 0; offsetY = 0;
+  if (image.width > image.height) scale = canvas.width / image.width;
+  else scale = canvas.height / image.height;
+  forceStretchMode = false;
+  drawImage();
+};
 
-    const centerImage = () => {
-      offsetX = (canvas.width - image.width * scale) / 2;
-      offsetY = (canvas.height - image.height * scale) / 2;
-      forceStretchMode = false;
-      drawImage();
-    };
+const centerImage = () => {
+  if (!image) return;
+  offsetX = (canvas.width - image.width * scale) / 2;
+  offsetY = (canvas.height - image.height * scale) / 2;
+  forceStretchMode = false;
+  drawImage();
+};
 
-    // NEW: Force stretch
-    const forceStretch = () => {
-      forceStretchMode = true;
-      drawImage();
-    };
+const forceStretch = () => {
+  forceStretchMode = true;
+  drawImage();
+};
 
-    // Mouse events
-    const handleMouseDown = event => {
-      if (forceStretchMode) return; // disable dragging in stretch mode
-      isDragging = true;
-      startX = event.clientX - offsetX;
-      startY = event.clientY - offsetY;
-    };
+// --- mouse/touch interaction (disabled while forceStretchMode) ---
+const handleMouseDown = e => {
+  if (forceStretchMode) return;
+  isDragging = true;
+  startX = e.clientX - offsetX;
+  startY = e.clientY - offsetY;
+};
 
-    const handleMouseMove = event => {
-      if (!isDragging || forceStretchMode) return;
-      offsetX = event.clientX - startX;
-      offsetY = event.clientY - startY;
-      drawImage();
-    };
+const handleMouseMove = e => {
+  if (!isDragging || forceStretchMode) return;
+  offsetX = e.clientX - startX;
+  offsetY = e.clientY - startY;
+  drawImage();
+};
 
-    const handleMouseUp = () => {
-      isDragging = false;
-    };
+const handleMouseUp = () => { isDragging = false; };
 
-    const handleMouseWheel = event => {
-      if (forceStretchMode) return; // disable zoom in stretch mode
-      event.preventDefault();
-      const delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
-      const zoomSpeed = 0.1;
-      const zoomFactor = 1 + zoomSpeed * delta;
-      scale *= zoomFactor;
-      drawImage();
-    };
+const handleMouseWheel = e => {
+  if (forceStretchMode) return;
+  e.preventDefault();
+  const delta = (e.wheelDelta ? e.wheelDelta : -e.deltaY) > 0 ? 1 : -1;
+  const zoomSpeed = 0.1;
+  const zoomFactor = 1 + zoomSpeed * delta;
+  scale *= zoomFactor;
+  drawImage();
+};
 
-    // Touch events
-    const handleTouchStart = event => {
-      if (forceStretchMode) return; 
-      if (event.touches.length === 1) {
-        lastTouchX = event.touches[0].clientX;
-        lastTouchY = event.touches[0].clientY;
-      } else if (event.touches.length === 2) {
-        lastTouchDistance = Math.hypot(
-          event.touches[0].clientX - event.touches[1].clientX,
-          event.touches[0].clientY - event.touches[1].clientY
-        );
-      }
-    };
+// touch
+const handleTouchStart = e => {
+  if (forceStretchMode) return;
+  if (e.touches.length === 1) {
+    lastTouchX = e.touches[0].clientX;
+    lastTouchY = e.touches[0].clientY;
+  } else if (e.touches.length === 2) {
+    lastTouchDistance = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+  }
+};
 
-    const handleTouchMove = event => {
-      if (forceStretchMode) return;
-      event.preventDefault();
-      if (event.touches.length === 1 && !isDragging) {
-        const touchX = event.touches[0].clientX;
-        const touchY = event.touches[0].clientY;
-        offsetX += touchX - lastTouchX;
-        offsetY += touchY - lastTouchY;
-        lastTouchX = touchX;
-        lastTouchY = touchY;
-        drawImage();
-      } else if (event.touches.length === 2) {
-        const touchDistance = Math.hypot(
-          event.touches[0].clientX - event.touches[1].clientX,
-          event.touches[0].clientY - event.touches[1].clientY
-        );
-        const zoomFactor = touchDistance / lastTouchDistance;
-        scale *= zoomFactor;
-        lastTouchDistance = touchDistance;
-        drawImage();
-      }
-    };
+const handleTouchMove = e => {
+  if (forceStretchMode) return;
+  if (e.touches.length === 1) {
+    e.preventDefault();
+    const tx = e.touches[0].clientX;
+    const ty = e.touches[0].clientY;
+    offsetX += tx - lastTouchX;
+    offsetY += ty - lastTouchY;
+    lastTouchX = tx; lastTouchY = ty;
+    drawImage();
+  } else if (e.touches.length === 2) {
+    e.preventDefault();
+    const touchDistance = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    const zoomFactor = touchDistance / (lastTouchDistance || touchDistance);
+    scale *= zoomFactor;
+    lastTouchDistance = touchDistance;
+    drawImage();
+  }
+};
 
-    const handleTouchEnd = () => {
-      lastTouchDistance = 0;
-    };
+const handleTouchEnd = () => { lastTouchDistance = 0; };
 
-    const downloadCanvas = () => {
-      const link = document.createElement('a');
-      link.download = 'resized.webp';
-      link.href = canvas.toDataURL('image/webp', 0.5);
-      link.click();
-    };
-	
-	// Handle image paste from clipboard
-    const handlePaste = event => {
-      const items = (event.clipboardData || event.originalEvent.clipboardData).items;
-      for (let index in items) {
-        const item = items[index];
-        if (item.kind === 'file' && item.type.includes('image')) {
-          const blob = item.getAsFile();
-          const reader = new FileReader();
-          reader.onload = function(event) {
-            loadImage(event.target.result);
-          };
-          reader.readAsDataURL(blob);
-          break;
-        }
-      }
-    };
+// download
+const downloadCanvas = () => {
+  const link = document.createElement('a');
+  link.download = 'resized.webp';
+  link.href = canvas.toDataURL('image/webp', 0.5);
+  link.click();
+};
 
-    // Add event listeners
-    imageInput.addEventListener('change', handleFileChange);
-    canvas.addEventListener('mousedown', handleMouseDown);
-    canvas.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    canvas.addEventListener('mousewheel', handleMouseWheel);
-    canvas.addEventListener('DOMMouseScroll', handleMouseWheel);
-    canvas.addEventListener('touchstart', handleTouchStart);
-    canvas.addEventListener('touchmove', handleTouchMove);
-    canvas.addEventListener('touchend', handleTouchEnd);
-	
-    stretchButton.addEventListener('click', fitByStretch);
-    fitLongestSideButton.addEventListener('click', fitOnLongestSide);
-    centerButton.addEventListener('click', centerImage);
-    forceStretchButton.addEventListener('click', forceStretch);
-    downloadCanvasButton.addEventListener('click', downloadCanvas);
-    document.addEventListener('paste', handlePaste);
+// --- events binding ---
+imageInput.addEventListener('change', handleFileChange);
+document.addEventListener('paste', handlePaste);
 
-    // Redraw when toggles change
-    toggleBorder.addEventListener('change', drawImage);
-    toggleLogo.addEventListener('change', drawImage);
-    toggleBg.addEventListener('change', drawImage);
+canvas.addEventListener('mousedown', handleMouseDown);
+canvas.addEventListener('mousemove', handleMouseMove);
+document.addEventListener('mouseup', handleMouseUp);
+canvas.addEventListener('wheel', handleMouseWheel);
 
-    // ensure background draws first time
-    bgImage.onload = drawImage;
-  </script>
+canvas.addEventListener('touchstart', handleTouchStart, {passive:false});
+canvas.addEventListener('touchmove', handleTouchMove, {passive:false});
+canvas.addEventListener('touchend', handleTouchEnd);
+
+stretchButton.addEventListener('click', fitByStretch);
+fitLongestSideButton.addEventListener('click', fitOnLongestSide);
+centerButton.addEventListener('click', centerImage);
+forceStretchButton.addEventListener('click', forceStretch);
+downloadCanvasButton.addEventListener('click', downloadCanvas);
+
+// redraw when toggles/controls change
+toggleBorder.addEventListener('change', drawImage);
+toggleLogo.addEventListener('change', drawImage);
+toggleBg.addEventListener('change', drawImage);
+toggleGradient.addEventListener('change', drawImage);
+gradColor1.addEventListener('input', drawImage);
+gradColor2.addEventListener('input', drawImage);
+gradDirection.addEventListener('change', drawImage);
+
+// ensure background draws on load
+bgImage.onload = drawImage;
+logo.onload = drawImage;
+
+// initial draw
+drawImage();
+
+</script>
 </body>
 </html>
