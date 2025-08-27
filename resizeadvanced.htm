@@ -74,12 +74,13 @@
       </div>
 
       <div class="control-row">
-        <button id="centerBtn">Center</button>
-        <button id="fitBtn">Fit to cell</button>
-        <button id="resetBtn">Clear image</button>
-      </div>
+  <button id="centerBtn">Center</button>
+  <button id="fitBtn">Fit to cell</button>
+  <button id="fillBtn">Fill cell</button> <!-- 🔥 new button -->
+  <button id="resetBtn">Clear image</button>
+</div>
 
-      <div class="small">Click a cell on the canvas to select it. Drag inside the selected cell to pan the image.</div>
+      <div class="small">Click a cell on the canvas to select it. Drag inside the selected cell to pan the image. Or <b>paste</b> (Ctrl+V / ⌘+V) an image into the selected cell.</div>
     </div>
 
     <div class="panel">
@@ -452,6 +453,26 @@ fitBtn.addEventListener('click', () => {
   draw();
 });
 
+fillBtn.addEventListener('click', () => {
+  const im = images[selectedIndex];
+  if (!im || !im.img) return;
+  const rects = getCellRects(count, layout);
+  const cell = rects[selectedIndex];
+  
+  // 🔥 cover behavior: use the larger scale
+  im.fitScale = Math.max(cell.w / im.img.width, cell.h / im.img.height);
+  im.scaleFactor = 1;
+  
+  const drawW = im.img.width * im.fitScale * im.scaleFactor;
+  const drawH = im.img.height * im.fitScale * im.scaleFactor;
+  im.offsetX = Math.round((cell.w - drawW) / 2);
+  im.offsetY = Math.round((cell.h - drawH) / 2);
+  
+  updateZoomUI();
+  draw();
+});
+
+
 resetBtn.addEventListener('click', () => {
   // clear selected image
   images[selectedIndex] = null;
@@ -481,6 +502,88 @@ layoutSelect.addEventListener('change', () => {
 // toggle UI
 toggleBorder.addEventListener('change', draw);
 toggleLogo.addEventListener('change', draw);
+
+// --- paste handler (robust)
+function insertImageDataURLToSelectedCell(dataURL) {
+  const img = new Image();
+  img.onload = () => {
+    // clamp selectedIndex
+    selectedIndex = Math.max(0, Math.min(selectedIndex, count - 1));
+    const rects = getCellRects(count, layout);
+    const cell = rects[selectedIndex];
+    const fitScale = Math.min(cell.w / img.width, cell.h / img.height);
+    const scaleFactor = 1;
+    const drawW = Math.round(img.width * fitScale * scaleFactor);
+    const drawH = Math.round(img.height * fitScale * scaleFactor);
+    images[selectedIndex] = {
+      img,
+      fitScale,
+      scaleFactor,
+      offsetX: Math.round((cell.w - drawW)/2),
+      offsetY: Math.round((cell.h - drawH)/2)
+    };
+    updateZoomUI();
+    draw();
+  };
+  img.onerror = () => console.warn('Image failed to load from pasted data');
+  img.src = dataURL;
+}
+
+function handlePaste(e) {
+  try {
+    const clip = e.clipboardData || window.clipboardData;
+    if (!clip) return;
+    // Prefer items (Chrome/Edge/Firefox)
+    if (clip.items && clip.items.length) {
+      for (let i=0;i<clip.items.length;i++){
+        const item = clip.items[i];
+        if (item.kind === 'file' && item.type.indexOf('image') !== -1) {
+          const blob = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = ev => insertImageDataURLToSelectedCell(ev.target.result);
+          reader.readAsDataURL(blob);
+          e.preventDefault();
+          return;
+        }
+        // some apps place <img src="data:..."> inside text/html
+        if (item.type === 'text/html') {
+          item.getAsString(str => {
+            if (!str) return;
+            const m = str.match(/src=["'](data:image\/[^"']+)["']/);
+            if (m && m[1]) {
+              insertImageDataURLToSelectedCell(m[1]);
+            }
+          });
+        }
+      }
+    }
+    // Fallback to clipboard.files
+    if (clip.files && clip.files.length) {
+      for (let i=0;i<clip.files.length;i++){
+        const file = clip.files[i];
+        if (file.type && file.type.indexOf('image') !== -1) {
+          const reader = new FileReader();
+          reader.onload = ev => insertImageDataURLToSelectedCell(ev.target.result);
+          reader.readAsDataURL(file);
+          e.preventDefault();
+          return;
+        }
+      }
+    }
+    // Fallback plain text data URI
+    if (clip.getData) {
+      const text = clip.getData('text/plain');
+      if (text && text.startsWith('data:image/')) {
+        insertImageDataURLToSelectedCell(text);
+        e.preventDefault();
+      }
+    }
+  } catch (err) {
+    console.warn('paste error', err);
+  }
+}
+
+document.addEventListener('paste', handlePaste);
 
 // download
 downloadBtn.addEventListener('click', () => {
