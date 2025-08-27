@@ -245,6 +245,77 @@ canvas.addEventListener("touchend", e => {
   }
 });
 
+let touchStartDist = 0;
+let lastTouchScale = 1;
+let touchDragging = false;
+let lastTouchX = 0, lastTouchY = 0;
+
+function getTouchDist(e) {
+  if (e.touches.length < 2) return 0;
+  const dx = e.touches[0].clientX - e.touches[1].clientX;
+  const dy = e.touches[0].clientY - e.touches[1].clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// Touch start
+canvas.addEventListener("touchstart", (e) => {
+  if (!images[selectedIndex]) return;
+
+  if (e.touches.length === 1) {
+    // single finger drag
+    touchDragging = true;
+    lastTouchX = e.touches[0].clientX;
+    lastTouchY = e.touches[0].clientY;
+  } else if (e.touches.length === 2) {
+    // pinch zoom
+    touchStartDist = getTouchDist(e);
+    lastTouchScale = 1;
+  }
+}, { passive: false });
+
+// Touch move
+canvas.addEventListener("touchmove", (e) => {
+  if (!images[selectedIndex]) return;
+  const im = images[selectedIndex];
+  const rects = getCellRects(count, layout);
+  const cell = rects[selectedIndex];
+
+  if (e.touches.length === 1 && touchDragging) {
+    // dragging with one finger
+    e.preventDefault();
+    const dx = e.touches[0].clientX - lastTouchX;
+    const dy = e.touches[0].clientY - lastTouchY;
+    im.offsetX += dx;
+    im.offsetY += dy;
+    lastTouchX = e.touches[0].clientX;
+    lastTouchY = e.touches[0].clientY;
+    draw();
+  } else if (e.touches.length === 2) {
+    // pinch zoom
+    e.preventDefault();
+    const newDist = getTouchDist(e);
+    if (!touchStartDist) return;
+    const scaleChange = newDist / touchStartDist;
+
+    im.scaleFactor *= scaleChange / lastTouchScale;
+    im.scaleFactor = Math.max(0.1, Math.min(im.scaleFactor, 10));
+
+    lastTouchScale = scaleChange;
+    updateZoomUI();
+    draw();
+  }
+}, { passive: false });
+
+// Touch end
+canvas.addEventListener("touchend", (e) => {
+  if (e.touches.length === 0) {
+    touchDragging = false;
+    touchStartDist = 0;
+    lastTouchScale = 1;
+  }
+});
+
+  
 // download
 const downloadCanvas = () => { const link=document.createElement('a'); link.download='resized.webp'; link.href=canvas.toDataURL('image/webp',0.5); link.click(); };
 
