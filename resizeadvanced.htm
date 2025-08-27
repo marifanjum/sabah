@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Image Collage Maker</title>
+<style>
+  body { margin: 10px; font-family: Arial, sans-serif; }
+  button, select, input { padding: 8px; margin: 5px; font-size: 16px; }
+  #canvasContainer { position: relative; width: 1200px; height: 720px; border: 2px solid black; overflow: hidden; margin-bottom: 20px; }
+  #canvas { position: absolute; top: 0; left: 0; }
+</style>
+</head>
+<body>
+
+  <div id="canvasContainer">
+    <canvas id="canvas" width="1200" height="720"></canvas>
+  </div>
+
+  <div>
+    <label>Number of Images:
+      <select id="numImages">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4" selected>4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+      </select>
+    </label>
+
+    <label>Layout:
+      <select id="layout">
+        <option value="grid">Grid</option>
+        <option value="row">Row</option>
+        <option value="column">Column</option>
+      </select>
+    </label>
+  </div>
+
+  <div id="fileInputs"></div>
+
+  <button id="makeCollageButton">Make Collage</button>
+  <button id="downloadButton">Download Collage</button>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const numImagesSelect = document.getElementById("numImages");
+const layoutSelect = document.getElementById("layout");
+const fileInputsDiv = document.getElementById("fileInputs");
+const makeCollageButton = document.getElementById("makeCollageButton");
+const downloadButton = document.getElementById("downloadButton");
+
+let images = [];
+
+// Generate file inputs dynamically
+function updateFileInputs() {
+  const count = parseInt(numImagesSelect.value);
+  fileInputsDiv.innerHTML = "";
+  for (let i = 0; i < count; i++) {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.dataset.index = i;
+    input.addEventListener("change", handleFileChange);
+    fileInputsDiv.appendChild(input);
+  }
+  images = new Array(count).fill(null);
+}
+
+function handleFileChange(e) {
+  const file = e.target.files[0];
+  const index = parseInt(e.target.dataset.index);
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      images[index] = img;
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function makeCollage() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const layout = layoutSelect.value;
+  const count = images.length;
+  const validImages = images.filter(img => img);
+
+  if (validImages.length < count) {
+    alert("Please upload all images first!");
+    return;
+  }
+
+  if (layout === "grid") {
+    const rows = Math.ceil(Math.sqrt(count));
+    const cols = Math.ceil(count / rows);
+    const cellW = canvas.width / cols;
+    const cellH = canvas.height / rows;
+    validImages.forEach((img, i) => {
+      const r = Math.floor(i / cols);
+      const c = i % cols;
+      ctx.drawImage(img, c * cellW, r * cellH, cellW, cellH);
+    });
+  } else if (layout === "row") {
+    const cellW = canvas.width / count;
+    validImages.forEach((img, i) => {
+      ctx.drawImage(img, i * cellW, 0, cellW, canvas.height);
+    });
+  } else if (layout === "column") {
+    const cellH = canvas.height / count;
+    validImages.forEach((img, i) => {
+      ctx.drawImage(img, 0, i * cellH, canvas.width, cellH);
+    });
+  }
+}
+
+function downloadCollage() {
+  const link = document.createElement("a");
+  link.download = "collage.webp";
+  link.href = canvas.toDataURL("image/webp", 0.8);
+  link.click();
+}
+
+numImagesSelect.addEventListener("change", updateFileInputs);
+makeCollageButton.addEventListener("click", makeCollage);
+downloadButton.addEventListener("click", downloadCollage);
+
+// initialize
+updateFileInputs();
+</script>
+</body>
+</html>
