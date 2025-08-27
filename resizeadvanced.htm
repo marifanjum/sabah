@@ -279,16 +279,7 @@ function draw(){
     ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 28);
   }
 
-  // draw selection highlight around selected cell
-  if (selectedIndex != null && selectedIndex < rects.length) {
-    const s = rects[selectedIndex];
-    ctx.save();
-    ctx.strokeStyle = 'rgba(25,118,210,0.9)';
-    ctx.lineWidth = 3;
-    ctx.setLineDash([6,6]);
-    ctx.strokeRect(s.x + 3, s.y + 3, s.w - 6, s.h - 6);
-    ctx.restore();
-  }
+  // NOTE: Selection highlight removed so nothing extra is drawn for selected cell
 
   // draw logo if enabled
   if (toggleLogo.checked && logo.complete) {
