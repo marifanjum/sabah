@@ -49,6 +49,21 @@
       </div>
     </div>
 
+<div class="control-row">
+  <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
+  <label><input type="checkbox" id="toggleLogo" checked> Show Logo</label>
+</div>
+<div class="control-row">
+  <label>Logo position</label>
+  <select id="logoPosition">
+    <option value="top-left">Top-left</option>
+    <option value="top-right" selected>Top-right</option>
+    <option value="bottom-left">Bottom-left</option>
+    <option value="bottom-right">Bottom-right</option>
+  </select>
+</div>
+
+
     <div class="panel">
       <div><span class="small">Global display</span></div>
       <div class="control-row">
@@ -125,6 +140,15 @@ let layout = layoutSelect.value;
 
 let images = new Array(count).fill(null); // will hold objects as described
 let selectedIndex = 0;
+
+const logoPositionSelect = document.getElementById('logoPosition');
+let logoPosition = logoPositionSelect.value;
+
+logoPositionSelect.addEventListener('change', () => {
+  logoPosition = logoPositionSelect.value;
+  draw();
+});
+
 
 const logo = new Image(); logo.src = 'sabah-logo.PNG'; // expected in root
 
@@ -283,10 +307,33 @@ function draw(){
   // NOTE: Selection highlight removed so nothing extra is drawn for selected cell
 
   // draw logo if enabled
-  if (toggleLogo.checked && logo.complete) {
-    const logoW = 120, logoH = 60;
-    ctx.drawImage(logo, canvas.width - logoW - 20, 20, logoW, logoH);
+  // draw logo if enabled
+if (toggleLogo.checked && logo.complete) {
+  const logoW = 120, logoH = 60;
+  let x = 0, y = 0;
+
+  switch (logoPosition) {
+    case "top-left":
+      x = 20; 
+      y = 20; 
+      break;
+    case "top-right":
+      x = canvas.width - logoW - 20; 
+      y = 20; 
+      break;
+    case "bottom-left":
+      x = 20; 
+      y = canvas.height - logoH - 20; 
+      break;
+    case "bottom-right":
+      x = canvas.width - logoW - 20; 
+      y = canvas.height - logoH - 20; 
+      break;
   }
+
+  ctx.drawImage(logo, x, y, logoW, logoH);
+}
+
 }
 
 // --- selection helpers ---
