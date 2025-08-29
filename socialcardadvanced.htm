@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Social Media Image Generator</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.css">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -204,7 +205,7 @@
     function drawText(text, settings) {
       if (!text) return;
 
-      ctx.font = `${settings.fontSize}px 'Jameel Noori Nastaleeq', serif`;
+      ctx.font = `${settings.fontSize}px 'Jameel Noori Nastaleeq', 'JameelNooriNastaliq', serif`;
       ctx.textAlign = "center";
       ctx.direction = "rtl";
       ctx.lineWidth = settings.strokeWidth;
@@ -326,3 +327,4 @@
   </script>
 </body>
 </html>
+
