@@ -25,6 +25,7 @@
     <button id="fitLongestSideButton">Fit on Longest Side</button>
     <button id="centerButton">Center Image</button>
     <button id="forceStretchButton">Force Stretch to Fit</button>
+    <button id="fillCanvasButton">Auto Zoom to Fill</button>
     <button id="downloadCanvasButton">Download Resized Image</button>
   </div>
 
@@ -75,6 +76,7 @@ const stretchButton = document.getElementById('stretchButton');
 const fitLongestSideButton = document.getElementById('fitLongestSideButton');
 const centerButton = document.getElementById('centerButton');
 const forceStretchButton = document.getElementById('forceStretchButton');
+const fillCanvasButton = document.getElementById('fillCanvasButton');
 const downloadCanvasButton = document.getElementById('downloadCanvasButton');
 
 const toggleBorder = document.getElementById('toggleBorder');
@@ -89,10 +91,10 @@ const logoPosition = document.getElementById('logoPosition');
 
 let image = null;
 let logo = new Image();
-logo.src = "sabah-logo.PNG"; // keep as before
+logo.src = "sabah-logo.PNG";
 
 let bgImage = new Image();
-bgImage.src = "image-bg.png"; // background filename you requested
+bgImage.src = "image-bg.png";
 
 let offsetX = 0, offsetY = 0;
 let isDragging = false;
@@ -159,17 +161,14 @@ function createCanvasGradient(direction, colorA, colorB) {
 const drawImage = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 1) draw background image if enabled
   if (toggleBg.checked && bgImage.complete) {
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
   }
-  // 2) otherwise if gradient enabled -> draw gradient using direction
   else if (!toggleBg.checked && toggleGradient.checked) {
     ctx.fillStyle = createCanvasGradient(gradDirection.value, gradColor1.value, gradColor2.value);
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  // 3) draw user image (respecting forceStretchMode)
   if (image) {
     if (forceStretchMode) {
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
@@ -178,7 +177,6 @@ const drawImage = () => {
     }
   }
 
-  // 4) border
   if (toggleBorder.checked) {
     ctx.strokeStyle = "grey";
     ctx.lineWidth = 2;
@@ -186,7 +184,6 @@ const drawImage = () => {
     ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 28);
   }
 
-  // 5) logo
   if (toggleLogo.checked && logo.complete) {
     const logoWidth = 120, logoHeight = 60;
     let x = 0, y = 0;
@@ -239,6 +236,16 @@ const forceStretch = () => {
   drawImage();
 };
 
+// --- new function: auto zoom to fill canvas ---
+const fillCanvas = () => {
+  if (!image) return;
+  scale = Math.max(canvas.width / image.width, canvas.height / image.height);
+  offsetX = (canvas.width - image.width * scale) / 2;
+  offsetY = (canvas.height - image.height * scale) / 2;
+  forceStretchMode = false;
+  drawImage();
+};
+
 // --- mouse/touch interaction ---
 const handleMouseDown = e => {
   if (forceStretchMode) return;
@@ -266,7 +273,6 @@ const handleMouseWheel = e => {
   drawImage();
 };
 
-// touch
 const handleTouchStart = e => {
   if (forceStretchMode) return;
   if (e.touches.length === 1) {
@@ -330,9 +336,9 @@ stretchButton.addEventListener('click', fitByStretch);
 fitLongestSideButton.addEventListener('click', fitOnLongestSide);
 centerButton.addEventListener('click', centerImage);
 forceStretchButton.addEventListener('click', forceStretch);
+fillCanvasButton.addEventListener('click', fillCanvas);
 downloadCanvasButton.addEventListener('click', downloadCanvas);
 
-// redraw when toggles/controls change
 toggleBorder.addEventListener('change', drawImage);
 toggleLogo.addEventListener('change', drawImage);
 toggleBg.addEventListener('change', drawImage);
@@ -342,11 +348,9 @@ gradColor2.addEventListener('input', drawImage);
 gradDirection.addEventListener('change', drawImage);
 logoPosition.addEventListener('change', drawImage);
 
-// ensure background draws on load
 bgImage.onload = drawImage;
 logo.onload = drawImage;
 
-// initial draw
 drawImage();
 </script>
 </body>
