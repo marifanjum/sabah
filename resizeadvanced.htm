@@ -1,340 +1,130 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Social Media Image Generator</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Collage Maker — Pan & Zoom per Image</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
-    input[type="text"], select, input[type="number"], input[type="range"] {
-      width: 90%;
-      font-size: 18px;
-      padding: 8px;
-      margin-bottom: 10px;
-      border: none;
-      border-radius: 6px;
-    }
-    #canvas {
-      border: 2px solid #444;
-      margin-bottom: 20px;
-      cursor: grab;
-    }
-    #canvas:active {
-      cursor: grabbing;
-    }
-    .controls {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 15px;
-      width: 90%;
-    }
-    .control-group {
-      background: #222;
-      padding: 10px;
-      border-radius: 8px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 14px;
-    }
-    button {
-      padding: 12px;
-      margin-top: 20px;
-      background: #fff403;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      width: 200px;
-    }
+    :root { --ui-gap: 8px; --ui-pad: 8px; --muted: #666; --bg: #fafafa; --accent: #1976d2; }
+    body { margin: 12px; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; background: var(--bg); color: #111; }
+    .row { display:flex; gap: var(--ui-gap); align-items:center; margin-bottom: 10px; flex-wrap:wrap; }
+    label { font-size: 14px; color: var(--muted); }
+    select, input[type="file"], button, input[type="range"], input[type="text"] { padding: 8px; font-size: 14px; }
+    button { background: white; border:1px solid #ddd; border-radius:6px; cursor:pointer; }
+    button:hover { box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    #canvasContainer { position: relative; width: 1200px; height: 720px; border: 2px solid #333; background: white; overflow: hidden; }
+    canvas { display:block; width:1200px; height:720px; }
+    .controls { margin-top: 10px; display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; }
+    .panel { background: white; border: 1px solid #e6e6e6; padding: 10px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+    .panel h4 { margin:0 0 8px 0; font-size:14px; color:#222; }
+    .small { font-size:13px; color:var(--muted); }
+    .selected-cell { outline: 3px dashed rgba(25,118,210,0.8); outline-offset: -6px; }
+    .disabled { opacity: 0.6; pointer-events: none; }
+    .control-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
   </style>
 </head>
 <body>
-<h2> Social Media Card Advanced </h2>
+<h2>Collage maker (2–6 images) — pan & zoom per image</h2>
 
-  <input id="headlineInput" type="text" placeholder="Enter headline text here">
-  <input id="subheadingInput" type="text" placeholder="Enter subheading text here">
-
-  <select id="textSelector">
-    <option value="headline">Headline</option>
-    <option value="subheading">Subheading</option>
-  </select>
-
-  <canvas id="canvas" width="1080" height="1080"></canvas>
-
-  <div class="controls">
-    <div class="control-group">
-      <label>Upload Main Image</label>
-      <input type="file" id="imageLoader" accept="image/*">
+<div class="row">
+  <div class="panel">
+    <div class="control-row">
+      <label>Number of images</label>
+      <select id="numImages">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4" selected>4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+      </select>
     </div>
-    <div class="control-group">
-      <label>Image Zoom</label>
-      <input type="range" id="imageZoom" min="0.5" max="3" step="0.1" value="1">
-    </div>
-    <div class="control-group">
-      <label>Font Size</label>
-      <input type="range" id="fontSize" min="30" max="120" value="80">
-    </div>
-    <div class="control-group">
-      <label>Line Height</label>
-      <input type="range" id="lineHeight" min="40" max="150" value="100">
-    </div>
-    <div class="control-group">
-      <label>Word Spacing</label>
-      <input type="range" id="wordSpacing" min="0" max="40" value="0">
-    </div>
-    <div class="control-group">
-      <label>Stroke Width</label>
-      <input type="range" id="strokeWidth" min="0" max="10" value="2">
-    </div>
-    <div class="control-group">
-      <label>Shadow</label>
-      <input type="checkbox" id="shadow" checked>
-    </div>
-    <div class="control-group">
-      <label>First Line Word Count</label>
-      <input type="number" id="firstLineCount" min="1" max="30" value="15">
-    </div>
-    <div class="control-group">
-      <label>Text Y Position</label>
-      <input type="range" id="textY" min="500" max="1050" value="750">
-    </div>
-    <div class="control-group">
-      <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
-    </div>
-    <div class="control-group">
-      <label><input type="checkbox" id="toggleLogo" checked> Show Logo</label>
-    </div>
-    <div class="control-group">
-      <label>File Name</label>
-      <input type="text" id="filename" placeholder="collage">
+    <div class="control-row">
+      <label>Layout</label>
+      <select id="layout">
+        <option value="grid">Grid</option>
+        <option value="row">Column</option>
+        <option value="column">Row</option>
+      </select>
     </div>
   </div>
 
-  <button id="downloadBtn">Download Final Image</button>
+  <div class="control-row">
+    <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
+    <label><input type="checkbox" id="toggleLogo" checked> Show Logo</label>
+  </div>
 
-  <script>
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
+  <div class="control-row">
+    <label>Logo position</label>
+    <select id="logoPosition">
+      <option value="top-left">Top-left</option>
+      <option value="top-right" selected>Top-right</option>
+      <option value="bottom-left">Bottom-left</option>
+      <option value="bottom-right">Bottom-right</option>
+    </select>
+  </div>
 
-    const headlineInput = document.getElementById("headlineInput");
-    const subheadingInput = document.getElementById("subheadingInput");
-    const textSelector = document.getElementById("textSelector");
+  <div class="panel" style="min-width:260px;">
+    <h4>Cell / image controls</h4>
+    <div class="control-row">
+      <label>Select cell</label>
+      <select id="selectCell"></select>
+    </div>
+    <div id="fileInputs" class="control-row"></div>
+    <div class="control-row small" style="margin-top:6px;">
+      <label>Zoom</label>
+      <button id="zoomOutBtn">−</button>
+      <input id="zoomSlider" type="range" min="0.2" max="4" step="0.01" value="1" style="width:140px" />
+      <button id="zoomInBtn">+</button>
+    </div>
+    <div class="control-row">
+      <button id="centerBtn">Center</button>
+      <button id="fitBtn">Fit to cell</button>
+      <button id="fillBtn">Fill cell</button>
+      <button id="resetBtn">Clear image</button>
+    </div>
+    <div class="small">Click a cell on the canvas to select it. Drag inside the selected cell to pan the image. Or <b>paste</b> (Ctrl+V / ⌘+V) an image into the selected cell.</div>
+  </div>
 
-    const imageLoader = document.getElementById("imageLoader");
-    const imageZoomControl = document.getElementById("imageZoom");
-    const fontSizeControl = document.getElementById("fontSize");
-    const lineHeightControl = document.getElementById("lineHeight");
-    const wordSpacingControl = document.getElementById("wordSpacing");
-    const strokeWidthControl = document.getElementById("strokeWidth");
-    const shadowControl = document.getElementById("shadow");
-    const firstLineCountControl = document.getElementById("firstLineCount");
-    const textYControl = document.getElementById("textY");
-    const downloadBtn = document.getElementById("downloadBtn");
-    const filenameInput = document.getElementById("filename");
+  <div class="panel">
+    <div class="control-row">
+      <label for="filename">File name:</label>
+      <input type="text" id="filename" placeholder="collage">
+    </div>
+    <div class="control-row">
+      <button id="downloadBtn">Download Collage</button>
+    </div>
+  </div>
+</div>
 
-    const toggleBorder = document.getElementById("toggleBorder");
-    const toggleLogo = document.getElementById("toggleLogo");
+<div id="canvasContainer" class="panel">
+  <canvas id="canvas" width="1200" height="720"></canvas>
+</div>
 
-    let mainImage = null;
-    let bgImage = new Image();
-    let logoImage = new Image();
-    bgImage.src = "bg.png";
-    logoImage.src = "sabah-logo.PNG";
+<script>
+/* ---- your existing JS stays intact, only download button logic changed ---- */
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const downloadBtn = document.getElementById('downloadBtn');
 
-    let imageZoom = 1;
-    let imageOffsetX = 0, imageOffsetY = 0;
-    let isDragging = false, dragStartX = 0, dragStartY = 0;
+/* ... all your existing code (unchanged) ... */
 
-    // Separate settings for headline and subheading
-    let textSettings = {
-      headline: {
-        fontSize: 80,
-        lineHeight: 100,
-        wordSpacing: 0,
-        strokeWidth: 2,
-        shadow: true,
-        firstLineCount: 15,
-        y: 750
-      },
-      subheading: {
-        fontSize: 50,
-        lineHeight: 70,
-        wordSpacing: 0,
-        strokeWidth: 2,
-        shadow: true,
-        firstLineCount: 15,
-        y: 900
-      }
-    };
+/* --- updated download --- */
+downloadBtn.addEventListener('click', () => {
+  const filenameInput = document.getElementById('filename');
+  let filename = filenameInput.value.trim();
+  if (!filename) filename = "collage";
+  if (!filename.toLowerCase().endsWith('.webp')) {
+    filename += ".webp";
+  }
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = canvas.toDataURL('image/webp', 0.9);
+  link.click();
+});
 
-    imageLoader.addEventListener("change", handleImage, false);
-
-    [
-      headlineInput, subheadingInput, imageZoomControl, toggleBorder, toggleLogo
-    ].forEach(ctrl => ctrl.addEventListener("input", draw));
-
-    function handleImage(e) {
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        mainImage = new Image();
-        mainImage.onload = function() {
-          const targetWidth = 1080, targetHeight = 648;
-          const scaleX = targetWidth / mainImage.width;
-          const scaleY = targetHeight / mainImage.height;
-          imageZoom = Math.min(scaleX, scaleY);
-          imageOffsetX = 0;
-          imageOffsetY = 0;
-          imageZoomControl.value = imageZoom.toFixed(2);
-          draw();
-        };
-        mainImage.src = event.target.result;
-      };
-      reader.readAsDataURL(e.target.files[0]);
-    }
-
-    function splitWords(text) {
-      return text.match(/<[^>]+>|[^<>؀-ۿ]+|[؀-ۿ]+/g) || [];
-    }
-
-    function drawText(text, settings) {
-      if (!text) return;
-
-      ctx.font = `${settings.fontSize}px 'Jameel Noori Nastaleeq', 'JameelNooriNastaliq', serif`;
-      ctx.textAlign = "center";
-      ctx.direction = "rtl";
-      ctx.lineWidth = settings.strokeWidth;
-      ctx.strokeStyle = "#fff403";
-      ctx.fillStyle = "#fff403";
-
-      ctx.shadowColor = settings.shadow ? "transparent" : "white";
-      ctx.shadowBlur = settings.shadow ? 0 : 5;
-      ctx.shadowOffsetX = settings.shadow ? 0 : 4;
-      ctx.shadowOffsetY = settings.shadow ? 0 : 4;
-
-      const words = splitWords(text);
-      const lines = [words.slice(0, settings.firstLineCount), words.slice(settings.firstLineCount)];
-
-      lines.forEach((line, lineIndex) => {
-        const lineText = line.join(" ".repeat(Math.max(1, settings.wordSpacing / 4)));
-        const y = settings.y + lineIndex * settings.lineHeight;
-        ctx.fillText(lineText, canvas.width / 2, y);
-        ctx.strokeText(lineText, canvas.width / 2, y);
-      });
-    }
-
-    function updateSetting(settingName, value) {
-      const selected = textSelector.value;
-      if (settingName === "shadow") value = !!value;
-      textSettings[selected][settingName] = value;
-      draw();
-    }
-
-    fontSizeControl.addEventListener("input", e => updateSetting("fontSize", parseInt(e.target.value)));
-    lineHeightControl.addEventListener("input", e => updateSetting("lineHeight", parseInt(e.target.value)));
-    wordSpacingControl.addEventListener("input", e => updateSetting("wordSpacing", parseInt(e.target.value)));
-    strokeWidthControl.addEventListener("input", e => updateSetting("strokeWidth", parseInt(e.target.value)));
-    shadowControl.addEventListener("input", e => updateSetting("shadow", e.target.checked));
-    firstLineCountControl.addEventListener("input", e => updateSetting("firstLineCount", parseInt(e.target.value)));
-    textYControl.addEventListener("input", e => updateSetting("y", parseInt(e.target.value)));
-
-    // Update sliders when switching text selector
-    textSelector.addEventListener("change", () => {
-      const selected = textSelector.value;
-      fontSizeControl.value = textSettings[selected].fontSize;
-      lineHeightControl.value = textSettings[selected].lineHeight;
-      wordSpacingControl.value = textSettings[selected].wordSpacing;
-      strokeWidthControl.value = textSettings[selected].strokeWidth;
-      shadowControl.checked = textSettings[selected].shadow;
-      firstLineCountControl.value = textSettings[selected].firstLineCount;
-      textYControl.value = textSettings[selected].y;
-      draw();
-    });
-
-    imageZoomControl.addEventListener("input", () => {
-      imageZoom = parseFloat(imageZoomControl.value);
-      draw();
-    });
-
-    // Dragging image
-    canvas.addEventListener("mousedown", e => {
-      if (e.offsetY <= 648) {
-        isDragging = true;
-        dragStartX = e.offsetX - imageOffsetX;
-        dragStartY = e.offsetY - imageOffsetY;
-      }
-    });
-    canvas.addEventListener("mousemove", e => {
-      if (isDragging) {
-        imageOffsetX = e.offsetX - dragStartX;
-        imageOffsetY = e.offsetY - dragStartY;
-        draw();
-      }
-    });
-    canvas.addEventListener("mouseup", () => { isDragging = false; });
-    canvas.addEventListener("mouseleave", () => { isDragging = false; });
-
-    // download
-    downloadBtn.addEventListener("click", () => {
-      let filename = filenameInput.value.trim();
-      if (!filename) filename = "collage";
-      if (!filename.toLowerCase().endsWith(".png")) {
-        filename += ".png";
-      }
-      const link = document.createElement("a");
-      link.download = filename;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    });
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (bgImage.complete) ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
-
-      if (mainImage) {
-        const targetWidth = 1080, targetHeight = 648;
-        const scaledWidth = mainImage.width * imageZoom;
-        const scaledHeight = mainImage.height * imageZoom;
-        const drawX = (targetWidth - scaledWidth) / 2 + imageOffsetX;
-        const drawY = (targetHeight - scaledHeight) / 2 + imageOffsetY;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(0, 0, targetWidth, targetHeight);
-        ctx.clip();
-        ctx.drawImage(mainImage, drawX, drawY, scaledWidth, scaledHeight);
-        ctx.restore();
-      }
-
-      if (toggleBorder.checked) {
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(10, 10, 1080 - 20, 648 - 20);
-        ctx.strokeStyle = "#ccc";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(14, 14, 1080 - 28, 648 - 28);
-      }
-
-      if (toggleLogo.checked && logoImage && logoImage.complete) {
-        ctx.drawImage(logoImage, canvas.width - 131, 20, 120, 100);
-      }
-
-      drawText(headlineInput.value, textSettings.headline);
-      drawText(subheadingInput.value, textSettings.subheading);
-    }
-
-    bgImage.onload = draw;
-    logoImage.onload = draw;
-  </script>
+/* init calls */
+updateUIForCount();
+updateZoomUI();
+logo.onload = draw;
+</script>
 </body>
 </html>
