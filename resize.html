@@ -73,6 +73,11 @@
   </div>
 
 <script>
+/* Restored pan & zoom, pinch gestures, plus filename input for download.
+   - offsetX, offsetY are image top-left coords (canvas pixels).
+   - scale multiplies image natural width/height when drawing.
+*/
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
@@ -106,6 +111,26 @@ let offsetX = 0, offsetY = 0;
 let scale = 1;
 let forceStretchMode = false;
 
+const MIN_SCALE = 0.05;
+const MAX_SCALE = 20;
+
+// dragging state (mouse)
+let isDragging = false;
+let dragStartX = 0, dragStartY = 0;
+
+// touch/pinch state
+let lastTouchDistance = 0;
+let lastTouchCenter = null;
+
+// --- helpers ---
+function toCanvasCoords(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (clientX - rect.left) * (canvas.width / rect.width),
+    y: (clientY - rect.top) * (canvas.height / rect.height)
+  };
+}
+
 // --- image load / paste handlers ---
 const handleFileChange = e => {
   const file = e.target.files && e.target.files[0];
@@ -120,10 +145,15 @@ const loadImage = src => {
   image.onload = function() {
     fitImageToCanvas();
   };
+  image.onerror = function() {
+    console.warn('Image failed to load:', src);
+    image = null;
+    drawImage();
+  };
   image.src = src;
 };
 
-// support paste event
+// support paste event (Ctrl+V / ⌘+V)
 document.addEventListener("paste", e => {
   if (e.clipboardData) {
     const items = e.clipboardData.items;
@@ -152,6 +182,7 @@ function createCanvasGradient(direction, colorA, colorB) {
     case 'tr-bl':          x0 = canvas.width; y0 = 0; x1 = 0; y1 = canvas.height; break;
     case 'bl-tr':          x0 = 0; y0 = canvas.height; x1 = canvas.width; y1 = 0; break;
     case 'br-tl':          x0 = canvas.width; y0 = canvas.height; x1 = 0; y1 = 0; break;
+    default:               x0 = 0; y0 = 0; x1 = 0; y1 = canvas.height;
   }
   const g = ctx.createLinearGradient(x0, y0, x1, y1);
   g.addColorStop(0, colorA);
@@ -163,11 +194,15 @@ function createCanvasGradient(direction, colorA, colorB) {
 const drawImage = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if (toggleBg.checked && bgImage.complete) {
+  if (toggleBg.checked && bgImage.complete && bgImage.naturalWidth > 0) {
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
   }
   else if (!toggleBg.checked && toggleGradient.checked) {
     ctx.fillStyle = createCanvasGradient(gradDirection.value, gradColor1.value, gradColor2.value);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  } else {
+    // default background
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
@@ -186,7 +221,7 @@ const drawImage = () => {
     ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 28);
   }
 
-  if (toggleLogo.checked && logo.complete) {
+  if (toggleLogo.checked && logo.complete && logo.naturalWidth > 0) {
     const logoWidth = 120, logoHeight = 60;
     let x = 0, y = 0;
     switch (logoPosition.value) {
@@ -202,8 +237,10 @@ const drawImage = () => {
 // --- fit / layout functions ---
 const fitImageToCanvas = () => {
   if (!image) return;
-  offsetX = 0; offsetY = 0;
+  // center and fit (contain)
   scale = Math.min(canvas.width / image.width, canvas.height / image.height);
+  offsetX = (canvas.width - image.width * scale) / 2;
+  offsetY = (canvas.height - image.height * scale) / 2;
   forceStretchMode = false;
   drawImage();
 };
@@ -211,9 +248,10 @@ const fitImageToCanvas = () => {
 const fitByStretch = () => { fitImageToCanvas(); };
 const fitOnLongestSide = () => {
   if (!image) return;
-  offsetX = 0; offsetY = 0;
   if (image.width > image.height) scale = canvas.width / image.width;
   else scale = canvas.height / image.height;
+  offsetX = (canvas.width - image.width * scale) / 2;
+  offsetY = (canvas.height - image.height * scale) / 2;
   forceStretchMode = false;
   drawImage();
 };
@@ -233,6 +271,112 @@ const fillCanvas = () => {
   forceStretchMode = false;
   drawImage();
 };
+
+// --- input events for pan/zoom ---
+
+// mouse drag start
+canvas.addEventListener('mousedown', (e) => {
+  if (!image || forceStretchMode) return;
+  const p = toCanvasCoords(e.clientX, e.clientY);
+  isDragging = true;
+  // we'll compute offset so that offsetX = clientX - startX pattern works on move
+  dragStartX = p.x - offsetX;
+  dragStartY = p.y - offsetY;
+  canvas.style.cursor = 'grabbing';
+});
+
+// mouse move
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging || !image || forceStretchMode) return;
+  const p = toCanvasCoords(e.clientX, e.clientY);
+  offsetX = p.x - dragStartX;
+  offsetY = p.y - dragStartY;
+  drawImage();
+});
+
+// mouse up
+window.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    canvas.style.cursor = 'move';
+  }
+});
+
+// wheel zoom (centered at pointer)
+canvas.addEventListener('wheel', (e) => {
+  if (!image || forceStretchMode) return;
+  e.preventDefault();
+  const p = toCanvasCoords(e.clientX, e.clientY);
+  const prevScale = scale;
+  const zoomFactor = (e.deltaY < 0) ? 1.12 : 0.88;
+  scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * zoomFactor));
+  // keep the point under cursor stable
+  offsetX = p.x - (p.x - offsetX) * (scale / prevScale);
+  offsetY = p.y - (p.y - offsetY) * (scale / prevScale);
+  drawImage();
+}, { passive: false });
+
+// touch handlers: pan with one finger, pinch with two
+canvas.addEventListener('touchstart', (e) => {
+  if (!image || forceStretchMode) return;
+  if (e.touches.length === 1) {
+    const p = toCanvasCoords(e.touches[0].clientX, e.touches[0].clientY);
+    isDragging = true;
+    dragStartX = p.x - offsetX;
+    dragStartY = p.y - offsetY;
+  } else if (e.touches.length === 2) {
+    // start pinch
+    const t0 = e.touches[0], t1 = e.touches[1];
+    const dx = t1.clientX - t0.clientX;
+    const dy = t1.clientY - t0.clientY;
+    lastTouchDistance = Math.hypot(dx, dy);
+    // center point in canvas coordinates
+    const cx = (t0.clientX + t1.clientX) / 2;
+    const cy = (t0.clientY + t1.clientY) / 2;
+    lastTouchCenter = toCanvasCoords(cx, cy);
+  }
+}, { passive:false });
+
+canvas.addEventListener('touchmove', (e) => {
+  if (!image || forceStretchMode) return;
+  if (e.touches.length === 1 && isDragging) {
+    e.preventDefault();
+    const p = toCanvasCoords(e.touches[0].clientX, e.touches[0].clientY);
+    offsetX = p.x - dragStartX;
+    offsetY = p.y - dragStartY;
+    drawImage();
+  } else if (e.touches.length === 2) {
+    e.preventDefault();
+    const t0 = e.touches[0], t1 = e.touches[1];
+    const dx = t1.clientX - t0.clientX;
+    const dy = t1.clientY - t0.clientY;
+    const dist = Math.hypot(dx, dy);
+    if (lastTouchDistance > 0) {
+      const prevScale = scale;
+      let newScale = prevScale * (dist / lastTouchDistance);
+      newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+      // center point between fingers in canvas coords
+      const cx = (t0.clientX + t1.clientX) / 2;
+      const cy = (t0.clientY + t1.clientY) / 2;
+      const center = toCanvasCoords(cx, cy);
+      offsetX = center.x - (center.x - offsetX) * (newScale / prevScale);
+      offsetY = center.y - (center.y - offsetY) * (newScale / prevScale);
+      scale = newScale;
+      drawImage();
+    }
+    lastTouchDistance = dist;
+  }
+}, { passive:false });
+
+canvas.addEventListener('touchend', (e) => {
+  if (e.touches.length < 2) lastTouchDistance = 0;
+  if (e.touches.length === 0) isDragging = false;
+}, { passive:true });
+
+// double-click/double-tap to center
+canvas.addEventListener('dblclick', (e) => {
+  centerImage();
+});
 
 // download
 const downloadCanvas = () => {
@@ -267,6 +411,7 @@ logoPosition.addEventListener('change', drawImage);
 bgImage.onload = drawImage;
 logo.onload = drawImage;
 
+// initial blank draw
 drawImage();
 </script>
 </body>
