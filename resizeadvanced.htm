@@ -1,644 +1,340 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Collage Maker — Pan & Zoom per Image</title>
-<style>
-  :root { --ui-gap: 8px; --ui-pad: 8px; --muted: #666; --bg: #fafafa; --accent: #1976d2; }
-  body { margin: 12px; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; background: var(--bg); color: #111; }
-  .row { display:flex; gap: var(--ui-gap); align-items:center; margin-bottom: 10px; flex-wrap:wrap; }
-  label { font-size: 14px; color: var(--muted); }
-  select, input[type="file"], button, input[type="range"] { padding: 8px; font-size: 14px; }
-  button { background: white; border:1px solid #ddd; border-radius:6px; cursor:pointer; }
-  button:hover { box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-  #canvasContainer { position: relative; width: 1200px; height: 720px; border: 2px solid #333; background: white; overflow: hidden; }
-  canvas { display:block; width:1200px; height:720px; }
-  .controls { margin-top: 10px; display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; }
-  .panel { background: white; border: 1px solid #e6e6e6; padding: 10px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
-  .panel h4 { margin:0 0 8px 0; font-size:14px; color:#222; }
-  .small { font-size:13px; color:var(--muted); }
-  .selected-cell { outline: 3px dashed rgba(25,118,210,0.8); outline-offset: -6px; }
-  .disabled { opacity: 0.6; pointer-events: none; }
-  .control-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
-</style>
+  <meta charset="UTF-8">
+  <title>Social Media Image Generator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    input[type="text"], select, input[type="number"], input[type="range"] {
+      width: 90%;
+      font-size: 18px;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 6px;
+    }
+    #canvas {
+      border: 2px solid #444;
+      margin-bottom: 20px;
+      cursor: grab;
+    }
+    #canvas:active {
+      cursor: grabbing;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      width: 90%;
+    }
+    .control-group {
+      background: #222;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+    button {
+      padding: 12px;
+      margin-top: 20px;
+      background: #fff403;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 200px;
+    }
+  </style>
 </head>
 <body>
+<h2> Social Media Card Advanced </h2>
 
-  <h2>Collage maker (2–6 images) — pan & zoom per image</h2>
+  <input id="headlineInput" type="text" placeholder="Enter headline text here">
+  <input id="subheadingInput" type="text" placeholder="Enter subheading text here">
 
-  <div class="row">
-    <div class="panel">
-      <div class="control-row">
-        <label>Number of images</label>
-        <select id="numImages">
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4" selected>4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-        </select>
-      </div>
-      <div class="control-row">
-        <label>Layout</label>
-        <select id="layout">
-          <option value="grid">Grid</option>
-          <option value="row">Column</option>
-          <option value="column">Row</option>
-        </select>
-      </div>
-    </div>
-
-<div class="control-row">
-  <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
-  <label><input type="checkbox" id="toggleLogo" checked> Show Logo</label>
-</div>
-<div class="control-row">
-  <label>Logo position</label>
-  <select id="logoPosition">
-    <option value="top-left">Top-left</option>
-    <option value="top-right" selected>Top-right</option>
-    <option value="bottom-left">Bottom-left</option>
-    <option value="bottom-right">Bottom-right</option>
+  <select id="textSelector">
+    <option value="headline">Headline</option>
+    <option value="subheading">Subheading</option>
   </select>
-</div>
 
+  <canvas id="canvas" width="1080" height="1080"></canvas>
 
-    
-
-    <div class="panel" style="min-width:260px;">
-      <h4>Cell / image controls</h4>
-      <div class="control-row">
-        <label>Select cell</label>
-        <select id="selectCell"></select>
-      </div>
-
-      <div id="fileInputs" class="control-row"></div>
-
-      <div class="control-row small" style="margin-top:6px;">
-        <label>Zoom</label>
-        <button id="zoomOutBtn">−</button>
-        <input id="zoomSlider" type="range" min="0.2" max="4" step="0.01" value="1" style="width:140px" />
-        <button id="zoomInBtn">+</button>
-      </div>
-
-      <div class="control-row">
-  <button id="centerBtn">Center</button>
-  <button id="fitBtn">Fit to cell</button>
-  <button id="fillBtn">Fill cell</button> <!-- 🔥 new button -->
-  <button id="resetBtn">Clear image</button>
-</div>
-
-      <div class="small">Click a cell on the canvas to select it. Drag inside the selected cell to pan the image. Or <b>paste</b> (Ctrl+V / ⌘+V) an image into the selected cell.</div>
+  <div class="controls">
+    <div class="control-group">
+      <label>Upload Main Image</label>
+      <input type="file" id="imageLoader" accept="image/*">
     </div>
-
-    <div class="panel">
-      <div class="control-row">
-        <button id="downloadBtn">Download Collage</button>
-      </div>
+    <div class="control-group">
+      <label>Image Zoom</label>
+      <input type="range" id="imageZoom" min="0.5" max="3" step="0.1" value="1">
+    </div>
+    <div class="control-group">
+      <label>Font Size</label>
+      <input type="range" id="fontSize" min="30" max="120" value="80">
+    </div>
+    <div class="control-group">
+      <label>Line Height</label>
+      <input type="range" id="lineHeight" min="40" max="150" value="100">
+    </div>
+    <div class="control-group">
+      <label>Word Spacing</label>
+      <input type="range" id="wordSpacing" min="0" max="40" value="0">
+    </div>
+    <div class="control-group">
+      <label>Stroke Width</label>
+      <input type="range" id="strokeWidth" min="0" max="10" value="2">
+    </div>
+    <div class="control-group">
+      <label>Shadow</label>
+      <input type="checkbox" id="shadow" checked>
+    </div>
+    <div class="control-group">
+      <label>First Line Word Count</label>
+      <input type="number" id="firstLineCount" min="1" max="30" value="15">
+    </div>
+    <div class="control-group">
+      <label>Text Y Position</label>
+      <input type="range" id="textY" min="500" max="1050" value="750">
+    </div>
+    <div class="control-group">
+      <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
+    </div>
+    <div class="control-group">
+      <label><input type="checkbox" id="toggleLogo" checked> Show Logo</label>
+    </div>
+    <div class="control-group">
+      <label>File Name</label>
+      <input type="text" id="filename" placeholder="collage">
     </div>
   </div>
 
-  <div id="canvasContainer" class="panel">
-    <canvas id="canvas" width="1200" height="720"></canvas>
-  </div>
+  <button id="downloadBtn">Download Final Image</button>
 
-<script>
-/* Collage maker with per-image pan & zoom
-   - Images array holds objects: { img, fitScale, scaleFactor, offsetX, offsetY }
-   - offsets are in pixels relative to cell origin
-   - scaleFactor is multiplier applied on top of fitScale (initial = 1)
-*/
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
 
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+    const headlineInput = document.getElementById("headlineInput");
+    const subheadingInput = document.getElementById("subheadingInput");
+    const textSelector = document.getElementById("textSelector");
 
-const numImagesSelect = document.getElementById('numImages');
-const layoutSelect = document.getElementById('layout');
-const fileInputsDiv = document.getElementById('fileInputs');
-const selectCell = document.getElementById('selectCell');
+    const imageLoader = document.getElementById("imageLoader");
+    const imageZoomControl = document.getElementById("imageZoom");
+    const fontSizeControl = document.getElementById("fontSize");
+    const lineHeightControl = document.getElementById("lineHeight");
+    const wordSpacingControl = document.getElementById("wordSpacing");
+    const strokeWidthControl = document.getElementById("strokeWidth");
+    const shadowControl = document.getElementById("shadow");
+    const firstLineCountControl = document.getElementById("firstLineCount");
+    const textYControl = document.getElementById("textY");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const filenameInput = document.getElementById("filename");
 
-const toggleBorder = document.getElementById('toggleBorder');
-const toggleLogo = document.getElementById('toggleLogo');
+    const toggleBorder = document.getElementById("toggleBorder");
+    const toggleLogo = document.getElementById("toggleLogo");
 
-const zoomSlider = document.getElementById('zoomSlider');
-const zoomInBtn = document.getElementById('zoomInBtn');
-const zoomOutBtn = document.getElementById('zoomOutBtn');
-const centerBtn = document.getElementById('centerBtn');
-const fitBtn = document.getElementById('fitBtn');
-const resetBtn = document.getElementById('resetBtn');
-const downloadBtn = document.getElementById('downloadBtn');
+    let mainImage = null;
+    let bgImage = new Image();
+    let logoImage = new Image();
+    bgImage.src = "bg.png";
+    logoImage.src = "sabah-logo.PNG";
 
-let count = parseInt(numImagesSelect.value);
-let layout = layoutSelect.value;
+    let imageZoom = 1;
+    let imageOffsetX = 0, imageOffsetY = 0;
+    let isDragging = false, dragStartX = 0, dragStartY = 0;
 
-let images = new Array(count).fill(null); // will hold objects as described
-let selectedIndex = 0;
-
-const logoPositionSelect = document.getElementById('logoPosition');
-let logoPosition = logoPositionSelect.value;
-
-logoPositionSelect.addEventListener('change', () => {
-  logoPosition = logoPositionSelect.value;
-  draw();
-});
-
-
-const logo = new Image(); logo.src = 'sabah-logo.PNG'; // expected in root
-
-// --- compute cell rectangles for given count/layout
-function getCellRects(count, layout) {
-  const rects = [];
-  if (layout === 'row') {
-    const w = canvas.width / count;
-    const h = canvas.height;
-    for (let i=0;i<count;i++) rects.push({ x: Math.round(i*w), y:0, w: Math.ceil(w), h });
-    return rects;
-  } else if (layout === 'column') {
-    const h = canvas.height / count;
-    const w = canvas.width;
-    for (let i=0;i<count;i++) rects.push({ x:0, y: Math.round(i*h), w, h: Math.ceil(h) });
-    return rects;
-  } else { // grid
-    const rows = Math.ceil(Math.sqrt(count));
-    const cols = Math.ceil(count / rows);
-    const cellW = canvas.width / cols;
-    const cellH = canvas.height / rows;
-    for (let r=0;r<rows;r++){
-      for (let c=0;c<cols;c++){
-        const idx = r*cols + c;
-        if (idx >= count) break;
-        rects.push({ x: Math.round(c*cellW), y: Math.round(r*cellH), w: Math.ceil(cellW), h: Math.ceil(cellH) });
+    // Separate settings for headline and subheading
+    let textSettings = {
+      headline: {
+        fontSize: 80,
+        lineHeight: 100,
+        wordSpacing: 0,
+        strokeWidth: 2,
+        shadow: true,
+        firstLineCount: 15,
+        y: 750
+      },
+      subheading: {
+        fontSize: 50,
+        lineHeight: 70,
+        wordSpacing: 0,
+        strokeWidth: 2,
+        shadow: true,
+        firstLineCount: 15,
+        y: 900
       }
-    }
-    return rects;
-  }
-}
+    };
 
-// --- create/refresh file inputs and selectCell
-function updateUIForCount() {
-  count = parseInt(numImagesSelect.value);
-  // preserve existing images up to new count
-  const old = images.slice(0);
-  images = new Array(count).fill(null);
-  for (let i=0;i<Math.min(old.length, images.length); i++) images[i] = old[i];
-  // rebuild file inputs
-  fileInputsDiv.innerHTML = '';
-  selectCell.innerHTML = '';
-  for (let i=0;i<count;i++){
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-    fileInput.dataset.index = i;
-    fileInput.addEventListener('change', handleFileChange);
-    fileInputsDiv.appendChild(fileInput);
+    imageLoader.addEventListener("change", handleImage, false);
 
-    const opt = document.createElement('option');
-    opt.value = i; opt.textContent = `Cell ${i+1}`;
-    selectCell.appendChild(opt);
-  }
-  // reset transforms for all images (fit & center), easier to keep consistent
-  resetTransformsAll();
-  selectedIndex = Math.min(selectedIndex, count-1);
-  selectCell.value = selectedIndex;
-  draw();
-}
+    [
+      headlineInput, subheadingInput, imageZoomControl, toggleBorder, toggleLogo
+    ].forEach(ctrl => ctrl.addEventListener("input", draw));
 
-function resetTransformsAll(){
-  // for images that have img loaded, recompute fitScale & center
-  const rects = getCellRects(count, layout);
-  for (let i=0;i<count;i++){
-    if (images[i] && images[i].img) {
-      const cell = rects[i];
-      const im = images[i];
-      im.fitScale = Math.min(cell.w / im.img.width, cell.h / im.img.height);
-      im.scaleFactor = 1;
-      const drawW = im.img.width * im.fitScale * im.scaleFactor;
-      const drawH = im.img.height * im.fitScale * im.scaleFactor;
-      im.offsetX = Math.round((cell.w - drawW)/2);
-      im.offsetY = Math.round((cell.h - drawH)/2);
-    }
-  }
-}
-
-// --- handle file selection per cell
-function handleFileChange(e){
-  const idx = Number(e.target.dataset.index);
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const img = new Image();
-    img.onload = () => {
-      // create image object with transform properties
-      const rects = getCellRects(count, layout);
-      const cell = rects[idx];
-      const fitScale = Math.min(cell.w / img.width, cell.h / img.height);
-      const scaleFactor = 1;
-      const drawW = Math.round(img.width * fitScale * scaleFactor);
-      const drawH = Math.round(img.height * fitScale * scaleFactor);
-      images[idx] = {
-        img,
-        fitScale,
-        scaleFactor,
-        offsetX: Math.round((cell.w - drawW)/2),
-        offsetY: Math.round((cell.h - drawH)/2)
+    function handleImage(e) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        mainImage = new Image();
+        mainImage.onload = function() {
+          const targetWidth = 1080, targetHeight = 648;
+          const scaleX = targetWidth / mainImage.width;
+          const scaleY = targetHeight / mainImage.height;
+          imageZoom = Math.min(scaleX, scaleY);
+          imageOffsetX = 0;
+          imageOffsetY = 0;
+          imageZoomControl.value = imageZoom.toFixed(2);
+          draw();
+        };
+        mainImage.src = event.target.result;
       };
-      selectedIndex = idx;
-      selectCell.value = idx;
-      updateZoomUI();
+      reader.readAsDataURL(e.target.files[0]);
+    }
+
+    function splitWords(text) {
+      return text.match(/<[^>]+>|[^<>؀-ۿ]+|[؀-ۿ]+/g) || [];
+    }
+
+    function drawText(text, settings) {
+      if (!text) return;
+
+      ctx.font = `${settings.fontSize}px 'Jameel Noori Nastaleeq', 'JameelNooriNastaliq', serif`;
+      ctx.textAlign = "center";
+      ctx.direction = "rtl";
+      ctx.lineWidth = settings.strokeWidth;
+      ctx.strokeStyle = "#fff403";
+      ctx.fillStyle = "#fff403";
+
+      ctx.shadowColor = settings.shadow ? "transparent" : "white";
+      ctx.shadowBlur = settings.shadow ? 0 : 5;
+      ctx.shadowOffsetX = settings.shadow ? 0 : 4;
+      ctx.shadowOffsetY = settings.shadow ? 0 : 4;
+
+      const words = splitWords(text);
+      const lines = [words.slice(0, settings.firstLineCount), words.slice(settings.firstLineCount)];
+
+      lines.forEach((line, lineIndex) => {
+        const lineText = line.join(" ".repeat(Math.max(1, settings.wordSpacing / 4)));
+        const y = settings.y + lineIndex * settings.lineHeight;
+        ctx.fillText(lineText, canvas.width / 2, y);
+        ctx.strokeText(lineText, canvas.width / 2, y);
+      });
+    }
+
+    function updateSetting(settingName, value) {
+      const selected = textSelector.value;
+      if (settingName === "shadow") value = !!value;
+      textSettings[selected][settingName] = value;
       draw();
-    };
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-// --- drawing
-function draw(){
-  ctx.clearRect(0,0,canvas.width, canvas.height);
-
-  const rects = getCellRects(count, layout);
-
-  // draw each cell - image inside
-  for (let i=0;i<count;i++){
-    const cell = rects[i];
-    // optional light divider/background for cell
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(cell.x, cell.y, cell.w, cell.h);
-    ctx.clip();
-
-    if (images[i] && images[i].img) {
-      const im = images[i];
-      const drawW = im.img.width * im.fitScale * im.scaleFactor;
-      const drawH = im.img.height * im.fitScale * im.scaleFactor;
-      const drawX = cell.x + im.offsetX;
-      const drawY = cell.y + im.offsetY;
-      ctx.drawImage(im.img, drawX, drawY, drawW, drawH);
-    } else {
-      // empty cell: fill slightly off-white to make layout visible
-      ctx.fillStyle = '#f6f6f6';
-      ctx.fillRect(cell.x, cell.y, cell.w, cell.h);
     }
 
-    ctx.restore();
+    fontSizeControl.addEventListener("input", e => updateSetting("fontSize", parseInt(e.target.value)));
+    lineHeightControl.addEventListener("input", e => updateSetting("lineHeight", parseInt(e.target.value)));
+    wordSpacingControl.addEventListener("input", e => updateSetting("wordSpacing", parseInt(e.target.value)));
+    strokeWidthControl.addEventListener("input", e => updateSetting("strokeWidth", parseInt(e.target.value)));
+    shadowControl.addEventListener("input", e => updateSetting("shadow", e.target.checked));
+    firstLineCountControl.addEventListener("input", e => updateSetting("firstLineCount", parseInt(e.target.value)));
+    textYControl.addEventListener("input", e => updateSetting("y", parseInt(e.target.value)));
 
-    // draw thin inner separator (optional)
-    ctx.strokeStyle = '#e6e6e6';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(cell.x + 0.5, cell.y + 0.5, cell.w - 1, cell.h - 1);
-  }
+    // Update sliders when switching text selector
+    textSelector.addEventListener("change", () => {
+      const selected = textSelector.value;
+      fontSizeControl.value = textSettings[selected].fontSize;
+      lineHeightControl.value = textSettings[selected].lineHeight;
+      wordSpacingControl.value = textSettings[selected].wordSpacing;
+      strokeWidthControl.value = textSettings[selected].strokeWidth;
+      shadowControl.checked = textSettings[selected].shadow;
+      firstLineCountControl.value = textSettings[selected].firstLineCount;
+      textYControl.value = textSettings[selected].y;
+      draw();
+    });
 
-  // draw outer border if enabled (two rects like previous)
-  if (toggleBorder.checked) {
-    ctx.strokeStyle = "grey";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-    ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 28);
-  }
+    imageZoomControl.addEventListener("input", () => {
+      imageZoom = parseFloat(imageZoomControl.value);
+      draw();
+    });
 
-  // NOTE: Selection highlight removed so nothing extra is drawn for selected cell
-
-  // draw logo if enabled
-  // draw logo if enabled
-if (toggleLogo.checked && logo.complete) {
-  const logoW = 120, logoH = 60;
-  let x = 0, y = 0;
-
-  switch (logoPosition) {
-    case "top-left":
-      x = 20; 
-      y = 20; 
-      break;
-    case "top-right":
-      x = canvas.width - logoW - 20; 
-      y = 20; 
-      break;
-    case "bottom-left":
-      x = 20; 
-      y = canvas.height - logoH - 20; 
-      break;
-    case "bottom-right":
-      x = canvas.width - logoW - 20; 
-      y = canvas.height - logoH - 20; 
-      break;
-  }
-
-  ctx.drawImage(logo, x, y, logoW, logoH);
-}
-
-}
-
-// --- selection helpers ---
-function setSelectedIndex(i) {
-  selectedIndex = Math.max(0, Math.min(count-1, i));
-  selectCell.value = selectedIndex;
-  updateZoomUI();
-  draw();
-}
-
-// update zoom slider to show selected image's current scaleFactor
-function updateZoomUI() {
-  const im = images[selectedIndex];
-  if (!im || !im.img) {
-    zoomSlider.value = 1;
-    zoomSlider.disabled = true;
-    zoomInBtn.disabled = true; zoomOutBtn.disabled = true;
-    centerBtn.disabled = true; fitBtn.disabled = true; resetBtn.disabled = true;
-  } else {
-    zoomSlider.disabled = false;
-    zoomInBtn.disabled = false; zoomOutBtn.disabled = false;
-    centerBtn.disabled = false; fitBtn.disabled = false; resetBtn.disabled = false;
-    zoomSlider.value = im.scaleFactor;
-  }
-}
-
-// --- pan and zoom interactions for selected image ---
-let isDragging = false;
-let dragStart = { x:0, y:0 };
-
-function getCanvasPoint(evt) {
-  const rect = canvas.getBoundingClientRect();
-  const clientX = (evt.touches ? evt.touches[0].clientX : evt.clientX);
-  const clientY = (evt.touches ? evt.touches[0].clientY : evt.clientY);
-  const x = (clientX - rect.left) * (canvas.width / rect.width);
-  const y = (clientY - rect.top) * (canvas.height / rect.height);
-  return { x, y };
-}
-
-canvas.addEventListener('mousedown', (e) => {
-  const p = getCanvasPoint(e);
-  const rects = getCellRects(count, layout);
-  // check which cell clicked
-  for (let i=0;i<rects.length;i++){
-    const c = rects[i];
-    if (p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + c.h) {
-      setSelectedIndex(i);
-      // if image exists for this cell, start dragging
-      const im = images[i];
-      if (im && im.img) {
+    // Dragging image
+    canvas.addEventListener("mousedown", e => {
+      if (e.offsetY <= 648) {
         isDragging = true;
-        dragStart.x = p.x; dragStart.y = p.y;
+        dragStartX = e.offsetX - imageOffsetX;
+        dragStartY = e.offsetY - imageOffsetY;
       }
-      break;
-    }
-  }
-});
-
-window.addEventListener('mousemove', (e) => {
-  if (!isDragging) return;
-  const p = getCanvasPoint(e);
-  const dx = p.x - dragStart.x;
-  const dy = p.y - dragStart.y;
-  dragStart.x = p.x; dragStart.y = p.y;
-  // apply to selected image offsets (in cell-local coords)
-  const rects = getCellRects(count, layout);
-  const cell = rects[selectedIndex];
-  if (!cell) return;
-  const im = images[selectedIndex];
-  if (!im || !im.img) return;
-  // offsets stored relative to cell origin; dx/dy in canvas coords are same scale as cell coords
-  im.offsetX += dx;
-  im.offsetY += dy;
-  draw();
-});
-
-window.addEventListener('mouseup', () => { isDragging = false; });
-
-canvas.addEventListener('touchstart', (e) => {
-  if (e.touches.length === 1) {
-    const p = getCanvasPoint(e);
-    const rects = getCellRects(count, layout);
-    for (let i=0;i<rects.length;i++){
-      const c = rects[i];
-      if (p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + c.h) {
-        setSelectedIndex(i);
-        const im = images[i];
-        if (im && im.img) {
-          isDragging = true;
-          dragStart.x = p.x; dragStart.y = p.y;
-        }
-        break;
+    });
+    canvas.addEventListener("mousemove", e => {
+      if (isDragging) {
+        imageOffsetX = e.offsetX - dragStartX;
+        imageOffsetY = e.offsetY - dragStartY;
+        draw();
       }
-    }
-  }
-}, { passive:false });
+    });
+    canvas.addEventListener("mouseup", () => { isDragging = false; });
+    canvas.addEventListener("mouseleave", () => { isDragging = false; });
 
-canvas.addEventListener('touchmove', (e) => {
-  if (!isDragging) return;
-  e.preventDefault();
-  const p = getCanvasPoint(e);
-  const dx = p.x - dragStart.x;
-  const dy = p.y - dragStart.y;
-  dragStart.x = p.x; dragStart.y = p.y;
-  const im = images[selectedIndex];
-  if (!im) return;
-  im.offsetX += dx; im.offsetY += dy;
-  draw();
-}, { passive:false });
-
-canvas.addEventListener('touchend', () => { isDragging = false; });
-
-// --- zoom controls ---
-zoomSlider.addEventListener('input', (e) => {
-  const im = images[selectedIndex];
-  if (!im || !im.img) return;
-  const oldFactor = im.scaleFactor;
-  const newFactor = Number(e.target.value);
-  // preserve visual center: scale offsets proportional to ratio
-  const oldDrawW = im.img.width * im.fitScale * oldFactor;
-  const newDrawW = im.img.width * im.fitScale * newFactor;
-  const ratio = oldDrawW > 0 ? (newDrawW / oldDrawW) : 1;
-  im.offsetX = im.offsetX * ratio;
-  im.offsetY = im.offsetY * ratio;
-  im.scaleFactor = newFactor;
-  draw();
-});
-
-zoomInBtn.addEventListener('click', () => {
-  const v = Math.min(Number(zoomSlider.max), Number(zoomSlider.value) + 0.1);
-  zoomSlider.value = v.toFixed(2);
-  zoomSlider.dispatchEvent(new Event('input'));
-});
-zoomOutBtn.addEventListener('click', () => {
-  const v = Math.max(Number(zoomSlider.min), Number(zoomSlider.value) - 0.1);
-  zoomSlider.value = v.toFixed(2);
-  zoomSlider.dispatchEvent(new Event('input'));
-});
-
-centerBtn.addEventListener('click', () => {
-  const im = images[selectedIndex];
-  if (!im || !im.img) return;
-  const rects = getCellRects(count, layout);
-  const cell = rects[selectedIndex];
-  const drawW = im.img.width * im.fitScale * im.scaleFactor;
-  const drawH = im.img.height * im.fitScale * im.scaleFactor;
-  im.offsetX = Math.round((cell.w - drawW)/2);
-  im.offsetY = Math.round((cell.h - drawH)/2);
-  draw();
-});
-
-fitBtn.addEventListener('click', () => {
-  const im = images[selectedIndex];
-  if (!im || !im.img) return;
-  const rects = getCellRects(count, layout);
-  const cell = rects[selectedIndex];
-  im.fitScale = Math.min(cell.w / im.img.width, cell.h / im.img.height);
-  im.scaleFactor = 1;
-  const drawW = im.img.width * im.fitScale * im.scaleFactor;
-  const drawH = im.img.height * im.fitScale * im.scaleFactor;
-  im.offsetX = Math.round((cell.w - drawW)/2);
-  im.offsetY = Math.round((cell.h - drawH)/2);
-  updateZoomUI();
-  draw();
-});
-
-fillBtn.addEventListener('click', () => {
-  const im = images[selectedIndex];
-  if (!im || !im.img) return;
-  const rects = getCellRects(count, layout);
-  const cell = rects[selectedIndex];
-  
-  // 🔥 cover behavior: use the larger scale
-  im.fitScale = Math.max(cell.w / im.img.width, cell.h / im.img.height);
-  im.scaleFactor = 1;
-  
-  const drawW = im.img.width * im.fitScale * im.scaleFactor;
-  const drawH = im.img.height * im.fitScale * im.scaleFactor;
-  im.offsetX = Math.round((cell.w - drawW) / 2);
-  im.offsetY = Math.round((cell.h - drawH) / 2);
-  
-  updateZoomUI();
-  draw();
-});
-
-
-resetBtn.addEventListener('click', () => {
-  // clear selected image
-  images[selectedIndex] = null;
-  // also clear corresponding file input's value if present
-  const input = fileInputsDiv.querySelector(`input[data-index="${selectedIndex}"]`);
-  if (input) input.value = "";
-  updateZoomUI();
-  draw();
-});
-
-// --- select change
-selectCell.addEventListener('change', (e) => {
-  setSelectedIndex(Number(e.target.value));
-});
-
-// --- layout / count change
-numImagesSelect.addEventListener('change', () => {
-  updateUIForCount();
-});
-layoutSelect.addEventListener('change', () => {
-  layout = layoutSelect.value;
-  // reset transforms for all images so they re-fit the new cell shapes
-  resetTransformsAll();
-  draw();
-});
-
-// toggle UI
-toggleBorder.addEventListener('change', draw);
-toggleLogo.addEventListener('change', draw);
-
-// --- paste handler (robust)
-function insertImageDataURLToSelectedCell(dataURL) {
-  const img = new Image();
-  img.onload = () => {
-    // clamp selectedIndex
-    selectedIndex = Math.max(0, Math.min(selectedIndex, count - 1));
-    const rects = getCellRects(count, layout);
-    const cell = rects[selectedIndex];
-    const fitScale = Math.min(cell.w / img.width, cell.h / img.height);
-    const scaleFactor = 1;
-    const drawW = Math.round(img.width * fitScale * scaleFactor);
-    const drawH = Math.round(img.height * fitScale * scaleFactor);
-    images[selectedIndex] = {
-      img,
-      fitScale,
-      scaleFactor,
-      offsetX: Math.round((cell.w - drawW)/2),
-      offsetY: Math.round((cell.h - drawH)/2)
-    };
-    updateZoomUI();
-    draw();
-  };
-  img.onerror = () => console.warn('Image failed to load from pasted data');
-  img.src = dataURL;
-}
-
-function handlePaste(e) {
-  try {
-    const clip = e.clipboardData || window.clipboardData;
-    if (!clip) return;
-    // Prefer items (Chrome/Edge/Firefox)
-    if (clip.items && clip.items.length) {
-      for (let i=0;i<clip.items.length;i++){
-        const item = clip.items[i];
-        if (item.kind === 'file' && item.type.indexOf('image') !== -1) {
-          const blob = item.getAsFile();
-          const reader = new FileReader();
-          reader.onload = ev => insertImageDataURLToSelectedCell(ev.target.result);
-          reader.readAsDataURL(blob);
-          e.preventDefault();
-          return;
-        }
-        // some apps place <img src="data:..."> inside text/html
-        if (item.type === 'text/html') {
-          item.getAsString(str => {
-            if (!str) return;
-            const m = str.match(/src=["'](data:image\/[^"']+)["']/);
-            if (m && m[1]) {
-              insertImageDataURLToSelectedCell(m[1]);
-            }
-          });
-        }
+    // download
+    downloadBtn.addEventListener("click", () => {
+      let filename = filenameInput.value.trim();
+      if (!filename) filename = "collage";
+      if (!filename.toLowerCase().endsWith(".png")) {
+        filename += ".png";
       }
-    }
-    // Fallback to clipboard.files
-    if (clip.files && clip.files.length) {
-      for (let i=0;i<clip.files.length;i++){
-        const file = clip.files[i];
-        if (file.type && file.type.indexOf('image') !== -1) {
-          const reader = new FileReader();
-          reader.onload = ev => insertImageDataURLToSelectedCell(ev.target.result);
-          reader.readAsDataURL(file);
-          e.preventDefault();
-          return;
-        }
+      const link = document.createElement("a");
+      link.download = filename;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (bgImage.complete) ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+
+      if (mainImage) {
+        const targetWidth = 1080, targetHeight = 648;
+        const scaledWidth = mainImage.width * imageZoom;
+        const scaledHeight = mainImage.height * imageZoom;
+        const drawX = (targetWidth - scaledWidth) / 2 + imageOffsetX;
+        const drawY = (targetHeight - scaledHeight) / 2 + imageOffsetY;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, targetWidth, targetHeight);
+        ctx.clip();
+        ctx.drawImage(mainImage, drawX, drawY, scaledWidth, scaledHeight);
+        ctx.restore();
       }
-    }
-    // Fallback plain text data URI
-    if (clip.getData) {
-      const text = clip.getData('text/plain');
-      if (text && text.startsWith('data:image/')) {
-        insertImageDataURLToSelectedCell(text);
-        e.preventDefault();
+
+      if (toggleBorder.checked) {
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, 10, 1080 - 20, 648 - 20);
+        ctx.strokeStyle = "#ccc";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(14, 14, 1080 - 28, 648 - 28);
       }
+
+      if (toggleLogo.checked && logoImage && logoImage.complete) {
+        ctx.drawImage(logoImage, canvas.width - 131, 20, 120, 100);
+      }
+
+      drawText(headlineInput.value, textSettings.headline);
+      drawText(subheadingInput.value, textSettings.subheading);
     }
-  } catch (err) {
-    console.warn('paste error', err);
-  }
-}
 
-document.addEventListener('paste', handlePaste);
-
-// download
-downloadBtn.addEventListener('click', () => {
-  const link = document.createElement('a');
-  link.download = 'collage.webp';
-  link.href = canvas.toDataURL('image/webp', 0.9);
-  link.click();
-});
-
-// initial setup
-updateUIForCount();
-updateZoomUI();
-logo.onload = draw;
-
-</script>
+    bgImage.onload = draw;
+    logoImage.onload = draw;
+  </script>
 </body>
 </html>
