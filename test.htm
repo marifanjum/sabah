@@ -1,310 +1,408 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Social Media Image Generator</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.css">
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
-    #headlineInput {
-      width: 90%;
-      font-size: 20px;
-      padding: 10px;
-      margin-bottom: 20px;
-      border: none;
-      border-radius: 6px;
-    }
-    #canvas {
-      border: 2px solid #444;
-      margin-bottom: 20px;
-      cursor: grab;
-    }
-    #canvas:active {
-      cursor: grabbing;
-    }
-    .controls {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 15px;
-      width: 90%;
-    }
-    .control-group {
-      background: #222;
-      padding: 10px;
-      border-radius: 8px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 14px;
-    }
-    input[type="range"], input[type="file"], input[type="number"] {
-      width: 100%;
-    }
-    button {
-      padding: 12px;
-      margin-top: 20px;
-      background: #fff403;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      width: 200px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Image Manipulation</title>
+<style>
+  body { margin: 5px; font-family: Arial, sans-serif; }
+  button { padding: 12px 20px; margin: 8px; font-size: 18px; }
+  #canvasContainer { position: relative; width: 1200px; height: 720px; border: 2px solid black; overflow: hidden; margin-bottom: 20px; }
+  #canvas { position: absolute; top: 0; left: 0; cursor: move; }
+  label { font-size: 16px; margin-right: 12px; display: inline-block; }
+  .small { font-size: 14px; margin-left: 6px; }
+  .controls-row { margin-bottom: 10px; }
+</style>
 </head>
 <body>
-  <input id="headlineInput" type="text" placeholder="Enter headline text here">
 
-  <canvas id="canvas" width="1080" height="1080"></canvas>
-
-  <div class="controls">
-    <div class="control-group">
-      <label>Upload Main Image</label>
-      <input type="file" id="imageLoader" accept="image/*">
-    </div>
-    <div class="control-group">
-      <label>Image Zoom</label>
-      <input type="range" id="imageZoom" min="0.5" max="3" step="0.1" value="1">
-    </div>
-    <div class="control-group">
-      <label>Font Size</label>
-      <input type="range" id="fontSize" min="30" max="120" value="80">
-    </div>
-    <div class="control-group">
-      <label>Line Height</label>
-      <input type="range" id="lineHeight" min="40" max="150" value="100">
-    </div>
-    <div class="control-group">
-      <label>Word Spacing</label>
-      <input type="range" id="wordSpacing" min="-40" max="40" value="0">
-    </div>
-    <div class="control-group">
-      <label>Stroke Width</label>
-      <input type="range" id="strokeWidth" min="0" max="10" value="2">
-    </div>
-    <div class="control-group">
-      <label>Shadow</label>
-      <input type="checkbox" id="shadow" checked>
-    </div>
-    <div class="control-group">
-      <label>First Line Word Count</label>
-      <input type="number" id="firstLineCount" min="1" max="30" value="15">
-    </div>
-    <div class="control-group">
-      <label>Headline Y Position</label>
-      <input type="range" id="headlineY" min="700" max="1050" value="750">
-    </div>
-    <!-- NEW TOGGLES -->
-    <div class="control-group">
-      <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
-    </div>
-    <div class="control-group">
-      <label><input type="checkbox" id="toggleLogo" checked> Show Logo</label>
-    </div>
+  <div id="canvasContainer">
+    <canvas id="canvas" width="1200" height="720"></canvas>
   </div>
 
-  <button id="downloadBtn">Download Final Image</button>
+  <div class="controls-row">
+    <button id="stretchButton">Fit by Stretch Short Side</button>
+    <button id="fitLongestSideButton">Fit on Longest Side</button>
+    <button id="centerButton">Center Image</button>
+    <button id="forceStretchButton">Force Stretch to Fit</button>
+    <button id="fillCanvasButton">Auto Zoom to Fill</button>
+    <button id="downloadCanvasButton">Download Resized Image</button>
+  </div>
 
-  <script>
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
+  <div class="controls-row">
+    <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
+    <label><input type="checkbox" id="toggleLogo" checked> Show Logo</label>
+    <label><input type="checkbox" id="toggleBg" checked> Show Background</label>
+    <label><input type="checkbox" id="toggleGradient"> Use Gradient Background</label>
 
-    const headlineInput = document.getElementById("headlineInput");
-    const imageLoader = document.getElementById("imageLoader");
-    const imageZoomControl = document.getElementById("imageZoom");
-    const fontSizeControl = document.getElementById("fontSize");
-    const lineHeightControl = document.getElementById("lineHeight");
-    const wordSpacingControl = document.getElementById("wordSpacing");
-    const strokeWidthControl = document.getElementById("strokeWidth");
-    const shadowControl = document.getElementById("shadow");
-    const firstLineCountControl = document.getElementById("firstLineCount");
-    const headlineYControl = document.getElementById("headlineY");
-    const downloadBtn = document.getElementById("downloadBtn");
+    <label>Logo Position:
+      <select id="logoPosition" class="small">
+        <option value="top-right" selected>Top Right</option>
+        <option value="top-left">Top Left</option>
+        <option value="bottom-right">Bottom Right</option>
+        <option value="bottom-left">Bottom Left</option>
+      </select>
+    </label>
+  </div>
 
-    // NEW TOGGLES
-    const toggleBorder = document.getElementById("toggleBorder");
-    const toggleLogo = document.getElementById("toggleLogo");
+  <div class="controls-row">
+      <label>Gradient Color Right: <input type="color" id="gradColor2" value="#ffffff"></label>
+    <label>Gradient Color Left: <input type="color" id="gradColor1" value="#000000"></label>
+  
+    <label>Direction:
+      <select id="gradDirection" class="small">
+        <option value="top-bottom">Top → Bottom</option>
+        <option value="bottom-top">Bottom → Top</option>
+        <option value="left-right">Left → Right</option>
+        <option value="right-left">Right → Left</option>
+        <option value="tl-br">Top-Left → Bottom-Right</option>
+        <option value="tr-bl">Top-Right → Bottom-Left</option>
+        <option value="bl-tr">Bottom-Left → Top-Right</option>
+        <option value="br-tl">Bottom-Right → Top-Left</option>
+      </select>
+    </label>
+  </div>
 
-    let mainImage = null;
-    let bgImage = new Image();
-    let logoImage = new Image();
-    bgImage.src = "bg.png";
-    logoImage.src = "sabah-logo.PNG";
+  <div class="controls-row">
+    <input type="file" id="imageInput" accept="image/*">
+  </div>
 
-    let imageZoom = 1;
-    let imageOffsetX = 0, imageOffsetY = 0;
-    let isDragging = false, dragStartX = 0, dragStartY = 0;
+<script>
 
-    imageLoader.addEventListener("change", handleImage, false);
-    [
-      headlineInput, fontSizeControl, lineHeightControl, wordSpacingControl,
-      strokeWidthControl, shadowControl, firstLineCountControl, headlineYControl,
-      imageZoomControl, toggleBorder, toggleLogo
-    ].forEach(ctrl => ctrl.addEventListener("input", draw));
+  <!-- Add these inputs and button somewhere in your HTML -->
+<div class="controls-row">
+  <input type="text" id="titleInput" placeholder="Enter Title (English)">
+  <input type="text" id="captionInput" placeholder="اردو کیپشن درج کریں">
+  <button id="downloadWithMeta">Download with Title & Caption</button>
+</div>
 
-    function handleImage(e) {
+<script type="module">
+import initWasm, { ExifTool } from "https://cdn.jsdelivr.net/npm/exiftool-wasm@0.1.5/+esm";
+
+// Reuse your existing canvas
+const downloadWithMetaBtn = document.getElementById("downloadWithMeta");
+const titleInput = document.getElementById("titleInput");
+const captionInput = document.getElementById("captionInput");
+
+downloadWithMetaBtn.addEventListener("click", async () => {
+  const title = titleInput.value.trim();
+  const caption = captionInput.value.trim();
+
+  if (!title && !caption) {
+    alert("Please enter a title or caption before downloading.");
+    return;
+  }
+
+  // Capture canvas as JPEG
+  const blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", 0.9));
+  const arrayBuffer = await blob.arrayBuffer();
+  const uint8 = new Uint8Array(arrayBuffer);
+
+  // Init exiftool-wasm
+  await initWasm();
+  const exiftool = new ExifTool();
+
+  // Inject metadata (UTF-8 safe)
+  const withMeta = await exiftool.write(uint8, {
+    "XMP-dc:Title": title,
+    "XMP-dc:Description": caption,
+    "IPTC:Caption-Abstract": caption
+  });
+
+  // Save result
+  const outBlob = new Blob([withMeta], { type: "image/jpeg" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(outBlob);
+  a.download = "canvas-with-meta.jpg";
+  a.click();
+});
+
+
+  
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const imageInput = document.getElementById('imageInput');
+const stretchButton = document.getElementById('stretchButton');
+const fitLongestSideButton = document.getElementById('fitLongestSideButton');
+const centerButton = document.getElementById('centerButton');
+const forceStretchButton = document.getElementById('forceStretchButton');
+const fillCanvasButton = document.getElementById('fillCanvasButton');
+const downloadCanvasButton = document.getElementById('downloadCanvasButton');
+
+const toggleBorder = document.getElementById('toggleBorder');
+const toggleLogo = document.getElementById('toggleLogo');
+const toggleBg = document.getElementById('toggleBg');
+const toggleGradient = document.getElementById('toggleGradient');
+
+const gradColor1 = document.getElementById('gradColor1');
+const gradColor2 = document.getElementById('gradColor2');
+const gradDirection = document.getElementById('gradDirection');
+const logoPosition = document.getElementById('logoPosition');
+
+let image = null;
+let logo = new Image();
+logo.src = "sabah-logo.PNG";
+
+let bgImage = new Image();
+bgImage.src = "image-bg.png";
+
+let offsetX = 0, offsetY = 0;
+let isDragging = false;
+let startX = 0, startY = 0;
+let scale = 1;
+let forceStretchMode = false;
+
+let lastTouchDistance = 0;
+let lastTouchX = 0;
+let lastTouchY = 0;
+
+// --- image load / paste handlers ---
+const handleFileChange = e => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => loadImage(ev.target.result);
+  reader.readAsDataURL(file);
+};
+
+const loadImage = src => {
+  image = new Image();
+  image.onload = function() {
+    fitImageToCanvas();
+  };
+  image.src = src;
+};
+
+const handlePaste = event => {
+  const items = (event.clipboardData || event.originalEvent && event.originalEvent.clipboardData).items;
+  for (let i=0; i<items.length; i++){
+    const item = items[i];
+    if (item.kind === 'file' && item.type.indexOf('image') !== -1){
+      const blob = item.getAsFile();
       const reader = new FileReader();
-      reader.onload = function(event) {
-        mainImage = new Image();
-        mainImage.onload = function() {
-          // Fit logic
-          const targetWidth = 1080, targetHeight = 648;
-          const scaleX = targetWidth / mainImage.width;
-          const scaleY = targetHeight / mainImage.height;
-          imageZoom = Math.min(scaleX, scaleY);
-          imageOffsetX = 0;
-          imageOffsetY = 0;
-          imageZoomControl.value = imageZoom.toFixed(2);
-          draw();
-        };
-        mainImage.src = event.target.result;
-      };
-      reader.readAsDataURL(e.target.files[0]);
+      reader.onload = ev => loadImage(ev.target.result);
+      reader.readAsDataURL(blob);
+      break;
     }
+  }
+};
 
-    function splitWords(text) {
-      return text.match(/<[^>]+>|[^<>؀-ۿ]+|[؀-ۿ]+/g) || [];
+// --- utility: create a canvas gradient from direction ---
+function createCanvasGradient(direction, colorA, colorB) {
+  let x0=0, y0=0, x1=0, y1=0;
+  switch (direction) {
+    case 'top-bottom':     x0 = 0; y0 = 0; x1 = 0; y1 = canvas.height; break;
+    case 'bottom-top':     x0 = 0; y0 = canvas.height; x1 = 0; y1 = 0; break;
+    case 'left-right':     x0 = 0; y0 = 0; x1 = canvas.width; y1 = 0; break;
+    case 'right-left':     x0 = canvas.width; y0 = 0; x1 = 0; y1 = 0; break;
+    case 'tl-br':          x0 = 0; y0 = 0; x1 = canvas.width; y1 = canvas.height; break;
+    case 'tr-bl':          x0 = canvas.width; y0 = 0; x1 = 0; y1 = canvas.height; break;
+    case 'bl-tr':          x0 = 0; y0 = canvas.height; x1 = canvas.width; y1 = 0; break;
+    case 'br-tl':          x0 = canvas.width; y0 = canvas.height; x1 = 0; y1 = 0; break;
+    default:               x0 = 0; y0 = 0; x1 = 0; y1 = canvas.height;
+  }
+  const g = ctx.createLinearGradient(x0, y0, x1, y1);
+  g.addColorStop(0, colorA);
+  g.addColorStop(1, colorB);
+  return g;
+}
+
+// --- draw all layers ---
+const drawImage = () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (toggleBg.checked && bgImage.complete) {
+    ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+  }
+  else if (!toggleBg.checked && toggleGradient.checked) {
+    ctx.fillStyle = createCanvasGradient(gradDirection.value, gradColor1.value, gradColor2.value);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  if (image) {
+    if (forceStretchMode) {
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.drawImage(image, offsetX, offsetY, image.width * scale, image.height * scale);
     }
+  }
 
-    function drawHeadline() {
-      const text = headlineInput.value;
-      if (!text) return;
+  if (toggleBorder.checked) {
+    ctx.strokeStyle = "grey";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+    ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 28);
+  }
 
-      const fontSize = parseInt(fontSizeControl.value);
-      const lineHeight = parseInt(lineHeightControl.value);
-      const wordSpacing = parseInt(wordSpacingControl.value); // now supports negative
-      const strokeWidth = parseInt(strokeWidthControl.value);
-      const shadow = shadowControl.checked;
-      const firstLineCount = parseInt(firstLineCountControl.value);
-      const baseY = parseInt(headlineYControl.value);
-
-      ctx.font = `${fontSize}px 'Jameel Noori Nastaleeq', serif`;
-      ctx.textAlign = "center";
-      ctx.direction = "rtl";
-      ctx.lineWidth = strokeWidth;
-      ctx.strokeStyle = "#fff403";
-      ctx.fillStyle = "#fff403";
-
-      if (shadow) {
-        ctx.shadowColor = "transparent";
-      } else {
-        ctx.shadowColor = "white";
-        ctx.shadowBlur = 5;
-        ctx.shadowOffsetX = 4;
-        ctx.shadowOffsetY = 4;
-      }
-
-      const words = splitWords(text);
-      const lines = [words.slice(0, firstLineCount), words.slice(firstLineCount)];
-
-      lines.forEach((line, lineIndex) => {
-        const y = baseY + lineIndex * lineHeight;
-
-        // measure each word
-        const widths = line.map(w => ctx.measureText(w).width);
-        const totalWidth = widths.reduce((a, b) => a + b, 0) + (line.length - 1) * wordSpacing;
-
-        // start position (RTL center alignment)
-        let x = canvas.width / 2 + totalWidth / 2;
-
-        line.forEach((word, i) => {
-          const w = widths[i];
-          ctx.fillText(word, x - w, y);
-          ctx.strokeText(word, x - w, y);
-          x -= (w + wordSpacing);
-        });
-      });
+  if (toggleLogo.checked && logo.complete) {
+    const logoWidth = 120, logoHeight = 60;
+    let x = 0, y = 0;
+    switch (logoPosition.value) {
+      case 'top-left':     x = 20; y = 50; break;
+      case 'top-right':    x = canvas.width - logoWidth - 20; y = 50; break;
+      case 'bottom-left':  x = 20; y = canvas.height - logoHeight - 20; break;
+      case 'bottom-right': x = canvas.width - logoWidth - 20; y = canvas.height - logoHeight - 20; break;
     }
+    ctx.drawImage(logo, x, y, logoWidth, logoHeight);
+  }
+};
 
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (bgImage.complete) ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+// --- fit / layout functions ---
+const fitImageToCanvas = () => {
+  if (!image) return;
+  offsetX = 0; offsetY = 0;
+  scale = Math.min(canvas.width / image.width, canvas.height / image.height);
+  forceStretchMode = false;
+  drawImage();
+};
 
-      // Draw main image
-      if (mainImage) {
-        const targetWidth = 1080, targetHeight = 648;
-        const scaledWidth = mainImage.width * imageZoom;
-        const scaledHeight = mainImage.height * imageZoom;
+const fitByStretch = () => {
+  if (!image) return;
+  offsetX = 0; offsetY = 0;
+  scale = Math.min(canvas.width / image.width, canvas.height / image.height);
+  forceStretchMode = false;
+  drawImage();
+};
 
-        const drawX = (targetWidth - scaledWidth) / 2 + imageOffsetX;
-        const drawY = (targetHeight - scaledHeight) / 2 + imageOffsetY;
+const fitOnLongestSide = () => {
+  if (!image) return;
+  offsetX = 0; offsetY = 0;
+  if (image.width > image.height) scale = canvas.width / image.width;
+  else scale = canvas.height / image.height;
+  forceStretchMode = false;
+  drawImage();
+};
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(0, 0, targetWidth, targetHeight);
-        ctx.clip();
-        ctx.drawImage(mainImage, drawX, drawY, scaledWidth, scaledHeight);
-        ctx.restore();
-      }
+const centerImage = () => {
+  if (!image) return;
+  offsetX = (canvas.width - image.width * scale) / 2;
+  offsetY = (canvas.height - image.height * scale) / 2;
+  forceStretchMode = false;
+  drawImage();
+};
 
-      // Border
-      if (toggleBorder.checked) {
-        const frameX = 0, frameY = 0;
-        const frameWidth = 1080, frameHeight = 648;
+const forceStretch = () => {
+  forceStretchMode = true;
+  drawImage();
+};
 
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(frameX + 10, frameY + 10, frameWidth - 20, frameHeight - 20);
+// --- new function: auto zoom to fill canvas ---
+const fillCanvas = () => {
+  if (!image) return;
+  scale = Math.max(canvas.width / image.width, canvas.height / image.height);
+  offsetX = (canvas.width - image.width * scale) / 2;
+  offsetY = (canvas.height - image.height * scale) / 2;
+  forceStretchMode = false;
+  drawImage();
+};
 
-        ctx.strokeStyle = "#ccc";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(frameX + 14, frameY + 14, frameWidth - 28, frameHeight - 28);
-      }
+// --- mouse/touch interaction ---
+const handleMouseDown = e => {
+  if (forceStretchMode) return;
+  isDragging = true;
+  startX = e.clientX - offsetX;
+  startY = e.clientY - offsetY;
+};
 
-      // Logo
-      if (toggleLogo.checked && logoImage && logoImage.complete && logoImage.naturalWidth > 0) {
-        ctx.drawImage(logoImage, canvas.width - 131, 20, 120, 100);
-      }
+const handleMouseMove = e => {
+  if (!isDragging || forceStretchMode) return;
+  offsetX = e.clientX - startX;
+  offsetY = e.clientY - startY;
+  drawImage();
+};
 
-      drawHeadline();
-    }
+const handleMouseUp = () => { isDragging = false; };
 
-    // Zoom control
-    imageZoomControl.addEventListener("input", () => {
-      imageZoom = parseFloat(imageZoomControl.value);
-      draw();
-    });
+const handleMouseWheel = e => {
+  if (forceStretchMode) return;
+  e.preventDefault();
+  const delta = (e.wheelDelta ? e.wheelDelta : -e.deltaY) > 0 ? 1 : -1;
+  const zoomSpeed = 0.1;
+  const zoomFactor = 1 + zoomSpeed * delta;
+  scale *= zoomFactor;
+  drawImage();
+};
 
-    // Dragging
-    canvas.addEventListener("mousedown", e => {
-      if (e.offsetY <= 648) {
-        isDragging = true;
-        dragStartX = e.offsetX - imageOffsetX;
-        dragStartY = e.offsetY - imageOffsetY;
-      }
-    });
+const handleTouchStart = e => {
+  if (forceStretchMode) return;
+  if (e.touches.length === 1) {
+    lastTouchX = e.touches[0].clientX;
+    lastTouchY = e.touches[0].clientY;
+  } else if (e.touches.length === 2) {
+    lastTouchDistance = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+  }
+};
 
-    canvas.addEventListener("mousemove", e => {
-      if (isDragging) {
-        imageOffsetX = e.offsetX - dragStartX;
-        imageOffsetY = e.offsetY - dragStartY;
-        draw();
-      }
-    });
+const handleTouchMove = e => {
+  if (forceStretchMode) return;
+  if (e.touches.length === 1) {
+    e.preventDefault();
+    const tx = e.touches[0].clientX;
+    const ty = e.touches[0].clientY;
+    offsetX += tx - lastTouchX;
+    offsetY += ty - lastTouchY;
+    lastTouchX = tx; lastTouchY = ty;
+    drawImage();
+  } else if (e.touches.length === 2) {
+    e.preventDefault();
+    const touchDistance = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    const zoomFactor = touchDistance / (lastTouchDistance || touchDistance);
+    scale *= zoomFactor;
+    lastTouchDistance = touchDistance;
+    drawImage();
+  }
+};
 
-    canvas.addEventListener("mouseup", () => { isDragging = false; });
-    canvas.addEventListener("mouseleave", () => { isDragging = false; });
+const handleTouchEnd = () => { lastTouchDistance = 0; };
 
-    downloadBtn.addEventListener("click", () => {
-      const link = document.createElement("a");
-      link.download = "final-image.png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    });
+// download
+const downloadCanvas = () => {
+  const link = document.createElement('a');
+  link.download = 'resized.webp';
+  link.href = canvas.toDataURL('image/webp', 0.5);
+  link.click();
+};
 
-    bgImage.onload = draw;
-    logoImage.onload = draw;
-  </script>
+// --- events binding ---
+imageInput.addEventListener('change', handleFileChange);
+document.addEventListener('paste', handlePaste);
+
+canvas.addEventListener('mousedown', handleMouseDown);
+canvas.addEventListener('mousemove', handleMouseMove);
+document.addEventListener('mouseup', handleMouseUp);
+canvas.addEventListener('wheel', handleMouseWheel);
+
+canvas.addEventListener('touchstart', handleTouchStart, {passive:false});
+canvas.addEventListener('touchmove', handleTouchMove, {passive:false});
+canvas.addEventListener('touchend', handleTouchEnd);
+
+stretchButton.addEventListener('click', fitByStretch);
+fitLongestSideButton.addEventListener('click', fitOnLongestSide);
+centerButton.addEventListener('click', centerImage);
+forceStretchButton.addEventListener('click', forceStretch);
+fillCanvasButton.addEventListener('click', fillCanvas);
+downloadCanvasButton.addEventListener('click', downloadCanvas);
+
+toggleBorder.addEventListener('change', drawImage);
+toggleLogo.addEventListener('change', drawImage);
+toggleBg.addEventListener('change', drawImage);
+toggleGradient.addEventListener('change', drawImage);
+gradColor1.addEventListener('input', drawImage);
+gradColor2.addEventListener('input', drawImage);
+gradDirection.addEventListener('change', drawImage);
+logoPosition.addEventListener('change', drawImage);
+
+bgImage.onload = drawImage;
+logo.onload = drawImage;
+
+drawImage();
+</script>
 </body>
 </html>
