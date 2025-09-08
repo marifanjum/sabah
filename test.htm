@@ -3,15 +3,16 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Image Manipulation</title>
+<title>Canvas Image with Metadata</title>
 <style>
   body { margin: 5px; font-family: Arial, sans-serif; }
-  button { padding: 12px 20px; margin: 8px; font-size: 18px; }
+  button { padding: 12px 20px; margin: 8px; font-size: 18px; cursor: pointer; }
   #canvasContainer { position: relative; width: 1200px; height: 720px; border: 2px solid black; overflow: hidden; margin-bottom: 20px; }
   #canvas { position: absolute; top: 0; left: 0; cursor: move; }
   label { font-size: 16px; margin-right: 12px; display: inline-block; }
   .small { font-size: 14px; margin-left: 6px; }
   .controls-row { margin-bottom: 10px; }
+  input[type=text] { padding: 8px; font-size: 16px; width: 250px; margin-right: 10px; }
 </style>
 </head>
 <body>
@@ -26,7 +27,6 @@
     <button id="centerButton">Center Image</button>
     <button id="forceStretchButton">Force Stretch to Fit</button>
     <button id="fillCanvasButton">Auto Zoom to Fill</button>
-    <button id="downloadCanvasButton">Download Resized Image</button>
   </div>
 
   <div class="controls-row">
@@ -46,7 +46,7 @@
   </div>
 
   <div class="controls-row">
-      <label>Gradient Color Right: <input type="color" id="gradColor2" value="#ffffff"></label>
+    <label>Gradient Color Right: <input type="color" id="gradColor2" value="#ffffff"></label>
     <label>Gradient Color Left: <input type="color" id="gradColor1" value="#000000"></label>
   
     <label>Direction:
@@ -67,58 +67,16 @@
     <input type="file" id="imageInput" accept="image/*">
   </div>
 
-<script>
-
-  <!-- Add these inputs and button somewhere in your HTML -->
-<div class="controls-row">
-  <input type="text" id="titleInput" placeholder="Enter Title (English)">
-  <input type="text" id="captionInput" placeholder="اردو کیپشن درج کریں">
-  <button id="downloadWithMeta">Download with Title & Caption</button>
-</div>
+  <!-- Title + Caption -->
+  <div class="controls-row">
+    <input type="text" id="titleInput" placeholder="Enter Title (English)">
+    <input type="text" id="captionInput" placeholder="اردو کیپشن درج کریں">
+    <button id="downloadWithMeta">Download with Metadata</button>
+  </div>
 
 <script type="module">
 import initWasm, { ExifTool } from "https://cdn.jsdelivr.net/npm/exiftool-wasm@0.1.5/+esm";
 
-// Reuse your existing canvas
-const downloadWithMetaBtn = document.getElementById("downloadWithMeta");
-const titleInput = document.getElementById("titleInput");
-const captionInput = document.getElementById("captionInput");
-
-downloadWithMetaBtn.addEventListener("click", async () => {
-  const title = titleInput.value.trim();
-  const caption = captionInput.value.trim();
-
-  if (!title && !caption) {
-    alert("Please enter a title or caption before downloading.");
-    return;
-  }
-
-  // Capture canvas as JPEG
-  const blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", 0.9));
-  const arrayBuffer = await blob.arrayBuffer();
-  const uint8 = new Uint8Array(arrayBuffer);
-
-  // Init exiftool-wasm
-  await initWasm();
-  const exiftool = new ExifTool();
-
-  // Inject metadata (UTF-8 safe)
-  const withMeta = await exiftool.write(uint8, {
-    "XMP-dc:Title": title,
-    "XMP-dc:Description": caption,
-    "IPTC:Caption-Abstract": caption
-  });
-
-  // Save result
-  const outBlob = new Blob([withMeta], { type: "image/jpeg" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(outBlob);
-  a.download = "canvas-with-meta.jpg";
-  a.click();
-});
-
-
-  
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
@@ -128,7 +86,6 @@ const fitLongestSideButton = document.getElementById('fitLongestSideButton');
 const centerButton = document.getElementById('centerButton');
 const forceStretchButton = document.getElementById('forceStretchButton');
 const fillCanvasButton = document.getElementById('fillCanvasButton');
-const downloadCanvasButton = document.getElementById('downloadCanvasButton');
 
 const toggleBorder = document.getElementById('toggleBorder');
 const toggleLogo = document.getElementById('toggleLogo');
@@ -157,7 +114,7 @@ let lastTouchDistance = 0;
 let lastTouchX = 0;
 let lastTouchY = 0;
 
-// --- image load / paste handlers ---
+// --- image load ---
 const handleFileChange = e => {
   const file = e.target.files && e.target.files[0];
   if (!file) return;
@@ -174,33 +131,18 @@ const loadImage = src => {
   image.src = src;
 };
 
-const handlePaste = event => {
-  const items = (event.clipboardData || event.originalEvent && event.originalEvent.clipboardData).items;
-  for (let i=0; i<items.length; i++){
-    const item = items[i];
-    if (item.kind === 'file' && item.type.indexOf('image') !== -1){
-      const blob = item.getAsFile();
-      const reader = new FileReader();
-      reader.onload = ev => loadImage(ev.target.result);
-      reader.readAsDataURL(blob);
-      break;
-    }
-  }
-};
-
-// --- utility: create a canvas gradient from direction ---
+// --- gradient utility ---
 function createCanvasGradient(direction, colorA, colorB) {
   let x0=0, y0=0, x1=0, y1=0;
   switch (direction) {
-    case 'top-bottom':     x0 = 0; y0 = 0; x1 = 0; y1 = canvas.height; break;
-    case 'bottom-top':     x0 = 0; y0 = canvas.height; x1 = 0; y1 = 0; break;
-    case 'left-right':     x0 = 0; y0 = 0; x1 = canvas.width; y1 = 0; break;
-    case 'right-left':     x0 = canvas.width; y0 = 0; x1 = 0; y1 = 0; break;
-    case 'tl-br':          x0 = 0; y0 = 0; x1 = canvas.width; y1 = canvas.height; break;
-    case 'tr-bl':          x0 = canvas.width; y0 = 0; x1 = 0; y1 = canvas.height; break;
-    case 'bl-tr':          x0 = 0; y0 = canvas.height; x1 = canvas.width; y1 = 0; break;
-    case 'br-tl':          x0 = canvas.width; y0 = canvas.height; x1 = 0; y1 = 0; break;
-    default:               x0 = 0; y0 = 0; x1 = 0; y1 = canvas.height;
+    case 'top-bottom':     x0=0;y0=0;x1=0;y1=canvas.height; break;
+    case 'bottom-top':     x0=0;y0=canvas.height;x1=0;y1=0; break;
+    case 'left-right':     x0=0;y0=0;x1=canvas.width;y1=0; break;
+    case 'right-left':     x0=canvas.width;y0=0;x1=0;y1=0; break;
+    case 'tl-br':          x0=0;y0=0;x1=canvas.width;y1=canvas.height; break;
+    case 'tr-bl':          x0=canvas.width;y0=0;x1=0;y1=canvas.height; break;
+    case 'bl-tr':          x0=0;y0=canvas.height;x1=canvas.width;y1=0; break;
+    case 'br-tl':          x0=canvas.width;y0=canvas.height;x1=0;y1=0; break;
   }
   const g = ctx.createLinearGradient(x0, y0, x1, y1);
   g.addColorStop(0, colorA);
@@ -248,7 +190,7 @@ const drawImage = () => {
   }
 };
 
-// --- fit / layout functions ---
+// --- fit functions ---
 const fitImageToCanvas = () => {
   if (!image) return;
   offsetX = 0; offsetY = 0;
@@ -257,14 +199,7 @@ const fitImageToCanvas = () => {
   drawImage();
 };
 
-const fitByStretch = () => {
-  if (!image) return;
-  offsetX = 0; offsetY = 0;
-  scale = Math.min(canvas.width / image.width, canvas.height / image.height);
-  forceStretchMode = false;
-  drawImage();
-};
-
+const fitByStretch = () => { fitImageToCanvas(); };
 const fitOnLongestSide = () => {
   if (!image) return;
   offsetX = 0; offsetY = 0;
@@ -273,7 +208,6 @@ const fitOnLongestSide = () => {
   forceStretchMode = false;
   drawImage();
 };
-
 const centerImage = () => {
   if (!image) return;
   offsetX = (canvas.width - image.width * scale) / 2;
@@ -281,13 +215,7 @@ const centerImage = () => {
   forceStretchMode = false;
   drawImage();
 };
-
-const forceStretch = () => {
-  forceStretchMode = true;
-  drawImage();
-};
-
-// --- new function: auto zoom to fill canvas ---
+const forceStretch = () => { forceStretchMode = true; drawImage(); };
 const fillCanvas = () => {
   if (!image) return;
   scale = Math.max(canvas.width / image.width, canvas.height / image.height);
@@ -297,24 +225,12 @@ const fillCanvas = () => {
   drawImage();
 };
 
-// --- mouse/touch interaction ---
-const handleMouseDown = e => {
-  if (forceStretchMode) return;
-  isDragging = true;
-  startX = e.clientX - offsetX;
-  startY = e.clientY - offsetY;
-};
+// --- dragging/zoom ---
+canvas.addEventListener('mousedown', e => { if (!forceStretchMode){ isDragging=true; startX=e.clientX-offsetX; startY=e.clientY-offsetY; }});
+canvas.addEventListener('mousemove', e => { if (isDragging && !forceStretchMode){ offsetX=e.clientX-startX; offsetY=e.clientY-startY; drawImage(); }});
+document.addEventListener('mouseup', ()=>isDragging=false);
 
-const handleMouseMove = e => {
-  if (!isDragging || forceStretchMode) return;
-  offsetX = e.clientX - startX;
-  offsetY = e.clientY - startY;
-  drawImage();
-};
-
-const handleMouseUp = () => { isDragging = false; };
-
-const handleMouseWheel = e => {
+canvas.addEventListener('wheel', e => {
   if (forceStretchMode) return;
   e.preventDefault();
   const delta = (e.wheelDelta ? e.wheelDelta : -e.deltaY) > 0 ? 1 : -1;
@@ -322,74 +238,15 @@ const handleMouseWheel = e => {
   const zoomFactor = 1 + zoomSpeed * delta;
   scale *= zoomFactor;
   drawImage();
-};
+});
 
-const handleTouchStart = e => {
-  if (forceStretchMode) return;
-  if (e.touches.length === 1) {
-    lastTouchX = e.touches[0].clientX;
-    lastTouchY = e.touches[0].clientY;
-  } else if (e.touches.length === 2) {
-    lastTouchDistance = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-  }
-};
-
-const handleTouchMove = e => {
-  if (forceStretchMode) return;
-  if (e.touches.length === 1) {
-    e.preventDefault();
-    const tx = e.touches[0].clientX;
-    const ty = e.touches[0].clientY;
-    offsetX += tx - lastTouchX;
-    offsetY += ty - lastTouchY;
-    lastTouchX = tx; lastTouchY = ty;
-    drawImage();
-  } else if (e.touches.length === 2) {
-    e.preventDefault();
-    const touchDistance = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-    const zoomFactor = touchDistance / (lastTouchDistance || touchDistance);
-    scale *= zoomFactor;
-    lastTouchDistance = touchDistance;
-    drawImage();
-  }
-};
-
-const handleTouchEnd = () => { lastTouchDistance = 0; };
-
-// download
-const downloadCanvas = () => {
-  const link = document.createElement('a');
-  link.download = 'resized.webp';
-  link.href = canvas.toDataURL('image/webp', 0.5);
-  link.click();
-};
-
-// --- events binding ---
+// --- buttons binding ---
 imageInput.addEventListener('change', handleFileChange);
-document.addEventListener('paste', handlePaste);
-
-canvas.addEventListener('mousedown', handleMouseDown);
-canvas.addEventListener('mousemove', handleMouseMove);
-document.addEventListener('mouseup', handleMouseUp);
-canvas.addEventListener('wheel', handleMouseWheel);
-
-canvas.addEventListener('touchstart', handleTouchStart, {passive:false});
-canvas.addEventListener('touchmove', handleTouchMove, {passive:false});
-canvas.addEventListener('touchend', handleTouchEnd);
-
 stretchButton.addEventListener('click', fitByStretch);
 fitLongestSideButton.addEventListener('click', fitOnLongestSide);
 centerButton.addEventListener('click', centerImage);
 forceStretchButton.addEventListener('click', forceStretch);
 fillCanvasButton.addEventListener('click', fillCanvas);
-downloadCanvasButton.addEventListener('click', downloadCanvas);
-
 toggleBorder.addEventListener('change', drawImage);
 toggleLogo.addEventListener('change', drawImage);
 toggleBg.addEventListener('change', drawImage);
@@ -401,6 +258,36 @@ logoPosition.addEventListener('change', drawImage);
 
 bgImage.onload = drawImage;
 logo.onload = drawImage;
+
+// --- Download with metadata ---
+document.getElementById("downloadWithMeta").addEventListener("click", async () => {
+  const title = document.getElementById("titleInput").value.trim();
+  const caption = document.getElementById("captionInput").value.trim();
+
+  if (!title && !caption) {
+    alert("Please enter a title or caption before downloading.");
+    return;
+  }
+
+  const blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", 0.9));
+  const arrayBuffer = await blob.arrayBuffer();
+  const uint8 = new Uint8Array(arrayBuffer);
+
+  await initWasm();
+  const exiftool = new ExifTool();
+
+  const withMeta = await exiftool.write(uint8, {
+    "XMP-dc:Title": title,
+    "XMP-dc:Description": caption,
+    "IPTC:Caption-Abstract": caption
+  });
+
+  const outBlob = new Blob([withMeta], { type: "image/jpeg" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(outBlob);
+  a.download = "canvas-with-meta.jpg";
+  a.click();
+});
 
 drawImage();
 </script>
