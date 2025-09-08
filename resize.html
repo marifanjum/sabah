@@ -103,14 +103,8 @@ let bgImage = new Image();
 bgImage.src = "image-bg.png";
 
 let offsetX = 0, offsetY = 0;
-let isDragging = false;
-let startX = 0, startY = 0;
 let scale = 1;
 let forceStretchMode = false;
-
-let lastTouchDistance = 0;
-let lastTouchX = 0;
-let lastTouchY = 0;
 
 // --- image load / paste handlers ---
 const handleFileChange = e => {
@@ -129,6 +123,23 @@ const loadImage = src => {
   image.src = src;
 };
 
+// support paste event
+document.addEventListener("paste", e => {
+  if (e.clipboardData) {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        const file = items[i].getAsFile();
+        const reader = new FileReader();
+        reader.onload = ev => loadImage(ev.target.result);
+        reader.readAsDataURL(file);
+        e.preventDefault();
+        return;
+      }
+    }
+  }
+});
+
 // --- utility: create a canvas gradient from direction ---
 function createCanvasGradient(direction, colorA, colorB) {
   let x0=0, y0=0, x1=0, y1=0;
@@ -141,7 +152,6 @@ function createCanvasGradient(direction, colorA, colorB) {
     case 'tr-bl':          x0 = canvas.width; y0 = 0; x1 = 0; y1 = canvas.height; break;
     case 'bl-tr':          x0 = 0; y0 = canvas.height; x1 = canvas.width; y1 = 0; break;
     case 'br-tl':          x0 = canvas.width; y0 = canvas.height; x1 = 0; y1 = 0; break;
-    default:               x0 = 0; y0 = 0; x1 = 0; y1 = canvas.height;
   }
   const g = ctx.createLinearGradient(x0, y0, x1, y1);
   g.addColorStop(0, colorA);
