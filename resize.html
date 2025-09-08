@@ -12,6 +12,7 @@
   label { font-size: 16px; margin-right: 12px; display: inline-block; }
   .small { font-size: 14px; margin-left: 6px; }
   .controls-row { margin-bottom: 10px; }
+  input[type="text"] { padding: 6px; font-size: 16px; margin-left: 10px; width: 250px; }
 </style>
 </head>
 <body>
@@ -26,7 +27,6 @@
     <button id="centerButton">Center Image</button>
     <button id="forceStretchButton">Force Stretch to Fit</button>
     <button id="fillCanvasButton">Auto Zoom to Fill</button>
-    <button id="downloadCanvasButton">Download Resized Image</button>
   </div>
 
   <div class="controls-row">
@@ -46,7 +46,7 @@
   </div>
 
   <div class="controls-row">
-      <label>Gradient Color Right: <input type="color" id="gradColor2" value="#ffffff"></label>
+    <label>Gradient Color Right: <input type="color" id="gradColor2" value="#ffffff"></label>
     <label>Gradient Color Left: <input type="color" id="gradColor1" value="#000000"></label>
   
     <label>Direction:
@@ -67,6 +67,11 @@
     <input type="file" id="imageInput" accept="image/*">
   </div>
 
+  <div class="controls-row">
+    <label>Filename: <input type="text" id="fileNameInput" placeholder="Enter filename (optional)"></label>
+    <button id="downloadCanvasButton">Download Resized Image</button>
+  </div>
+
 <script>
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
@@ -78,6 +83,7 @@ const centerButton = document.getElementById('centerButton');
 const forceStretchButton = document.getElementById('forceStretchButton');
 const fillCanvasButton = document.getElementById('fillCanvasButton');
 const downloadCanvasButton = document.getElementById('downloadCanvasButton');
+const fileNameInput = document.getElementById('fileNameInput');
 
 const toggleBorder = document.getElementById('toggleBorder');
 const toggleLogo = document.getElementById('toggleLogo');
@@ -121,20 +127,6 @@ const loadImage = src => {
     fitImageToCanvas();
   };
   image.src = src;
-};
-
-const handlePaste = event => {
-  const items = (event.clipboardData || event.originalEvent && event.originalEvent.clipboardData).items;
-  for (let i=0; i<items.length; i++){
-    const item = items[i];
-    if (item.kind === 'file' && item.type.indexOf('image') !== -1){
-      const blob = item.getAsFile();
-      const reader = new FileReader();
-      reader.onload = ev => loadImage(ev.target.result);
-      reader.readAsDataURL(blob);
-      break;
-    }
-  }
 };
 
 // --- utility: create a canvas gradient from direction ---
@@ -206,14 +198,7 @@ const fitImageToCanvas = () => {
   drawImage();
 };
 
-const fitByStretch = () => {
-  if (!image) return;
-  offsetX = 0; offsetY = 0;
-  scale = Math.min(canvas.width / image.width, canvas.height / image.height);
-  forceStretchMode = false;
-  drawImage();
-};
-
+const fitByStretch = () => { fitImageToCanvas(); };
 const fitOnLongestSide = () => {
   if (!image) return;
   offsetX = 0; offsetY = 0;
@@ -222,7 +207,6 @@ const fitOnLongestSide = () => {
   forceStretchMode = false;
   drawImage();
 };
-
 const centerImage = () => {
   if (!image) return;
   offsetX = (canvas.width - image.width * scale) / 2;
@@ -230,13 +214,7 @@ const centerImage = () => {
   forceStretchMode = false;
   drawImage();
 };
-
-const forceStretch = () => {
-  forceStretchMode = true;
-  drawImage();
-};
-
-// --- new function: auto zoom to fill canvas ---
+const forceStretch = () => { forceStretchMode = true; drawImage(); };
 const fillCanvas = () => {
   if (!image) return;
   scale = Math.max(canvas.width / image.width, canvas.height / image.height);
@@ -246,92 +224,20 @@ const fillCanvas = () => {
   drawImage();
 };
 
-// --- mouse/touch interaction ---
-const handleMouseDown = e => {
-  if (forceStretchMode) return;
-  isDragging = true;
-  startX = e.clientX - offsetX;
-  startY = e.clientY - offsetY;
-};
-
-const handleMouseMove = e => {
-  if (!isDragging || forceStretchMode) return;
-  offsetX = e.clientX - startX;
-  offsetY = e.clientY - startY;
-  drawImage();
-};
-
-const handleMouseUp = () => { isDragging = false; };
-
-const handleMouseWheel = e => {
-  if (forceStretchMode) return;
-  e.preventDefault();
-  const delta = (e.wheelDelta ? e.wheelDelta : -e.deltaY) > 0 ? 1 : -1;
-  const zoomSpeed = 0.1;
-  const zoomFactor = 1 + zoomSpeed * delta;
-  scale *= zoomFactor;
-  drawImage();
-};
-
-const handleTouchStart = e => {
-  if (forceStretchMode) return;
-  if (e.touches.length === 1) {
-    lastTouchX = e.touches[0].clientX;
-    lastTouchY = e.touches[0].clientY;
-  } else if (e.touches.length === 2) {
-    lastTouchDistance = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-  }
-};
-
-const handleTouchMove = e => {
-  if (forceStretchMode) return;
-  if (e.touches.length === 1) {
-    e.preventDefault();
-    const tx = e.touches[0].clientX;
-    const ty = e.touches[0].clientY;
-    offsetX += tx - lastTouchX;
-    offsetY += ty - lastTouchY;
-    lastTouchX = tx; lastTouchY = ty;
-    drawImage();
-  } else if (e.touches.length === 2) {
-    e.preventDefault();
-    const touchDistance = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-    const zoomFactor = touchDistance / (lastTouchDistance || touchDistance);
-    scale *= zoomFactor;
-    lastTouchDistance = touchDistance;
-    drawImage();
-  }
-};
-
-const handleTouchEnd = () => { lastTouchDistance = 0; };
-
 // download
 const downloadCanvas = () => {
+  let filename = fileNameInput.value.trim();
+  if (filename === "") filename = "resized";
+  if (!filename.toLowerCase().endsWith(".webp")) filename += ".webp";
+
   const link = document.createElement('a');
-  link.download = 'resized.webp';
-  link.href = canvas.toDataURL('image/webp', 0.5);
+  link.download = filename;
+  link.href = canvas.toDataURL('image/webp', 0.95);
   link.click();
 };
 
 // --- events binding ---
 imageInput.addEventListener('change', handleFileChange);
-document.addEventListener('paste', handlePaste);
-
-canvas.addEventListener('mousedown', handleMouseDown);
-canvas.addEventListener('mousemove', handleMouseMove);
-document.addEventListener('mouseup', handleMouseUp);
-canvas.addEventListener('wheel', handleMouseWheel);
-
-canvas.addEventListener('touchstart', handleTouchStart, {passive:false});
-canvas.addEventListener('touchmove', handleTouchMove, {passive:false});
-canvas.addEventListener('touchend', handleTouchEnd);
-
 stretchButton.addEventListener('click', fitByStretch);
 fitLongestSideButton.addEventListener('click', fitOnLongestSide);
 centerButton.addEventListener('click', centerImage);
