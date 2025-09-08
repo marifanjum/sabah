@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Social Media Image Generator</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.css">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -117,6 +117,8 @@
     </div>
   </div>
 
+  <!-- New input for filename -->
+  <input id="filenameInput" type="text" placeholder="Enter file name (without extension)">
   <button id="downloadBtn">Download Final Image</button>
 
   <script>
@@ -137,6 +139,7 @@
     const firstLineCountControl = document.getElementById("firstLineCount");
     const textYControl = document.getElementById("textY");
     const downloadBtn = document.getElementById("downloadBtn");
+    const filenameInput = document.getElementById("filenameInput");
 
     const toggleBorder = document.getElementById("toggleBorder");
     const toggleLogo = document.getElementById("toggleLogo");
@@ -279,9 +282,11 @@
     canvas.addEventListener("mouseup", () => { isDragging = false; });
     canvas.addEventListener("mouseleave", () => { isDragging = false; });
 
+    // Download with custom filename
     downloadBtn.addEventListener("click", () => {
+      const filename = filenameInput.value.trim() || "final-image";
       const link = document.createElement("a");
-      link.download = "final-image.png";
+      link.download = filename + ".png";
       link.href = canvas.toDataURL("image/png");
       link.click();
     });
@@ -327,4 +332,3 @@
   </script>
 </body>
 </html>
-
