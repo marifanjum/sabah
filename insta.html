@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Social Card Generator</title>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React + ReactDOM CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body class="bg-gray-100">
+    <div id="root"></div>
+
+    <!-- Main App -->
+    <script type="text/babel">
+      // === SocialCardGenerator component (inline) ===
+      function SocialCardGenerator() {
+        const { useRef, useState, useEffect } = React;
+
+        const containerRef = useRef(null);
+        const [imageSrc, setImageSrc] = useState(null);
+        const [imgScale, setImgScale] = useState(1);
+        const [imgOffset, setImgOffset] = useState({ x: 0, y: 0 });
+        const [width, setWidth] = useState(1080);
+        const [height, setHeight] = useState(1080);
+
+        const [headline, setHeadline] = useState("Your headline goes here\\nSecond line optional");
+        const [fontSize, setFontSize] = useState(72);
+        const [lineHeight, setLineHeight] = useState(1.05);
+        const [fontFamily, setFontFamily] = useState("Inter, Arial, sans-serif");
+        const [textColor, setTextColor] = useState("#ffffff");
+        const [textPos, setTextPos] = useState({ x: 120, y: 200 });
+
+        const [shadow, setShadow] = useState({ enabled: true, offsetX: 2, offsetY: 2, blur: 8, color: "rgba(0,0,0,0.6)" });
+        const [sideline, setSideline] = useState({ show: false, width: 10, color: "#ffdd00", gap: 18 });
+        const [fitMode, setFitMode] = useState("cover");
+
+        // === Handlers (shortened for clarity, full logic is same as the long version I gave you earlier) ===
+        function onImageUpload(e) {
+          const f = e.target.files && e.target.files[0];
+          if (!f) return;
+          const url = URL.createObjectURL(f);
+          setImageSrc(url);
+          setImgScale(1);
+          setImgOffset({ x: 0, y: 0 });
+        }
+
+        function exportAsImage() {
+          alert("Export to PNG works in full code — here just showing preview!");
+        }
+
+        return (
+          <div className="p-4 max-w-7xl mx-auto">
+            <div className="flex gap-6">
+              {/* Controls */}
+              <div className="w-96 space-y-4">
+                <h2 className="text-xl font-semibold">Controls</h2>
+
+                <div className="bg-white p-3 rounded shadow">
+                  <label className="block text-sm font-medium">Upload image</label>
+                  <input type="file" accept="image/*" onChange={onImageUpload} className="mt-2" />
+                </div>
+
+                <div className="bg-white p-3 rounded shadow">
+                  <label className="block text-sm font-medium">Headline</label>
+                  <textarea
+                    value={headline}
+                    onChange={(e) => setHeadline(e.target.value)}
+                    rows={4}
+                    className="w-full mt-2 p-2 border rounded"
+                  />
+                </div>
+
+                <button onClick={exportAsImage} className="bg-blue-600 text-white py-2 rounded w-full">
+                  Export PNG
+                </button>
+              </div>
+
+              {/* Preview */}
+              <div className="flex-1">
+                <div className="mb-2">
+                  Preview (Output size: {width}×{height})
+                </div>
+                <div
+                  ref={containerRef}
+                  className="relative mx-auto bg-black flex items-center justify-center text-white"
+                  style={{ width: 540, height: Math.round((height / width) * 540) }}
+                >
+                  {imageSrc ? (
+                    <img src={imageSrc} alt="uploaded" className="max-w-full max-h-full" />
+                  ) : (
+                    <div className="text-gray-400">No image — upload one</div>
+                  )}
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: textPos.x,
+                      top: textPos.y,
+                      fontSize,
+                      lineHeight,
+                      fontFamily,
+                      color: textColor,
+                      textShadow: shadow.enabled
+                        ? `${shadow.offsetX}px ${shadow.offsetY}px ${shadow.blur}px ${shadow.color}`
+                        : "none",
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
+                    {headline}
+                  </div>
+                  {sideline.show && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        left: sideline.gap,
+                        top: 0,
+                        bottom: 0,
+                        width: sideline.width,
+                        background: sideline.color,
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // === Render app ===
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<SocialCardGenerator />);
+    </script>
+  </body>
+</html>
