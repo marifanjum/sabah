@@ -3,20 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <title>Social Card Generator</title>
-    <!-- Tailwind -->
+    <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React + ReactDOM -->
+    <!-- React + ReactDOM CDN -->
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <!-- Babel -->
+    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Example font embed: Pangea (replace with your own woff2 for production) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet" />
+    <style>
+      @font-face {
+        font-family: "Pangea";
+        src: url("pangea.woff2") format("woff2"); /* Put your actual font file in repo */
+        font-weight: normal;
+        font-style: normal;
+      }
+      body {
+        font-family: Inter, Arial, sans-serif;
+      }
+    </style>
   </head>
   <body class="bg-gray-100">
     <div id="root"></div>
 
     <script type="text/babel">
       function SocialCardGenerator() {
-        const { useState, useRef } = React;
+        const { useRef, useState } = React;
 
         const containerRef = useRef(null);
         const [imageSrc, setImageSrc] = useState(null);
@@ -25,29 +39,30 @@
         const [width, setWidth] = useState(1080);
         const [height, setHeight] = useState(1080);
 
-        const [headline, setHeadline] = useState("Your headline goes here\nSecond line optional");
+        const [headline, setHeadline] = useState("Your headline goes here");
         const [fontSize, setFontSize] = useState(72);
         const [lineHeight, setLineHeight] = useState(1.2);
-        const [fontFamily, setFontFamily] = useState("Inter, Arial, sans-serif");
+        const [fontFamily, setFontFamily] = useState("Pangea, Inter, Arial, sans-serif");
         const [textColor, setTextColor] = useState("#ffffff");
-        const [textPos, setTextPos] = useState({ x: 100, y: 200 });
+        const [textPos, setTextPos] = useState({ x: 120, y: 200 });
+        const [direction, setDirection] = useState("ltr");
 
         const [shadow, setShadow] = useState({
           enabled: true,
           offsetX: 2,
           offsetY: 2,
-          blur: 6,
-          color: "rgba(0,0,0,0.6)",
+          blur: 8,
+          color: "rgba(0,0,0,0.6)"
         });
 
         const [sideline, setSideline] = useState({
           show: false,
           width: 10,
           color: "#ffdd00",
-          gap: 18,
+          gap: 18
         });
 
-        const [fitMode, setFitMode] = useState("cover");
+        const [fileName, setFileName] = useState("social-card.png");
 
         function onImageUpload(e) {
           const f = e.target.files && e.target.files[0];
@@ -58,113 +73,83 @@
           setImgOffset({ x: 0, y: 0 });
         }
 
-        // --- Dragging image ---
-        function startDrag(e) {
-          e.preventDefault();
-          const startX = e.clientX;
-          const startY = e.clientY;
-          const initOffset = { ...imgOffset };
-
-          function onMove(ev) {
-            setImgOffset({
-              x: initOffset.x + (ev.clientX - startX),
-              y: initOffset.y + (ev.clientY - startY),
-            });
-          }
-          function onUp() {
-            window.removeEventListener("mousemove", onMove);
-            window.removeEventListener("mouseup", onUp);
-          }
-
-          window.addEventListener("mousemove", onMove);
-          window.addEventListener("mouseup", onUp);
-        }
-
-        // --- Dragging text ---
-        function startDragText(e) {
-          e.preventDefault();
-          const startX = e.clientX;
-          const startY = e.clientY;
-          const initPos = { ...textPos };
-
-          function onMove(ev) {
-            setTextPos({
-              x: initPos.x + (ev.clientX - startX),
-              y: initPos.y + (ev.clientY - startY),
-            });
-          }
-          function onUp() {
-            window.removeEventListener("mousemove", onMove);
-            window.removeEventListener("mouseup", onUp);
-          }
-
-          window.addEventListener("mousemove", onMove);
-          window.addEventListener("mouseup", onUp);
-        }
-
-        // --- Export ---
         function exportAsImage() {
           const canvas = document.createElement("canvas");
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext("2d");
 
+          // background
           ctx.fillStyle = "#000";
           ctx.fillRect(0, 0, width, height);
 
+          // image
           if (imageSrc) {
             const img = new Image();
             img.crossOrigin = "anonymous";
-            img.src = imageSrc;
             img.onload = () => {
-              let drawW, drawH;
-              if (fitMode === "cover") {
-                const scale = Math.max(width / img.width, height / img.height);
-                drawW = img.width * scale * imgScale;
-                drawH = img.height * scale * imgScale;
-              } else if (fitMode === "contain") {
-                const scale = Math.min(width / img.width, height / img.height);
-                drawW = img.width * scale * imgScale;
-                drawH = img.height * scale * imgScale;
-              } else {
-                drawW = width * imgScale;
-                drawH = height * imgScale;
-              }
-              const dx = (width - drawW) / 2 + imgOffset.x;
-              const dy = (height - drawH) / 2 + imgOffset.y;
-              ctx.drawImage(img, dx, dy, drawW, drawH);
+              const iw = img.width;
+              const ih = img.height;
+              let dw = width * imgScale;
+              let dh = (ih / iw) * dw;
+              ctx.drawImage(img, imgOffset.x, imgOffset.y, dw, dh);
 
-              if (sideline.show) {
-                ctx.fillStyle = sideline.color;
-                ctx.fillRect(sideline.gap, 0, sideline.width, height);
-              }
-
-              ctx.font = `${fontSize}px ${fontFamily}`;
-              ctx.fillStyle = textColor;
-              ctx.textBaseline = "top";
-              ctx.textAlign = "left";
-
-              const lines = headline.split("\n");
-              let y = textPos.y;
-              lines.forEach((line) => {
-                if (shadow.enabled) {
-                  ctx.shadowColor = shadow.color;
-                  ctx.shadowBlur = shadow.blur;
-                  ctx.shadowOffsetX = shadow.offsetX;
-                  ctx.shadowOffsetY = shadow.offsetY;
-                } else {
-                  ctx.shadowColor = "transparent";
-                }
-                ctx.fillText(line, textPos.x, y);
-                y += fontSize * lineHeight;
-              });
-
-              const link = document.createElement("a");
-              link.download = "social-card.png";
-              link.href = canvas.toDataURL("image/png");
-              link.click();
+              drawTextAndLine(ctx);
+              downloadCanvas(canvas);
             };
+            img.src = imageSrc;
+          } else {
+            drawTextAndLine(ctx);
+            downloadCanvas(canvas);
           }
+        }
+
+        function drawTextAndLine(ctx) {
+          ctx.font = fontSize + "px " + fontFamily;
+          ctx.fillStyle = textColor;
+          ctx.textBaseline = "top";
+          ctx.direction = direction;
+
+          if (shadow.enabled) {
+            ctx.shadowOffsetX = shadow.offsetX;
+            ctx.shadowOffsetY = shadow.offsetY;
+            ctx.shadowBlur = shadow.blur;
+            ctx.shadowColor = shadow.color;
+          } else {
+            ctx.shadowColor = "transparent";
+          }
+
+          const lines = headline.split("\n");
+          lines.forEach((line, i) => {
+            ctx.fillText(line, textPos.x, textPos.y + i * fontSize * lineHeight);
+          });
+
+          if (sideline.show) {
+            ctx.shadowColor = "transparent"; // no shadow on sidebar
+            ctx.fillStyle = sideline.color;
+            if (direction === "ltr") {
+              ctx.fillRect(
+                textPos.x - sideline.gap - sideline.width,
+                textPos.y,
+                sideline.width,
+                lines.length * fontSize * lineHeight
+              );
+            } else {
+              ctx.fillRect(
+                textPos.x + ctx.measureText(lines[0]).width + sideline.gap,
+                textPos.y,
+                sideline.width,
+                lines.length * fontSize * lineHeight
+              );
+            }
+          }
+        }
+
+        function downloadCanvas(canvas) {
+          const link = document.createElement("a");
+          link.download = fileName || "social-card.png";
+          link.href = canvas.toDataURL("image/png");
+          link.click();
         }
 
         return (
@@ -174,174 +159,48 @@
               <div className="w-96 space-y-4">
                 <h2 className="text-xl font-semibold">Controls</h2>
 
-                <div className="bg-white p-3 rounded shadow">
+                <div className="bg-white p-3 rounded shadow space-y-2">
                   <label className="block text-sm font-medium">Upload image</label>
-                  <input type="file" accept="image/*" onChange={onImageUpload} className="mt-2" />
+                  <input type="file" accept="image/*" onChange={onImageUpload} />
                 </div>
 
-                <div className="bg-white p-3 rounded shadow">
+                <div className="bg-white p-3 rounded shadow space-y-2">
                   <label className="block text-sm font-medium">Headline</label>
                   <textarea
                     value={headline}
                     onChange={(e) => setHeadline(e.target.value)}
-                    rows={4}
-                    className="w-full mt-2 p-2 border rounded"
+                    rows={3}
+                    className="w-full p-2 border rounded"
                   />
-                  <label className="block text-sm mt-2">Font size</label>
-                  <input
-                    type="number"
-                    value={fontSize}
-                    onChange={(e) => setFontSize(parseInt(e.target.value))}
-                    className="w-full border p-1 rounded"
-                  />
-                  <label className="block text-sm mt-2">Line height</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={lineHeight}
-                    onChange={(e) => setLineHeight(parseFloat(e.target.value))}
-                    className="w-full border p-1 rounded"
-                  />
-                  <label className="block text-sm mt-2">Text color</label>
-                  <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} />
-                </div>
-
-                <div className="bg-white p-3 rounded shadow">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={shadow.enabled}
-                      onChange={(e) => setShadow({ ...shadow, enabled: e.target.checked })}
-                    />
-                    <span className="ml-2">Enable shadow</span>
-                  </label>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    <label className="text-sm">
-                      OffsetX
-                      <input
-                        type="number"
-                        value={shadow.offsetX}
-                        onChange={(e) => setShadow({ ...shadow, offsetX: parseInt(e.target.value) })}
-                        className="w-full border p-1 rounded"
-                      />
-                    </label>
-                    <label className="text-sm">
-                      OffsetY
-                      <input
-                        type="number"
-                        value={shadow.offsetY}
-                        onChange={(e) => setShadow({ ...shadow, offsetY: parseInt(e.target.value) })}
-                        className="w-full border p-1 rounded"
-                      />
-                    </label>
-                    <label className="text-sm">
-                      Blur
-                      <input
-                        type="number"
-                        value={shadow.blur}
-                        onChange={(e) => setShadow({ ...shadow, blur: parseInt(e.target.value) })}
-                        className="w-full border p-1 rounded"
-                      />
-                    </label>
-                    <label className="text-sm">
-                      Color
-                      <input
-                        type="color"
-                        value={shadow.color}
-                        onChange={(e) => setShadow({ ...shadow, color: e.target.value })}
-                        className="w-full border p-1 rounded"
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                <div className="bg-white p-3 rounded shadow">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={sideline.show}
-                      onChange={(e) => setSideline({ ...sideline, show: e.target.checked })}
-                    />
-                    <span className="ml-2">Show sideline</span>
-                  </label>
-                  {sideline.show && (
-                    <div className="mt-2 space-y-2">
-                      <label className="block text-sm">
-                        Width
-                        <input
-                          type="number"
-                          value={sideline.width}
-                          onChange={(e) => setSideline({ ...sideline, width: parseInt(e.target.value) })}
-                          className="w-full border p-1 rounded"
-                        />
-                      </label>
-                      <label className="block text-sm">
-                        Gap
-                        <input
-                          type="number"
-                          value={sideline.gap}
-                          onChange={(e) => setSideline({ ...sideline, gap: parseInt(e.target.value) })}
-                          className="w-full border p-1 rounded"
-                        />
-                      </label>
-                      <label className="block text-sm">
-                        Color
-                        <input
-                          type="color"
-                          value={sideline.color}
-                          onChange={(e) => setSideline({ ...sideline, color: e.target.value })}
-                          className="w-full border p-1 rounded"
-                        />
-                      </label>
-                    </div>
-                  )}
-                </div>
-
-                <div className="bg-white p-3 rounded shadow">
-                  <label className="block text-sm">Fit mode</label>
+                  <label className="block text-sm font-medium">Font family</label>
                   <select
-                    value={fitMode}
-                    onChange={(e) => setFitMode(e.target.value)}
-                    className="w-full border p-1 rounded"
+                    value={fontFamily}
+                    onChange={(e) => setFontFamily(e.target.value)}
+                    className="w-full p-2 border rounded"
                   >
-                    <option value="cover">Cover</option>
-                    <option value="contain">Contain</option>
-                    <option value="stretch">Stretch</option>
+                    <option value="Pangea, Inter, Arial, sans-serif">Pangea</option>
+                    <option value="Jameel Noori Nastaleeq, serif">Jameel Noori Nastaleeq</option>
+                    <option value="Inter, Arial, sans-serif">Inter</option>
                   </select>
-                  <label className="block text-sm mt-2">Zoom</label>
-                  <input
-                    type="range"
-                    min="0.5"
-                    max="3"
-                    step="0.05"
-                    value={imgScale}
-                    onChange={(e) => setImgScale(parseFloat(e.target.value))}
-                    className="w-full"
-                  />
+                  <label className="block text-sm font-medium">Text direction</label>
+                  <select
+                    value={direction}
+                    onChange={(e) => setDirection(e.target.value)}
+                    className="w-full p-2 border rounded"
+                  >
+                    <option value="ltr">Left-to-Right</option>
+                    <option value="rtl">Right-to-Left</option>
+                  </select>
                 </div>
 
-                <div className="bg-white p-3 rounded shadow">
-                  <label className="block text-sm">Canvas size</label>
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      onClick={() => {
-                        setWidth(1080);
-                        setHeight(1080);
-                      }}
-                      className="bg-gray-200 px-3 py-1 rounded"
-                    >
-                      Instagram Square
-                    </button>
-                    <button
-                      onClick={() => {
-                        setWidth(1080);
-                        setHeight(1920);
-                      }}
-                      className="bg-gray-200 px-3 py-1 rounded"
-                    >
-                      Instagram Story
-                    </button>
-                  </div>
+                <div className="bg-white p-3 rounded shadow space-y-2">
+                  <label className="block text-sm font-medium">Export file name</label>
+                  <input
+                    type="text"
+                    value={fileName}
+                    onChange={(e) => setFileName(e.target.value)}
+                    className="w-full p-2 border rounded"
+                  />
                 </div>
 
                 <button
@@ -354,48 +213,22 @@
 
               {/* Preview */}
               <div className="flex-1">
-                <div className="mb-2">
-                  Preview (Output size: {width}×{height})
-                </div>
+                <div className="mb-2">Preview</div>
                 <div
                   ref={containerRef}
-                  className="relative mx-auto bg-black overflow-hidden"
+                  className="relative mx-auto bg-black flex items-center justify-center text-white"
                   style={{ width: 540, height: Math.round((height / width) * 540) }}
                 >
-                  {imageSrc && (
+                  {imageSrc ? (
                     <img
                       src={imageSrc}
-                      onMouseDown={startDrag}
-                      style={{
-                        position: "absolute",
-                        left: imgOffset.x,
-                        top: imgOffset.y,
-                        transform: `scale(${imgScale})`,
-                        transformOrigin: "center",
-                        width: fitMode === "stretch" ? "100%" : "auto",
-                        height: fitMode === "stretch" ? "100%" : "auto",
-                        maxWidth: fitMode !== "stretch" ? "none" : "100%",
-                        maxHeight: fitMode !== "stretch" ? "none" : "100%",
-                        cursor: "grab",
-                      }}
+                      alt="uploaded"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
+                  ) : (
+                    <div className="text-gray-400">No image — upload one</div>
                   )}
-
-                  {sideline.show && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        left: sideline.gap,
-                        top: 0,
-                        bottom: 0,
-                        width: sideline.width,
-                        background: sideline.color,
-                      }}
-                    />
-                  )}
-
                   <div
-                    onMouseDown={startDragText}
                     style={{
                       position: "absolute",
                       left: textPos.x,
@@ -404,15 +237,35 @@
                       lineHeight,
                       fontFamily,
                       color: textColor,
+                      direction: direction,
                       textShadow: shadow.enabled
                         ? `${shadow.offsetX}px ${shadow.offsetY}px ${shadow.blur}px ${shadow.color}`
                         : "none",
-                      whiteSpace: "pre-wrap",
-                      cursor: "move",
+                      whiteSpace: "pre-wrap"
                     }}
                   >
                     {headline}
                   </div>
+                  {sideline.show && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: textPos.y,
+                        bottom: "auto",
+                        width: sideline.width,
+                        height: "auto",
+                        background: sideline.color,
+                        left:
+                          direction === "ltr"
+                            ? textPos.x - sideline.gap - sideline.width
+                            : "auto",
+                        right:
+                          direction === "rtl"
+                            ? 540 - textPos.x + sideline.gap
+                            : "auto"
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             </div>
