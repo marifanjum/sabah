@@ -1,744 +1,362 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Social Card Generator</title>
+<head>
+  <meta charset="UTF-8" />
+  <title>Social Card Generator</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React + ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Inter font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    .draggable {
+      cursor: move;
+      user-select: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <div id="root"></div>
 
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React + ReactDOM -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <!-- Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
 
-    <!-- Optional local Pangea font: put pangea.woff2 next to index.html if you want it to load -->
-    <style>
-      @font-face {
-        font-family: "Pangea";
-        src: url("pangea.woff2") format("woff2");
-        font-weight: normal;
-        font-style: normal;
-      }
-      /* small defensive rule for Jameel — if user has it installed it'll be used */
-      .urdu { font-family: "Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif; }
-    </style>
-  </head>
+    function SocialCardGenerator() {
+      const [image, setImage] = useState(null);
+      const [scale, setScale] = useState(1);
+      const [offset, setOffset] = useState({ x: 0, y: 0 });
+      const [dragging, setDragging] = useState(false);
+      const [startPos, setStartPos] = useState(null);
 
-  <body class="bg-gray-100">
-    <div id="root"></div>
+      const [headline, setHeadline] = useState("Your headline here");
+      const [headlinePos, setHeadlinePos] = useState({ x: 50, y: 50 });
+      const [headlineDragging, setHeadlineDragging] = useState(false);
+      const [headlineStart, setHeadlineStart] = useState(null);
 
-    <script type="text/babel">
-      function SocialCardGenerator() {
-        const { useState, useRef, useEffect } = React;
+      const [fontSize, setFontSize] = useState(32);
+      const [lineHeight, setLineHeight] = useState(1.2);
+      const [textColor, setTextColor] = useState("#000000");
+      const [shadow, setShadow] = useState(false);
+      const [shadowColor, setShadowColor] = useState("#000000");
+      const [shadowBlur, setShadowBlur] = useState(4);
+      const [shadowOffsetX, setShadowOffsetX] = useState(2);
+      const [shadowOffsetY, setShadowOffsetY] = useState(2);
 
-        // Refs & preview container
-        const containerRef = useRef(null);
+      const [sideline, setSideline] = useState(false);
+      const [sidelineColor, setSidelineColor] = useState("#000000");
+      const [sidelineWidth, setSidelineWidth] = useState(4);
+      const [sidelineGap, setSidelineGap] = useState(8);
 
-        // Image layer
-        const [imageSrc, setImageSrc] = useState(null);
-        const [imgScale, setImgScale] = useState(1);
-        const [imgOffset, setImgOffset] = useState({ x: 0, y: 0 });
+      const [fitMode, setFitMode] = useState("cover");
+      const [canvasSize, setCanvasSize] = useState({ w: 1080, h: 1080 });
 
-        // Canvas size (export)
-        const [width, setWidth] = useState(1080);
-        const [height, setHeight] = useState(1080);
+      const [fontFamily, setFontFamily] = useState("Jameel Noori Nastaleeq");
+      const [direction, setDirection] = useState("ltr");
 
-        // Text layer
-        const [headline, setHeadline] = useState("آپ کی ہیڈ لائن یہاں آئے گی\nدوسری لائن");
-        const [fontSize, setFontSize] = useState(72);
-        const [lineHeight, setLineHeight] = useState(1.05);
-        const [fontFamily, setFontFamily] = useState("Jameel Noori Nastaleeq, serif");
-        const [textColor, setTextColor] = useState("#ffffff");
-        const [textPos, setTextPos] = useState({ x: 120, y: 200 });
-        const [direction, setDirection] = useState("rtl"); // ltr | rtl
+      const [filename, setFilename] = useState("social-card");
 
-        // Shadow
-        const [shadow, setShadow] = useState({
-          enabled: true,
-          offsetX: 2,
-          offsetY: 2,
-          blur: 8,
-          color: "rgba(0,0,0,0.6)",
-        });
+      const [showLogo, setShowLogo] = useState(false);
+      const [logoPosition, setLogoPosition] = useState("bottom-right");
 
-        // Sideline / blockquote
-        const [sideline, setSideline] = useState({
-          show: true,
-          width: 10,
-          color: "#ffdd00",
-          gap: 18,
-        });
+      const canvasRef = useRef();
 
-        // Fit mode
-        const [fitMode, setFitMode] = useState("cover"); // cover | contain | stretch
-
-        // Export filename
-        const [fileName, setFileName] = useState("social-card.png");
-
-        // Logo options
-        const [showLogo, setShowLogo] = useState(false);
-        const [logoCorner, setLogoCorner] = useState("br"); // tl, tr, bl, br
-        const [logoScale, setLogoScale] = useState(0.18); // fraction of canvas width (approx)
-
-        // Dragging state for image & text
-        const dragState = useRef({
-          draggingImage: false,
-          imageStart: { x: 0, y: 0, origX: 0, origY: 0 },
-          draggingText: false,
-          textStart: { x: 0, y: 0, origX: 0, origY: 0 },
-        });
-
-        // ========== image upload ==========
-        function onImageUpload(e) {
-          const f = e.target.files && e.target.files[0];
-          if (!f) return;
-          const url = URL.createObjectURL(f);
-          setImageSrc(url);
-          setImgScale(1);
-          setImgOffset({ x: 0, y: 0 });
+      const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (ev) => setImage(ev.target.result);
+          reader.readAsDataURL(file);
         }
+      };
 
-        // ========== pointer handlers (image) ==========
-        function onPointerDownImage(e) {
-          if (!imageSrc) return;
-          const p = dragState.current;
-          p.draggingImage = true;
-          p.imageStart = { x: e.clientX, y: e.clientY, origX: imgOffset.x, origY: imgOffset.y };
-          window.addEventListener("pointermove", onPointerMoveImage);
-          window.addEventListener("pointerup", onPointerUpImage);
+      const handleMouseDown = (e) => {
+        setDragging(true);
+        setStartPos({ x: e.clientX, y: e.clientY, ox: offset.x, oy: offset.y });
+      };
+      const handleMouseMove = (e) => {
+        if (dragging) {
+          const dx = e.clientX - startPos.x;
+          const dy = e.clientY - startPos.y;
+          setOffset({ x: startPos.ox + dx, y: startPos.oy + dy });
         }
-        function onPointerMoveImage(e) {
-          const p = dragState.current;
-          if (!p.draggingImage) return;
-          const dx = e.clientX - p.imageStart.x;
-          const dy = e.clientY - p.imageStart.y;
-          setImgOffset({ x: p.imageStart.origX + dx, y: p.imageStart.origY + dy });
+      };
+      const handleMouseUp = () => setDragging(false);
+
+      const handleHeadlineDown = (e) => {
+        e.stopPropagation();
+        setHeadlineDragging(true);
+        setHeadlineStart({ x: e.clientX, y: e.clientY, ox: headlinePos.x, oy: headlinePos.y });
+      };
+      const handleHeadlineMove = (e) => {
+        if (headlineDragging) {
+          const dx = e.clientX - headlineStart.x;
+          const dy = e.clientY - headlineStart.y;
+          setHeadlinePos({ x: headlineStart.ox + dx, y: headlineStart.oy + dy });
         }
-        function onPointerUpImage() {
-          const p = dragState.current;
-          p.draggingImage = false;
-          window.removeEventListener("pointermove", onPointerMoveImage);
-          window.removeEventListener("pointerup", onPointerUpImage);
-        }
+      };
+      const handleHeadlineUp = () => setHeadlineDragging(false);
 
-        // ========== pointer handlers (text drag) ==========
-        function onPointerDownText(e) {
-          // only left-click / primary
-          if (e.button !== 0) return;
-          const p = dragState.current;
-          p.draggingText = true;
-          p.textStart = { x: e.clientX, y: e.clientY, origX: textPos.x, origY: textPos.y };
-          window.addEventListener("pointermove", onPointerMoveText);
-          window.addEventListener("pointerup", onPointerUpText);
-        }
-        function onPointerMoveText(e) {
-          const p = dragState.current;
-          if (!p.draggingText) return;
-          const dx = e.clientX - p.textStart.x;
-          const dy = e.clientY - p.textStart.y;
-          setTextPos({ x: p.textStart.origX + dx, y: p.textStart.origY + dy });
-        }
-        function onPointerUpText() {
-          const p = dragState.current;
-          p.draggingText = false;
-          window.removeEventListener("pointermove", onPointerMoveText);
-          window.removeEventListener("pointerup", onPointerUpText);
-        }
+      useEffect(() => {
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+        window.addEventListener("mousemove", handleHeadlineMove);
+        window.addEventListener("mouseup", handleHeadlineUp);
+        return () => {
+          window.removeEventListener("mousemove", handleMouseMove);
+          window.removeEventListener("mouseup", handleMouseUp);
+          window.removeEventListener("mousemove", handleHeadlineMove);
+          window.removeEventListener("mouseup", handleHeadlineUp);
+        };
+      });
 
-        // ensure no native drag
-        useEffect(() => {
-          const el = containerRef.current;
-          if (!el) return;
-          el.ondragstart = (ev) => ev.preventDefault();
-        }, []);
+      const exportImage = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = canvasSize.w;
+        canvas.height = canvasSize.h;
+        const ctx = canvas.getContext("2d");
 
-        // ========== load helper ==========
-        function loadImage(src) {
-          return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.onload = () => resolve(img);
-            img.onerror = reject;
-            img.src = src;
-          });
-        }
+        if (image) {
+          const img = new Image();
+          img.src = image;
+          img.onload = () => {
+            let iw = img.width, ih = img.height;
+            let cw = canvas.width, ch = canvas.height;
+            let sx=0, sy=0, sw=iw, sh=ih;
 
-        // ========== export (async to await logo load) ==========
-        async function exportAsImage() {
-          try {
-            const canvas = document.createElement("canvas");
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-
-            // Clear / background (transparent by default — fill black as earlier behavior)
-            ctx.fillStyle = "#000";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // draw main image if present (respect fitMode, scale and offset)
-            if (imageSrc) {
-              const img = await loadImage(imageSrc);
-
-              // calculate base scale to fit container like CSS object-fit
-              const scaleX = canvas.width / img.width;
-              const scaleY = canvas.height / img.height;
-              let baseScale = 1;
-              if (fitMode === "cover") baseScale = Math.max(scaleX, scaleY);
-              else if (fitMode === "contain") baseScale = Math.min(scaleX, scaleY);
-              else if (fitMode === "stretch") baseScale = 1; // we'll stretch using canvas size below
-
-              if (fitMode === "stretch") {
-                const drawW = canvas.width * imgScale;
-                const drawH = canvas.height * imgScale;
-                const dx = imgOffset.x;
-                const dy = imgOffset.y;
-                ctx.drawImage(img, dx, dy, drawW, drawH);
-              } else {
-                const s = baseScale * imgScale;
-                const drawW = img.width * s;
-                const drawH = img.height * s;
-                // center + offset
-                const dx = (canvas.width - drawW) / 2 + imgOffset.x;
-                const dy = (canvas.height - drawH) / 2 + imgOffset.y;
-                ctx.drawImage(img, dx, dy, drawW, drawH);
-              }
-            }
-
-            // draw logo if requested (load local sabah-logo.PNG)
-            let logoImg = null;
-            if (showLogo) {
-              try {
-                logoImg = await loadImage("sabah-logo.PNG");
-                // compute desired logo size
-                const logoW = canvas.width * logoScale;
-                const aspect = logoImg.height / logoImg.width;
-                const logoH = logoW * aspect;
-                let lx = 0,
-                  ly = 0;
-                switch (logoCorner) {
-                  case "tl":
-                    lx = 16;
-                    ly = 16;
-                    break;
-                  case "tr":
-                    lx = canvas.width - logoW - 16;
-                    ly = 16;
-                    break;
-                  case "bl":
-                    lx = 16;
-                    ly = canvas.height - logoH - 16;
-                    break;
-                  default: // br
-                    lx = canvas.width - logoW - 16;
-                    ly = canvas.height - logoH - 16;
-                    break;
-                }
-                ctx.drawImage(logoImg, lx, ly, logoW, logoH);
-              } catch (err) {
-                // If logo load fails, ignore gracefully
-                console.warn("Could not load sabah-logo.PNG:", err);
-              }
-            }
-
-            // draw sideline - depends on text direction and text block geometry
-            // We'll compute the text block size roughly using ctx.measureText for first line and multiply by lines/lineHeight for height.
-            ctx.save();
-            ctx.font = `${fontSize}px ${fontFamily}`;
-            ctx.textBaseline = "top";
-            ctx.fillStyle = textColor;
-            ctx.direction = direction;
-
-            if (shadow.enabled) {
-              ctx.shadowColor = shadow.color;
-              ctx.shadowBlur = shadow.blur;
-              ctx.shadowOffsetX = shadow.offsetX;
-              ctx.shadowOffsetY = shadow.offsetY;
+            if (fitMode === "cover") {
+              const scale = Math.max(cw / iw, ch / ih);
+              sw = cw / scale;
+              sh = ch / scale;
+              sx = (iw - sw) / 2;
+              sy = (ih - sh) / 2;
+              ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
+            } else if (fitMode === "contain") {
+              const scale = Math.min(cw / iw, ch / ih);
+              const nw = iw * scale;
+              const nh = ih * scale;
+              const nx = (cw - nw) / 2;
+              const ny = (ch - nh) / 2;
+              ctx.drawImage(img, 0, 0, iw, ih, nx, ny, nw, nh);
             } else {
-              ctx.shadowColor = "transparent";
-              ctx.shadowBlur = 0;
-              ctx.shadowOffsetX = 0;
-              ctx.shadowOffsetY = 0;
+              ctx.drawImage(img, 0, 0, cw, ch);
             }
 
-            const lines = headline.split("\n");
-            const blockHeight = lines.length * fontSize * lineHeight;
-            // For width measurement, measure the longest line
-            let maxLineWidth = 0;
-            for (const ln of lines) {
-              const m = ctx.measureText(ln).width;
-              if (m > maxLineWidth) maxLineWidth = m;
-            }
+            drawOverlay(ctx);
+          };
+        } else {
+          drawOverlay(ctx);
+        }
 
-            // draw sideline (no shadow)
-            if (sideline.show) {
-              ctx.shadowColor = "transparent";
-              ctx.fillStyle = sideline.color;
-              if (direction === "ltr") {
-                // sidebar to left of text
-                const sx = textPos.x - sideline.gap - sideline.width;
-                ctx.fillRect(sx, textPos.y, sideline.width, blockHeight);
-              } else {
-                // sidebar to right of text
-                const sx = textPos.x + maxLineWidth + sideline.gap;
-                ctx.fillRect(sx, textPos.y, sideline.width, blockHeight);
-              }
-            }
+        function drawOverlay(ctx) {
+          ctx.save();
+          ctx.font = fontSize + "px '" + fontFamily + "', Inter, sans-serif";
+          ctx.fillStyle = textColor;
+          ctx.textAlign = "left";
+          ctx.textBaseline = "top";
+          ctx.direction = direction;
 
-            // draw text lines (apply shadow if enabled)
-            ctx.fillStyle = textColor;
-            if (shadow.enabled) {
-              ctx.shadowColor = shadow.color;
-              ctx.shadowBlur = shadow.blur;
-              ctx.shadowOffsetX = shadow.offsetX;
-              ctx.shadowOffsetY = shadow.offsetY;
-            } else {
-              ctx.shadowColor = "transparent";
-            }
-
-            // draw each line with position and lineHeight
-            let ty = textPos.y;
-            for (const ln of lines) {
-              // For RTL, use fillText with direction set and position as textPos.x
-              ctx.fillText(ln, textPos.x, ty);
-              ty += fontSize * lineHeight;
-            }
-
-            ctx.restore();
-
-            // finally download
-            const link = document.createElement("a");
-            link.download = fileName && fileName.trim() !== "" ? fileName : "social-card.png";
-            link.href = canvas.toDataURL("image/png");
-            link.click();
-          } catch (err) {
-            console.error("Export failed:", err);
-            alert("Export failed — check console for details.");
+          if (shadow) {
+            ctx.shadowColor = shadowColor;
+            ctx.shadowBlur = shadowBlur;
+            ctx.shadowOffsetX = shadowOffsetX;
+            ctx.shadowOffsetY = shadowOffsetY;
           }
-        }
 
-        // ========== Preview helpers: compute logo style ==========
-        function getLogoPreviewStyle(previewW, previewH) {
-          // previewW and previewH are containerRef dimensions
-          const logoW = previewW * logoScale;
-          // attempt to read actual image ratio? we'll approximate square if not loaded
-          const style = { position: "absolute", width: logoW + "px", height: "auto" };
-          const padding = 12;
-          if (logoCorner === "tl") {
-            style.left = padding + "px";
-            style.top = padding + "px";
-          } else if (logoCorner === "tr") {
-            style.right = padding + "px";
-            style.top = padding + "px";
-          } else if (logoCorner === "bl") {
-            style.left = padding + "px";
-            style.bottom = padding + "px";
+          let x = headlinePos.x;
+          let y = headlinePos.y;
+
+          if (sideline) {
+            const lineX = direction === "rtl" ? x + ctx.measureText(headline).width + sidelineGap : x - sidelineGap - sidelineWidth;
+            ctx.fillStyle = sidelineColor;
+            ctx.fillRect(lineX, y, sidelineWidth, fontSize * lineHeight * 2);
+            ctx.fillStyle = textColor;
+          }
+
+          ctx.fillText(headline, x, y);
+
+          ctx.restore();
+
+          if (showLogo) {
+            const logo = new Image();
+            logo.src = "sabah-logo.PNG";
+            logo.onload = () => {
+              const margin = 16;
+              const logoSize = 100;
+              let lx = 0, ly = 0;
+              if (logoPosition === "top-left") {
+                lx = margin; ly = margin;
+              } else if (logoPosition === "top-right") {
+                lx = canvas.width - logoSize - margin; ly = margin;
+              } else if (logoPosition === "bottom-left") {
+                lx = margin; ly = canvas.height - logoSize - margin;
+              } else {
+                lx = canvas.width - logoSize - margin; ly = canvas.height - logoSize - margin;
+              }
+              ctx.drawImage(logo, lx, ly, logoSize, logoSize);
+              saveFile();
+            };
           } else {
-            style.right = padding + "px";
-            style.bottom = padding + "px";
+            saveFile();
           }
-          return style;
         }
 
-        // small utility to get preview size of container (540 width scaled)
-        function getPreviewRect() {
-          const el = containerRef.current;
-          if (!el) return { w: 540, h: Math.round((height / width) * 540) };
-          const r = el.getBoundingClientRect();
-          return { w: r.width, h: r.height };
+        function saveFile() {
+          const link = document.createElement("a");
+          link.download = filename + ".png";
+          link.href = canvas.toDataURL("image/png");
+          link.click();
         }
+      };
 
-        // Render
-        return (
-          <div className="p-4 max-w-7xl mx-auto">
-            <div className="flex gap-6">
-              {/* Left: Controls */}
-              <div className="w-96 space-y-4">
-                <h2 className="text-xl font-semibold">Controls</h2>
-
-                <div className="bg-white p-3 rounded shadow">
-                  <label className="block text-sm font-medium">Upload image</label>
-                  <input type="file" accept="image/*" onChange={onImageUpload} className="mt-2" />
-                  <div className="mt-2 text-sm">Tip: drag the image in the preview to reposition it.</div>
-                </div>
-
-                <div className="bg-white p-3 rounded shadow">
-                  <label className="block text-sm font-medium">Headline (double-click to edit in textarea)</label>
-                  <textarea
-                    value={headline}
-                    onChange={(e) => setHeadline(e.target.value)}
-                    rows={3}
-                    className="w-full mt-2 p-2 border rounded"
-                  />
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    <div>
-                      <label className="text-sm">Font size</label>
-                      <input
-                        type="range"
-                        min="18"
-                        max="220"
-                        value={fontSize}
-                        onChange={(e) => setFontSize(parseInt(e.target.value))}
-                        className="w-full"
-                      />
-                      <div className="text-xs">{fontSize}px</div>
-                    </div>
-                    <div>
-                      <label className="text-sm">Line height</label>
-                      <input
-                        type="range"
-                        min="0.8"
-                        max="2.2"
-                        step="0.01"
-                        value={lineHeight}
-                        onChange={(e) => setLineHeight(parseFloat(e.target.value))}
-                        className="w-full"
-                      />
-                      <div className="text-xs">{lineHeight}</div>
-                    </div>
-                  </div>
-
-                  <div className="mt-2">
-                    <label className="text-sm">Font family</label>
-                    <select
-                      value={fontFamily}
-                      onChange={(e) => setFontFamily(e.target.value)}
-                      className="w-full mt-1 p-1 border rounded"
-                    >
-                      <option value="Jameel Noori Nastaleeq, serif">Jameel Noori Nastaleeq</option>
-                      <option value="Pangea, Inter, Arial, sans-serif">Pangea</option>
-                      <option value="Inter, Arial, sans-serif">Inter</option>
-                    </select>
-                  </div>
-
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-sm">Text color</label>
-                      <input
-                        type="color"
-                        value={textColor}
-                        onChange={(e) => setTextColor(e.target.value)}
-                        className="w-full h-8 p-0 border-0"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm">Direction</label>
-                      <select
-                        value={direction}
-                        onChange={(e) => setDirection(e.target.value)}
-                        className="w-full mt-1 p-1 border rounded"
-                      >
-                        <option value="rtl">Right-to-left (RTL)</option>
-                        <option value="ltr">Left-to-right (LTR)</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white p-3 rounded shadow">
-                  <label className="block text-sm font-medium">Drop shadow</label>
-                  <div className="flex gap-2 items-center mt-2">
-                    <input
-                      type="checkbox"
-                      checked={shadow.enabled}
-                      onChange={(e) => setShadow({ ...shadow, enabled: e.target.checked })}
-                    />
-                    <span className="text-sm">enabled</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 mt-2">
-                    <input
-                      type="number"
-                      value={shadow.offsetX}
-                      onChange={(e) => setShadow({ ...shadow, offsetX: parseInt(e.target.value) || 0 })}
-                      className="p-1 border rounded"
-                    />
-                    <input
-                      type="number"
-                      value={shadow.offsetY}
-                      onChange={(e) => setShadow({ ...shadow, offsetY: parseInt(e.target.value) || 0 })}
-                      className="p-1 border rounded"
-                    />
-                    <input
-                      type="number"
-                      value={shadow.blur}
-                      onChange={(e) => setShadow({ ...shadow, blur: parseInt(e.target.value) || 0 })}
-                      className="p-1 border rounded"
-                    />
-                  </div>
-                  <div className="mt-2">
-                    <input
-                      type="color"
-                      value={rgbaToHex(shadow.color)}
-                      onChange={(e) => setShadow({ ...shadow, color: e.target.value })}
-                      className="w-full h-8 p-0 border-0"
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-white p-3 rounded shadow">
-                  <label className="block text-sm font-medium">Sideline / blockquote</label>
-                  <div className="mt-2 flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={sideline.show}
-                      onChange={(e) => setSideline({ ...sideline, show: e.target.checked })}
-                    />
-                    <span className="text-sm">Show sideline</span>
-                  </div>
-                  {sideline.show && (
-                    <div className="mt-2 grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="text-xs">Width</label>
-                        <input
-                          type="range"
-                          min="2"
-                          max="60"
-                          value={sideline.width}
-                          onChange={(e) => setSideline({ ...sideline, width: parseInt(e.target.value) })}
-                          className="w-full"
-                        />
-                        <div className="text-xs">{sideline.width}px</div>
-                      </div>
-                      <div>
-                        <label className="text-xs">Gap</label>
-                        <input
-                          type="range"
-                          min="0"
-                          max="140"
-                          value={sideline.gap}
-                          onChange={(e) => setSideline({ ...sideline, gap: parseInt(e.target.value) })}
-                          className="w-full"
-                        />
-                        <div className="text-xs">{sideline.gap}px</div>
-                      </div>
-                      <div className="col-span-2">
-                        <label className="text-xs">Color</label>
-                        <input
-                          type="color"
-                          value={sideline.color}
-                          onChange={(e) => setSideline({ ...sideline, color: e.target.value })}
-                          className="w-full h-8 p-0 border-0"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="bg-white p-3 rounded shadow">
-                  <label className="block text-sm">Fit mode</label>
-                  <select value={fitMode} onChange={(e) => setFitMode(e.target.value)} className="w-full mt-1 p-1 border rounded">
-                    <option value="cover">Cover</option>
-                    <option value="contain">Contain</option>
-                    <option value="stretch">Stretch</option>
-                  </select>
-
-                  <label className="block text-sm mt-2">Image scale</label>
-                  <input
-                    type="range"
-                    min="0.2"
-                    max="3"
-                    step="0.01"
-                    value={imgScale}
-                    onChange={(e) => setImgScale(parseFloat(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="bg-white p-3 rounded shadow">
-                  <div>Canvas size</div>
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      onClick={() => {
-                        setWidth(1080);
-                        setHeight(1080);
-                      }}
-                      className="px-2 py-1 border rounded"
-                    >
-                      Instagram square
-                    </button>
-                    <button
-                      onClick={() => {
-                        setWidth(1080);
-                        setHeight(1920);
-                      }}
-                      className="px-2 py-1 border rounded"
-                    >
-                      Story 9:16
-                    </button>
-                  </div>
-                  <div className="mt-2">Custom: <input type="number" value={width} onChange={(e) => setWidth(parseInt(e.target.value) || 1080)} className="w-24 inline-block p-1 border rounded" /> × <input type="number" value={height} onChange={(e) => setHeight(parseInt(e.target.value) || 1080)} className="w-24 inline-block p-1 border rounded" /></div>
-                </div>
-
-                <div className="bg-white p-3 rounded shadow">
-                  <label className="block text-sm font-medium">Logo (sabah-logo.PNG)</label>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" checked={showLogo} onChange={(e) => setShowLogo(e.target.checked)} />
-                    <span className="text-sm">Show logo</span>
-                  </div>
-                  {showLogo && (
-                    <>
-                      <div className="mt-2">
-                        <label className="text-xs">Corner</label>
-                        <select value={logoCorner} onChange={(e) => setLogoCorner(e.target.value)} className="w-full p-1 border rounded">
-                          <option value="tl">Top-left</option>
-                          <option value="tr">Top-right</option>
-                          <option value="bl">Bottom-left</option>
-                          <option value="br">Bottom-right</option>
-                        </select>
-                      </div>
-                      <div className="mt-2">
-                        <label className="text-xs">Logo size (fraction)</label>
-                        <input type="range" min="0.06" max="0.35" step="0.01" value={logoScale} onChange={(e) => setLogoScale(parseFloat(e.target.value))} className="w-full" />
-                        <div className="text-xs">{Math.round(logoScale * 100)}% of width</div>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="bg-white p-3 rounded shadow">
-                  <label className="block text-sm font-medium">Export file name</label>
-                  <input type="text" value={fileName} onChange={(e) => setFileName(e.target.value)} className="w-full mt-1 p-1 border rounded" />
-                </div>
-
-                <div className="flex gap-2">
-                  <button onClick={exportAsImage} className="flex-1 bg-blue-600 text-white py-2 rounded">Export PNG</button>
-                </div>
-              </div>
-
-              {/* Right: Preview */}
-              <div className="flex-1">
-                <div className="mb-2">Preview (drag image to reposition, drag text to move). Output size: {width}×{height}</div>
-
-                <div ref={containerRef} className="relative mx-auto bg-black" style={{ width: 540, height: Math.round((height / width) * 540) }}>
-                  {/* Image layer (pointer down to drag) */}
-                  <div
-                    onPointerDown={onPointerDownImage}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      overflow: "hidden",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      touchAction: "none",
-                    }}
-                  >
-                    {imageSrc ? (
-                      <img
-                        src={imageSrc}
-                        alt="uploaded"
-                        draggable={false}
-                        style={{
-                          transform: `translate(${imgOffset.x}px, ${imgOffset.y}px) scale(${imgScale})`,
-                          transformOrigin: "center",
-                          userSelect: "none",
-                          maxWidth: fitMode === "contain" ? "100%" : "none",
-                          maxHeight: fitMode === "contain" ? "100%" : "none",
-                          width: fitMode === "stretch" ? "100%" : undefined,
-                          height: fitMode === "stretch" ? "100%" : undefined,
-                          cursor: "grab",
-                        }}
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center text-gray-400 h-full">No image — upload one or use background color</div>
-                    )}
-                  </div>
-
-                  {/* Sideline */}
-                  {sideline.show && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        left: direction === "ltr" ? textPos.x - sideline.gap - sideline.width : "auto",
-                        right: direction === "rtl" ? Math.max(0, 540 - textPos.x) + sideline.gap : "auto",
-                        top: textPos.y,
-                        width: sideline.width,
-                        bottom: "auto",
-                        height: "auto",
-                        minHeight: 40,
-                        background: sideline.color,
-                        pointerEvents: "none",
-                      }}
-                    />
-                  )}
-
-                  {/* Draggable text */}
-                  <div
-                    onPointerDown={onPointerDownText}
-                    onDoubleClick={() => {
-                      /* optional: focus textarea in controls */
-                      const ta = document.querySelector("textarea");
-                      if (ta) ta.focus();
-                    }}
-                    style={{
-                      position: "absolute",
-                      left: textPos.x,
-                      top: textPos.y,
-                      minWidth: 120,
-                      maxWidth: 540 - 40,
-                      fontSize: fontSize,
-                      lineHeight: lineHeight,
-                      fontFamily: fontFamily,
-                      color: textColor,
-                      whiteSpace: "pre-wrap",
-                      textAlign: direction === "rtl" ? "right" : "left",
-                      direction: direction,
-                      textShadow: shadow.enabled ? `${shadow.offsetX}px ${shadow.offsetY}px ${shadow.blur}px ${shadow.color}` : "none",
-                      cursor: "move",
-                      userSelect: "none",
-                      padding: 8,
-                    }}
-                  >
-                    {headline}
-                  </div>
-
-                  {/* Logo preview (if enabled) */}
-                  {showLogo && (
-                    <img
-                      src="sabah-logo.PNG"
-                      alt="logo"
-                      style={{
-                        position: "absolute",
-                        ...(
-                          logoCorner === "tl" ? { left: 12, top: 12 } :
-                            logoCorner === "tr" ? { right: 12, top: 12 } :
-                              logoCorner === "bl" ? { left: 12, bottom: 12 } :
-                                { right: 12, bottom: 12 }
-                        ),
-                        width: (540 * logoScale) + "px",
-                        height: "auto",
-                        pointerEvents: "none",
-                        opacity: 1,
-                      }}
-                    />
-                  )}
-                </div>
-
-                <div className="mt-2 text-xs text-gray-500">Tip: drag the headline to reposition it; use controls on the left for fonts, shadow, sidebar and export.</div>
-              </div>
+      return (
+        <div className="flex flex-col md:flex-row p-4 gap-4">
+          <div className="flex-1 flex items-center justify-center bg-white shadow rounded relative overflow-hidden"
+            style={{ width: canvasSize.w/4, height: canvasSize.h/4 }}
+            onMouseDown={handleMouseDown}
+          >
+            {image && (
+              <img
+                src={image}
+                alt="background"
+                style={{
+                  transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
+                  objectFit: fitMode
+                }}
+              />
+            )}
+            <div
+              className="absolute draggable"
+              onMouseDown={handleHeadlineDown}
+              style={{
+                left: headlinePos.x,
+                top: headlinePos.y,
+                fontSize: fontSize,
+                lineHeight: lineHeight,
+                color: textColor,
+                fontFamily: fontFamily + ", Inter, sans-serif",
+                direction: direction,
+                textShadow: shadow
+                  ? `${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px ${shadowColor}`
+                  : "none",
+              }}
+            >
+              {sideline && (
+                <div
+                  style={{
+                    backgroundColor: sidelineColor,
+                    width: sidelineWidth,
+                    height: "100%",
+                    display: "inline-block",
+                    marginRight: direction === "ltr" ? sidelineGap : 0,
+                    marginLeft: direction === "rtl" ? sidelineGap : 0,
+                  }}
+                />
+              )}
+              {headline}
             </div>
+            {showLogo && (
+              <img
+                src="sabah-logo.PNG"
+                alt="logo"
+                style={{
+                  position: "absolute",
+                  width: "60px",
+                  ...(logoPosition === "top-left" && { top: "8px", left: "8px" }),
+                  ...(logoPosition === "top-right" && { top: "8px", right: "8px" }),
+                  ...(logoPosition === "bottom-left" && { bottom: "8px", left: "8px" }),
+                  ...(logoPosition === "bottom-right" && { bottom: "8px", right: "8px" }),
+                }}
+              />
+            )}
           </div>
-        );
-      }
 
-      // small helpers for color conversion used in controls
-      function rgbaToHex(rgba) {
-        // if input is hex already, return as-is
-        if (!rgba) return "#000000";
-        if (rgba.startsWith("#")) return rgba;
-        const m = rgba.match(/rgba?\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)/);
-        if (!m) return "#000000";
-        const r = parseInt(m[1]).toString(16).padStart(2, "0");
-        const g = parseInt(m[2]).toString(16).padStart(2, "0");
-        const b = parseInt(m[3]).toString(16).padStart(2, "0");
-        return `#${r}${g}${b}`;
-      }
+          <div className="w-full md:w-80 flex flex-col gap-2">
+            <input type="file" onChange={handleImageUpload} className="mb-2" />
+            <textarea value={headline} onChange={(e)=>setHeadline(e.target.value)} className="border p-2" />
+            <label>Font Size <input type="number" value={fontSize} onChange={(e)=>setFontSize(parseInt(e.target.value))} className="w-20 border ml-2" /></label>
+            <label>Line Height <input type="number" step="0.1" value={lineHeight} onChange={(e)=>setLineHeight(parseFloat(e.target.value))} className="w-20 border ml-2" /></label>
+            <label>Text Color <input type="color" value={textColor} onChange={(e)=>setTextColor(e.target.value)} /></label>
 
-      const root = ReactDOM.createRoot(document.getElementById("root"));
-      root.render(<SocialCardGenerator />);
-    </script>
-  </body>
+            <label>Font Family
+              <select value={fontFamily} onChange={(e)=>setFontFamily(e.target.value)} className="border ml-2">
+                <option>Jameel Noori Nastaleeq</option>
+                <option>Pangea</option>
+                <option>Inter</option>
+              </select>
+            </label>
+
+            <label>Text Direction
+              <select value={direction} onChange={(e)=>setDirection(e.target.value)} className="border ml-2">
+                <option value="ltr">LTR</option>
+                <option value="rtl">RTL</option>
+              </select>
+            </label>
+
+            <label><input type="checkbox" checked={shadow} onChange={(e)=>setShadow(e.target.checked)} /> Shadow</label>
+            {shadow && (
+              <div className="pl-4 flex flex-col gap-1">
+                <label>Shadow Color <input type="color" value={shadowColor} onChange={(e)=>setShadowColor(e.target.value)} /></label>
+                <label>Blur <input type="number" value={shadowBlur} onChange={(e)=>setShadowBlur(parseInt(e.target.value))} className="w-20 border ml-2" /></label>
+                <label>OffsetX <input type="number" value={shadowOffsetX} onChange={(e)=>setShadowOffsetX(parseInt(e.target.value))} className="w-20 border ml-2" /></label>
+                <label>OffsetY <input type="number" value={shadowOffsetY} onChange={(e)=>setShadowOffsetY(parseInt(e.target.value))} className="w-20 border ml-2" /></label>
+              </div>
+            )}
+
+            <label><input type="checkbox" checked={sideline} onChange={(e)=>setSideline(e.target.checked)} /> Sideline</label>
+            {sideline && (
+              <div className="pl-4 flex flex-col gap-1">
+                <label>Line Color <input type="color" value={sidelineColor} onChange={(e)=>setSidelineColor(e.target.value)} /></label>
+                <label>Width <input type="number" value={sidelineWidth} onChange={(e)=>setSidelineWidth(parseInt(e.target.value))} className="w-20 border ml-2" /></label>
+                <label>Gap <input type="number" value={sidelineGap} onChange={(e)=>setSidelineGap(parseInt(e.target.value))} className="w-20 border ml-2" /></label>
+              </div>
+            )}
+
+            <label>Fit Mode
+              <select value={fitMode} onChange={(e)=>setFitMode(e.target.value)} className="border ml-2">
+                <option value="cover">Cover</option>
+                <option value="contain">Contain</option>
+                <option value="stretch">Stretch</option>
+              </select>
+            </label>
+
+            <label>Canvas Size
+              <select onChange={(e)=>{
+                if(e.target.value==="square") setCanvasSize({w:1080,h:1080});
+                else setCanvasSize({w:1080,h:1920});
+              }} className="border ml-2">
+                <option value="square">Instagram Square</option>
+                <option value="story">Instagram Story</option>
+              </select>
+            </label>
+
+            <label>Export Filename
+              <input type="text" value={filename} onChange={(e)=>setFilename(e.target.value)} className="border ml-2" />
+            </label>
+
+            <label><input type="checkbox" checked={showLogo} onChange={(e)=>setShowLogo(e.target.checked)} /> Show Logo</label>
+            {showLogo && (
+              <label>Logo Position
+                <select value={logoPosition} onChange={(e)=>setLogoPosition(e.target.value)} className="border ml-2">
+                  <option value="top-left">Top Left</option>
+                  <option value="top-right">Top Right</option>
+                  <option value="bottom-left">Bottom Left</option>
+                  <option value="bottom-right">Bottom Right</option>
+                </select>
+              </label>
+            )}
+
+            <button onClick={exportImage} className="bg-blue-600 text-white p-2 rounded mt-2">Export PNG</button>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<SocialCardGenerator />);
+  </script>
+</body>
 </html>
