@@ -34,9 +34,9 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         const containerRef = useRef(null);
         const textRef = useRef(null);
 
+        // --- State variables for the application
         const [images, setImages] = useState([]);
         const [activeImageId, setActiveImageId] = useState(null);
-
         const [width, setWidth] = useState(1080);
         const [height, setHeight] = useState(1080);
         const [headline, setHeadline] = useState("Headline here");
@@ -49,12 +49,72 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         const [logo, setLogo] = useState({ show: true, position: "top-right" });
         const [fileName, setFileName] = useState("social-card");
         const [sidelineOffset, setSidelineOffset] = useState(0);
-
         const [shadow, setShadow] = useState({ enabled: true, offsetX: 2, offsetY: 2, blur: 6, color: "rgba(0,0,0,0.6)" });
         const [stroke, setStroke] = useState({ enabled: false, width: 1, color: "#000000" });
         const [sideline, setSideline] = useState({ show: true, width: 4, gap: 8, height: 0, color: "#ff0000", opacity: 1 });
-
         const [fitMode, setFitMode] = useState("cover");
+
+        // --- ADDED FOR DATA PERSISTENCE & WARNING ---
+        
+        // Load data from local storage on initial render
+        useEffect(() => {
+          try {
+            const savedData = localStorage.getItem('socialCardData');
+            if (savedData) {
+              const parsedData = JSON.parse(savedData);
+              // Safely set each state variable from the parsed data
+              if (parsedData.headline) setHeadline(parsedData.headline);
+              if (parsedData.images) setImages(parsedData.images);
+              if (parsedData.width) setWidth(parsedData.width);
+              if (parsedData.height) setHeight(parsedData.height);
+              if (parsedData.fontSize) setFontSize(parsedData.fontSize);
+              if (parsedData.lineHeight) setLineHeight(parsedData.lineHeight);
+              if (parsedData.fontFamily) setFontFamily(parsedData.fontFamily);
+              if (parsedData.textColor) setTextColor(parsedData.textColor);
+              if (parsedData.textPos) setTextPos(parsedData.textPos);
+              if (parsedData.direction) setDirection(parsedData.direction);
+              if (parsedData.logo) setLogo(parsedData.logo);
+              if (parsedData.fileName) setFileName(parsedData.fileName);
+              if (parsedData.sidelineOffset) setSidelineOffset(parsedData.sidelineOffset);
+              if (parsedData.shadow) setShadow(parsedData.shadow);
+              if (parsedData.stroke) setStroke(parsedData.stroke);
+              if (parsedData.sideline) setSideline(parsedData.sideline);
+              if (parsedData.fitMode) setFitMode(parsedData.fitMode);
+            }
+          } catch (e) {
+            console.error("Failed to load data from localStorage", e);
+          }
+        }, []);
+
+        // Save data to local storage whenever a relevant state variable changes
+        useEffect(() => {
+            const dataToSave = {
+                headline, images, width, height, fontSize, lineHeight, fontFamily, textColor,
+                textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode
+            };
+            try {
+                localStorage.setItem('socialCardData', JSON.stringify(dataToSave));
+            } catch (e) {
+                console.error("Failed to save data to localStorage", e);
+            }
+        }, [headline, images, width, height, fontSize, lineHeight, fontFamily, textColor,
+            textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode]);
+
+        // Add a warning before the user closes or refreshes the page
+        useEffect(() => {
+          const handleBeforeUnload = (e) => {
+            // Cancel the event and show the confirmation message
+            e.preventDefault();
+            e.returnValue = ''; // Required for older browsers
+          };
+          window.addEventListener('beforeunload', handleBeforeUnload);
+
+          return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+          };
+        }, []);
+
+        // --- END OF ADDED CODE ---
 
         useEffect(() => {
           if (textRef.current && sideline.height === 0) {
