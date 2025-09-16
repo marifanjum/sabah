@@ -11,12 +11,15 @@
     <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Example font embed: Pangea (replace with your own woff2 for production) -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet" />
+    <!-- Example font embed: Pangea (replace with your own font file if you have it) -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap"
+      rel="stylesheet"
+    />
     <style>
       @font-face {
         font-family: "Pangea";
-        src: url("pangea.woff2") format("woff2"); /* Put your actual font file in repo */
+        src: url("pangea.woff2") format("woff2"); /* put actual font file in repo */
         font-weight: normal;
         font-style: normal;
       }
@@ -30,22 +33,24 @@
 
     <script type="text/babel">
       function SocialCardGenerator() {
-        const { useRef, useState } = React;
+        const { useRef, useState, useEffect } = React;
 
         const containerRef = useRef(null);
         const [imageSrc, setImageSrc] = useState(null);
         const [imgScale, setImgScale] = useState(1);
         const [imgOffset, setImgOffset] = useState({ x: 0, y: 0 });
+        const [isDragging, setIsDragging] = useState(false);
+        const [startDrag, setStartDrag] = useState({ x: 0, y: 0 });
         const [width, setWidth] = useState(1080);
         const [height, setHeight] = useState(1080);
 
-        const [headline, setHeadline] = useState("Your headline goes here");
+        const [headline, setHeadline] = useState("آپ کی ہیڈ لائن یہاں آئے گی");
         const [fontSize, setFontSize] = useState(72);
         const [lineHeight, setLineHeight] = useState(1.2);
-        const [fontFamily, setFontFamily] = useState("Pangea, Inter, Arial, sans-serif");
+        const [fontFamily, setFontFamily] = useState("Jameel Noori Nastaleeq, serif");
         const [textColor, setTextColor] = useState("#ffffff");
         const [textPos, setTextPos] = useState({ x: 120, y: 200 });
-        const [direction, setDirection] = useState("ltr");
+        const [direction, setDirection] = useState("rtl");
 
         const [shadow, setShadow] = useState({
           enabled: true,
@@ -56,13 +61,39 @@
         });
 
         const [sideline, setSideline] = useState({
-          show: false,
+          show: true,
           width: 10,
           color: "#ffdd00",
           gap: 18
         });
 
         const [fileName, setFileName] = useState("social-card.png");
+
+        // === Image Dragging ===
+        function handleMouseDown(e) {
+          setIsDragging(true);
+          setStartDrag({ x: e.clientX - imgOffset.x, y: e.clientY - imgOffset.y });
+        }
+        function handleMouseMove(e) {
+          if (!isDragging) return;
+          setImgOffset({ x: e.clientX - startDrag.x, y: e.clientY - startDrag.y });
+        }
+        function handleMouseUp() {
+          setIsDragging(false);
+        }
+
+        useEffect(() => {
+          if (!containerRef.current) return;
+          const el = containerRef.current;
+          el.addEventListener("mousemove", handleMouseMove);
+          el.addEventListener("mouseup", handleMouseUp);
+          el.addEventListener("mouseleave", handleMouseUp);
+          return () => {
+            el.removeEventListener("mousemove", handleMouseMove);
+            el.removeEventListener("mouseup", handleMouseUp);
+            el.removeEventListener("mouseleave", handleMouseUp);
+          };
+        });
 
         function onImageUpload(e) {
           const f = e.target.files && e.target.files[0];
@@ -79,19 +110,17 @@
           canvas.height = height;
           const ctx = canvas.getContext("2d");
 
-          // background
           ctx.fillStyle = "#000";
           ctx.fillRect(0, 0, width, height);
 
-          // image
           if (imageSrc) {
             const img = new Image();
             img.crossOrigin = "anonymous";
             img.onload = () => {
               const iw = img.width;
               const ih = img.height;
-              let dw = width * imgScale;
-              let dh = (ih / iw) * dw;
+              let dw = iw * imgScale;
+              let dh = ih * imgScale;
               ctx.drawImage(img, imgOffset.x, imgOffset.y, dw, dh);
 
               drawTextAndLine(ctx);
@@ -125,21 +154,23 @@
           });
 
           if (sideline.show) {
-            ctx.shadowColor = "transparent"; // no shadow on sidebar
+            ctx.shadowColor = "transparent";
             ctx.fillStyle = sideline.color;
+            const textBlockHeight = lines.length * fontSize * lineHeight;
             if (direction === "ltr") {
               ctx.fillRect(
                 textPos.x - sideline.gap - sideline.width,
                 textPos.y,
                 sideline.width,
-                lines.length * fontSize * lineHeight
+                textBlockHeight
               );
             } else {
+              const firstLineWidth = ctx.measureText(lines[0]).width;
               ctx.fillRect(
-                textPos.x + ctx.measureText(lines[0]).width + sideline.gap,
+                textPos.x + firstLineWidth + sideline.gap,
                 textPos.y,
                 sideline.width,
-                lines.length * fontSize * lineHeight
+                textBlockHeight
               );
             }
           }
@@ -162,6 +193,16 @@
                 <div className="bg-white p-3 rounded shadow space-y-2">
                   <label className="block text-sm font-medium">Upload image</label>
                   <input type="file" accept="image/*" onChange={onImageUpload} />
+                  <label className="block text-sm font-medium">Zoom</label>
+                  <input
+                    type="range"
+                    min="0.2"
+                    max="3"
+                    step="0.05"
+                    value={imgScale}
+                    onChange={(e) => setImgScale(parseFloat(e.target.value))}
+                    className="w-full"
+                  />
                 </div>
 
                 <div className="bg-white p-3 rounded shadow space-y-2">
@@ -178,11 +219,13 @@
                     onChange={(e) => setFontFamily(e.target.value)}
                     className="w-full p-2 border rounded"
                   >
+                    <option value="Jameel Noori Nastaleeq, serif">
+                      Jameel Noori Nastaleeq
+                    </option>
                     <option value="Pangea, Inter, Arial, sans-serif">Pangea</option>
-                    <option value="Jameel Noori Nastaleeq, serif">Jameel Noori Nastaleeq</option>
                     <option value="Inter, Arial, sans-serif">Inter</option>
                   </select>
-                  <label className="block text-sm font-medium">Text direction</label>
+                  <label className="block text-sm font-medium">Direction</label>
                   <select
                     value={direction}
                     onChange={(e) => setDirection(e.target.value)}
@@ -191,6 +234,119 @@
                     <option value="ltr">Left-to-Right</option>
                     <option value="rtl">Right-to-Left</option>
                   </select>
+                  <label className="block text-sm font-medium">Font size</label>
+                  <input
+                    type="number"
+                    value={fontSize}
+                    onChange={(e) => setFontSize(parseInt(e.target.value))}
+                    className="w-full p-2 border rounded"
+                  />
+                  <label className="block text-sm font-medium">Line height</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={lineHeight}
+                    onChange={(e) => setLineHeight(parseFloat(e.target.value))}
+                    className="w-full p-2 border rounded"
+                  />
+                  <label className="block text-sm font-medium">Text color</label>
+                  <input
+                    type="color"
+                    value={textColor}
+                    onChange={(e) => setTextColor(e.target.value)}
+                  />
+                </div>
+
+                <div className="bg-white p-3 rounded shadow space-y-2">
+                  <label className="block text-sm font-medium">Shadow</label>
+                  <input
+                    type="checkbox"
+                    checked={shadow.enabled}
+                    onChange={(e) =>
+                      setShadow({ ...shadow, enabled: e.target.checked })
+                    }
+                  />
+                  {shadow.enabled && (
+                    <div className="space-y-1">
+                      <label>Offset X</label>
+                      <input
+                        type="number"
+                        value={shadow.offsetX}
+                        onChange={(e) =>
+                          setShadow({ ...shadow, offsetX: parseInt(e.target.value) })
+                        }
+                      />
+                      <label>Offset Y</label>
+                      <input
+                        type="number"
+                        value={shadow.offsetY}
+                        onChange={(e) =>
+                          setShadow({ ...shadow, offsetY: parseInt(e.target.value) })
+                        }
+                      />
+                      <label>Blur</label>
+                      <input
+                        type="number"
+                        value={shadow.blur}
+                        onChange={(e) =>
+                          setShadow({ ...shadow, blur: parseInt(e.target.value) })
+                        }
+                      />
+                      <label>Color</label>
+                      <input
+                        type="color"
+                        value={shadow.color}
+                        onChange={(e) =>
+                          setShadow({ ...shadow, color: e.target.value })
+                        }
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-white p-3 rounded shadow space-y-2">
+                  <label className="block text-sm font-medium">Sidebar (blockquote)</label>
+                  <input
+                    type="checkbox"
+                    checked={sideline.show}
+                    onChange={(e) =>
+                      setSideline({ ...sideline, show: e.target.checked })
+                    }
+                  />
+                  {sideline.show && (
+                    <div className="space-y-1">
+                      <label>Width</label>
+                      <input
+                        type="number"
+                        value={sideline.width}
+                        onChange={(e) =>
+                          setSideline({
+                            ...sideline,
+                            width: parseInt(e.target.value)
+                          })
+                        }
+                      />
+                      <label>Gap</label>
+                      <input
+                        type="number"
+                        value={sideline.gap}
+                        onChange={(e) =>
+                          setSideline({
+                            ...sideline,
+                            gap: parseInt(e.target.value)
+                          })
+                        }
+                      />
+                      <label>Color</label>
+                      <input
+                        type="color"
+                        value={sideline.color}
+                        onChange={(e) =>
+                          setSideline({ ...sideline, color: e.target.value })
+                        }
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-white p-3 rounded shadow space-y-2">
@@ -216,18 +372,29 @@
                 <div className="mb-2">Preview</div>
                 <div
                   ref={containerRef}
-                  className="relative mx-auto bg-black flex items-center justify-center text-white"
+                  className="relative mx-auto bg-black overflow-hidden text-white"
                   style={{ width: 540, height: Math.round((height / width) * 540) }}
+                  onMouseDown={handleMouseDown}
                 >
                   {imageSrc ? (
                     <img
                       src={imageSrc}
                       alt="uploaded"
-                      className="absolute inset-0 w-full h-full object-cover"
+                      draggable={false}
+                      style={{
+                        position: "absolute",
+                        left: imgOffset.x,
+                        top: imgOffset.y,
+                        transform: `scale(${imgScale})`,
+                        transformOrigin: "top left"
+                      }}
                     />
                   ) : (
-                    <div className="text-gray-400">No image — upload one</div>
+                    <div className="text-gray-400 flex items-center justify-center w-full h-full">
+                      No image — upload one
+                    </div>
                   )}
+
                   <div
                     style={{
                       position: "absolute",
@@ -246,6 +413,7 @@
                   >
                     {headline}
                   </div>
+
                   {sideline.show && (
                     <div
                       style={{
