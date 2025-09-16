@@ -288,21 +288,25 @@ function selectImage(id) {
                   <div ref={containerRef} className="relative mx-auto bg-black overflow-auto" style={{width,height}}>
                     {/* Images */}
                     {images.sort((a,b)=>a.zIndex-b.zIndex).map(img=>(
-  <img key={img.id} src={img.src} 
-       onMouseDown={e => { startDragImage(e,img.id); selectImage(img.id); }}
-       style={{
-         position:"absolute",
-         left:img.x,
-         top:img.y,
-         transform:`scale(${img.scale})`,
-         cursor:"grab",
-         width:fitMode==="stretch"?"100%":"auto",
-         height:fitMode==="stretch"?"100%":"auto",
-         maxWidth:fitMode!=="stretch"?"none":"100%",
-         maxHeight:fitMode!=="stretch"?"none":"100%",
-         border: activeImageId === img.id ? '2px solid #3b82f6' : 'none'
-       }}
-  />
+<img key={img.id} src={img.src} 
+     onMouseDown={e => startDragImage(e, img.id)}
+     onTouchStart={e => startDragImage(e, img.id)}
+     onTouchMove={e => handlePinchZoom(e, img.id)}
+     onTouchEnd={e => resetPinchZoom(img.id)}
+     style={{
+       position:"absolute",
+       left:img.x,
+       top:img.y,
+       transform:`scale(${img.scale})`,
+       cursor:"grab",
+       width:fitMode==="stretch"?"100%":"auto",
+       height:fitMode==="stretch"?"100%":"auto",
+       maxWidth:fitMode!=="stretch"?"none":"100%",
+       maxHeight:fitMode!=="stretch"?"none":"100%",
+       border: activeImageId === img.id ? '2px solid #3b82f6' : 'none'
+     }}
+/>
+			  
 ))}
 
 
@@ -342,6 +346,89 @@ function selectImage(id) {
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<SocialCardGenerator />);
+// --- Dragging Image (mouse + touch)
+function startDragImage(e, id) {
+  e.preventDefault();
+  selectImage(id);
+  const img = images.find(im => im.id === id);
+  const initX = img.x, initY = img.y;
+  const maxZ = Math.max(...images.map(im => im.zIndex));
+  setImages((imgs) => imgs.map(im => im.id === id ? {...im, zIndex: maxZ+1} : im));
+
+  let startX = e.clientX, startY = e.clientY;
+  if (e.touches) { // touch event
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }
+
+  function onMove(ev) {
+    let currentX = ev.clientX, currentY = ev.clientY;
+    if (ev.touches) {
+      currentX = ev.touches[0].clientX;
+      currentY = ev.touches[0].clientY;
+    }
+    setImages((imgs) => imgs.map(im => im.id === id ? {...im, x: initX + currentX - startX, y: initY + currentY - startY} : im));
+  }
+
+  function onUp() {
+    window.removeEventListener("mousemove", onMove);
+    window.removeEventListener("mouseup", onUp);
+    window.removeEventListener("touchmove", onMove);
+    window.removeEventListener("touchend", onUp);
+  }
+
+  window.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+  window.addEventListener("touchmove", onMove, {passive:false});
+  window.addEventListener("touchend", onUp);
+}
+
+// --- Dragging Text (mouse + touch)
+function startDragText(e) {
+  e.preventDefault();
+  const initPos = {...textPos};
+  let startX = e.clientX, startY = e.clientY;
+  if (e.touches) { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }
+
+  function onMove(ev){
+    let currentX = ev.clientX, currentY = ev.clientY;
+    if (ev.touches) { currentX = ev.touches[0].clientX; currentY = ev.touches[0].clientY; }
+    setTextPos({x: initPos.x + currentX - startX, y: initPos.y + currentY - startY});
+  }
+
+  function onUp(){
+    window.removeEventListener("mousemove", onMove);
+    window.removeEventListener("mouseup", onUp);
+    window.removeEventListener("touchmove", onMove);
+    window.removeEventListener("touchend", onUp);
+  }
+
+  window.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+  window.addEventListener("touchmove", onMove, {passive:false});
+  window.addEventListener("touchend", onUp);
+}
+
+// --- Pinch Zoom for Images ---
+function handlePinchZoom(e, id) {
+  if (e.touches && e.touches.length === 2) {
+    e.preventDefault();
+    const [touch1, touch2] = e.touches;
+    const dist = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+    if (!images.find(im => im.id === id).initialDistance) {
+      setImages(imgs => imgs.map(im => im.id === id ? {...im, initialDistance: dist, initialScale: im.scale} : im));
+      return;
+    }
+    const img = images.find(im => im.id === id);
+    const newScale = img.initialScale * (dist / img.initialDistance);
+    changeImageScale(id, newScale);
+  }
+}
+
+function resetPinchZoom(id) {
+  setImages(imgs => imgs.map(im => im.id === id ? {...im, initialDistance: null, initialScale: null} : im));
+}
+		
     </script>
   </body>
 </html>
