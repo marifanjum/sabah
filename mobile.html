@@ -19,12 +19,11 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         src: url("https://db.onlinewebfonts.com/t/11650c78ba93a8c78b44eff5c3628f9e.eot");
         src: url("https://db.onlinewebfonts.com/t/11650c78ba93a8c78b44eff5c3628f9e.eot?#iefix") format("embedded-opentype"),
           url("https://db.onlinewebfonts.com/t/11650c78ba93a8c78b44eff5c3628f9e.woff2") format("woff2"),
-          url("https://db.onlinewebfonts.com/t/11650c78ba93a8c78f9e.woff") format("woff"),
+          url("https://db.onlinewebfonts.com/t/11650c78ba93a8c78b44eff5c3628f9e.woff") format("woff"),
           url("https://db.onlinewebfonts.com/t/11650c78ba93a8c78b44eff5c3628f9e.ttf") format("truetype"),
           url("https://db.onlinewebfonts.com/t/11650c78ba93a8c78b44eff5c3628f9e.svg#Pangea Afrikan Trial") format("svg");
       }
 
-      /* Simple slide-out animation for the drawer */
       @keyframes slide-in {
         from {
           transform: translateX(100%);
@@ -37,7 +36,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         animation: slide-in 0.3s ease-out forwards;
       }
 
-      /* Blurry background for the drawer overlay */
       .drawer-overlay {
         backdrop-filter: blur(2px);
         background-color: rgba(0, 0, 0, 0.4);
@@ -77,6 +75,10 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         const [showControls, setShowControls] = useState(false);
         const [touchStartDist, setTouchStartDist] = useState(null);
 
+        // --- ADDED FOR FEATHERING / BLENDING BORDERS ---
+        const [feather, setFeather] = useState({ enabled: false, radius: 25 });
+        const featherRef = useRef(null);
+        
         // Load data from local storage on initial render
         useEffect(() => {
           try {
@@ -100,6 +102,8 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
               if (parsedData.stroke) setStroke(parsedData.stroke);
               if (parsedData.sideline) setSideline(parsedData.sideline);
               if (parsedData.fitMode) setFitMode(parsedData.fitMode);
+              // Load feather state
+              if (parsedData.feather) setFeather(parsedData.feather);
             }
           } catch (e) {
             console.error("Failed to load data from localStorage", e);
@@ -110,7 +114,9 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         useEffect(() => {
             const dataToSave = {
                 headline, images, width, height, fontSize, lineHeight, fontFamily, textColor,
-                textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode
+                textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode,
+                // Save feather state
+                feather
             };
             try {
                 localStorage.setItem('socialCardData', JSON.stringify(dataToSave));
@@ -118,7 +124,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                 console.error("Failed to save data to localStorage", e);
             }
         }, [headline, images, width, height, fontSize, lineHeight, fontFamily, textColor,
-            textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode]);
+            textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode, feather]);
 
         // Add a warning before the user closes or refreshes the page
         useEffect(() => {
@@ -161,7 +167,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           );
         }
 
-        // --- UPDATED Dragging Logic for Text & Images to handle touch events ---
         function startDragImage(e, id) {
           e.preventDefault();
           setActiveImageId(id);
@@ -243,7 +248,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           setActiveImageId(id);
           const maxZ = Math.max(...images.map(im => im.zIndex));
           setImages((imgs) => imgs.map(im => im.id === id ? { ...im, zIndex: maxZ + 1 } : im));
-          // Open the controls drawer for mobile when an image is selected
           setShowControls(true);
         }
 
@@ -255,7 +259,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             {/* Main Preview Area */}
             <div className="flex flex-col items-center justify-center p-4">
               <div className="mb-2">Preview (Output size: {width}×{height})</div>
-              <div className="relative mx-auto bg-black overflow-hidden shadow-2xl" style={{width,height}}>
+              <div ref={containerRef} className="relative mx-auto bg-black overflow-hidden shadow-2xl" style={{width,height}}>
                 {/* Images */}
                 {images.sort((a, b) => a.zIndex - b.zIndex).map(img => (
                   <img key={img.id} src={img.src} 
@@ -269,7 +273,10 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                          cursor: "grab",
                          width: fitMode === "stretch" ? "100%" : "auto",
                          height: fitMode === "stretch" ? "100%" : "auto",
-                         border: activeImageId === img.id ? '2px solid #3b82f6' : 'none'
+                         border: activeImageId === img.id ? '2px solid #3b82f6' : 'none',
+                         // --- ADDED FOR FEATHERING ---
+                         maskImage: feather.enabled ? `radial-gradient(ellipse at center, transparent, black ${feather.radius}%, transparent 100%)` : 'none',
+                         WebkitMaskImage: feather.enabled ? `-webkit-radial-gradient(ellipse at center, transparent, black ${feather.radius}%, transparent 100%)` : 'none'
                        }}
                   />
                 ))}
@@ -364,6 +371,19 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                         <div className="flex gap-2 mt-1">
                             <button onClick={() => bringForward(activeImage.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Bring Forward</button>
                             <button onClick={() => sendBackward(activeImage.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Send Backward</button>
+                        </div>
+                        {/* --- ADDED FOR FEATHERING --- */}
+                        <div className="bg-white p-3 rounded shadow">
+                          <label className="flex items-center">
+                              <input type="checkbox" checked={feather.enabled} onChange={e => setFeather({...feather, enabled: e.target.checked})} />
+                              <span className="ml-2">Enable Feathering</span>
+                          </label>
+                          {feather.enabled && (
+                            <div className="mt-2">
+                                <label className="block text-sm">Feather Radius ({feather.radius}%)</label>
+                                <input type="range" min="0" max="100" value={feather.radius} onChange={e => setFeather({...feather, radius: parseInt(e.target.value)})} className="w-full" />
+                            </div>
+                          )}
                         </div>
                     </div>
                   )}
@@ -539,6 +559,33 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                     <label className="block text-sm font-medium">Upload images</label>
                     <input type="file" accept="image/*" multiple onChange={onImageUpload} className="mt-2"/>
                   </div>
+                  
+                  {images.map(img=>(
+                    <div key={img.id} className={`bg-gray-50 p-3 rounded shadow space-y-1 ${activeImageId === img.id ? 'border-2 border-blue-500' : ''}`}>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Image {img.id}</span>
+                        <button onClick={()=>deleteImage(img.id)} className="text-red-500 text-sm">Delete</button>
+                      </div>
+                      <label className="block text-sm">Zoom</label>
+                      <input type="range" min="0.1" max="3" step="0.05" value={img.scale} onChange={e => changeImageScale(img.id, parseFloat(e.target.value))} className="w-full" />
+                      <div className="flex gap-2 mt-1">
+                        <button onClick={()=>bringForward(img.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Bring Forward</button>
+                        <button onClick={()=>sendBackward(img.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Send Backward</button>
+                      </div>
+                      <div className="bg-white p-3 rounded shadow mt-2">
+                        <label className="flex items-center">
+                            <input type="checkbox" checked={feather.enabled} onChange={e => setFeather({...feather, enabled: e.target.checked})} />
+                            <span className="ml-2">Enable Feathering</span>
+                        </label>
+                        {feather.enabled && (
+                          <div className="mt-2">
+                              <label className="block text-sm">Feather Radius ({feather.radius}%)</label>
+                              <input type="range" min="0" max="100" value={feather.radius} onChange={e => setFeather({...feather, radius: parseInt(e.target.value)})} className="w-full" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                   
                   <div className="bg-gray-50 p-3 rounded shadow">
                     <label className="flex items-center">
