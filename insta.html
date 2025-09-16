@@ -25,7 +25,7 @@
         const [width, setWidth] = useState(1080);
         const [height, setHeight] = useState(1080);
 
-        const [headline, setHeadline] = useState("Your headline goes here\\nSecond line optional");
+        const [headline, setHeadline] = useState("Your headline goes here\nSecond line optional");
         const [fontSize, setFontSize] = useState(72);
         const [lineHeight, setLineHeight] = useState(1.2);
         const [fontFamily, setFontFamily] = useState("Inter, Arial, sans-serif");
@@ -58,6 +58,7 @@
           setImgOffset({ x: 0, y: 0 });
         }
 
+        // --- Dragging image ---
         function startDrag(e) {
           e.preventDefault();
           const startX = e.clientX;
@@ -79,6 +80,7 @@
           window.addEventListener("mouseup", onUp);
         }
 
+        // --- Dragging text ---
         function startDragText(e) {
           e.preventDefault();
           const startX = e.clientX;
@@ -100,13 +102,13 @@
           window.addEventListener("mouseup", onUp);
         }
 
+        // --- Export ---
         function exportAsImage() {
           const canvas = document.createElement("canvas");
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext("2d");
 
-          // background
           ctx.fillStyle = "#000";
           ctx.fillRect(0, 0, width, height);
 
@@ -115,8 +117,7 @@
             img.crossOrigin = "anonymous";
             img.src = imageSrc;
             img.onload = () => {
-              let drawW = img.width;
-              let drawH = img.height;
+              let drawW, drawH;
               if (fitMode === "cover") {
                 const scale = Math.max(width / img.width, height / img.height);
                 drawW = img.width * scale * imgScale;
@@ -133,20 +134,18 @@
               const dy = (height - drawH) / 2 + imgOffset.y;
               ctx.drawImage(img, dx, dy, drawW, drawH);
 
-              // sideline
               if (sideline.show) {
                 ctx.fillStyle = sideline.color;
                 ctx.fillRect(sideline.gap, 0, sideline.width, height);
               }
 
-              // text
               ctx.font = `${fontSize}px ${fontFamily}`;
               ctx.fillStyle = textColor;
               ctx.textBaseline = "top";
               ctx.textAlign = "left";
-              const lines = headline.split("\\n");
-              let y = textPos.y;
 
+              const lines = headline.split("\n");
+              let y = textPos.y;
               lines.forEach((line) => {
                 if (shadow.enabled) {
                   ctx.shadowColor = shadow.color;
@@ -371,7 +370,7 @@
                         position: "absolute",
                         left: imgOffset.x,
                         top: imgOffset.y,
-                        transform: \`scale(\${imgScale})\`,
+                        transform: `scale(${imgScale})`,
                         transformOrigin: "center",
                         width: fitMode === "stretch" ? "100%" : "auto",
                         height: fitMode === "stretch" ? "100%" : "auto",
@@ -406,7 +405,7 @@
                       fontFamily,
                       color: textColor,
                       textShadow: shadow.enabled
-                        ? \`\${shadow.offsetX}px \${shadow.offsetY}px \${shadow.blur}px \${shadow.color}\`
+                        ? `${shadow.offsetX}px ${shadow.offsetY}px ${shadow.blur}px ${shadow.color}`
                         : "none",
                       whiteSpace: "pre-wrap",
                       cursor: "move",
