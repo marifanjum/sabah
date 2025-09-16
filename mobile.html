@@ -51,7 +51,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         const containerRef = useRef(null);
         const textRef = useRef(null);
 
-        // --- State variables for the application
         const [images, setImages] = useState([]);
         const [activeImageId, setActiveImageId] = useState(null);
         const [width, setWidth] = useState(1080);
@@ -71,14 +70,9 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         const [sideline, setSideline] = useState({ show: true, width: 4, gap: 8, height: 0, color: "#ff0000", opacity: 1 });
         const [fitMode, setFitMode] = useState("cover");
         
-        // --- ADDED FOR MOBILE UI & INTERACTION ---
         const [showControls, setShowControls] = useState(false);
         const [touchStartDist, setTouchStartDist] = useState(null);
 
-        // --- ADDED FOR FEATHERING / BLENDING BORDERS ---
-        const [feather, setFeather] = useState({ enabled: false, radius: 25 });
-        const featherRef = useRef(null);
-        
         // Load data from local storage on initial render
         useEffect(() => {
           try {
@@ -102,8 +96,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
               if (parsedData.stroke) setStroke(parsedData.stroke);
               if (parsedData.sideline) setSideline(parsedData.sideline);
               if (parsedData.fitMode) setFitMode(parsedData.fitMode);
-              // Load feather state
-              if (parsedData.feather) setFeather(parsedData.feather);
             }
           } catch (e) {
             console.error("Failed to load data from localStorage", e);
@@ -114,9 +106,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         useEffect(() => {
             const dataToSave = {
                 headline, images, width, height, fontSize, lineHeight, fontFamily, textColor,
-                textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode,
-                // Save feather state
-                feather
+                textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode
             };
             try {
                 localStorage.setItem('socialCardData', JSON.stringify(dataToSave));
@@ -124,7 +114,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                 console.error("Failed to save data to localStorage", e);
             }
         }, [headline, images, width, height, fontSize, lineHeight, fontFamily, textColor,
-            textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode, feather]);
+            textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode]);
 
         // Add a warning before the user closes or refreshes the page
         useEffect(() => {
@@ -151,9 +141,24 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           const newImages = Array.from(files).map((file, index) => ({
             id: Date.now() + index,
             src: URL.createObjectURL(file),
-            x: 0, y: 0, scale: 1, zIndex: images.length + index
+            x: 0, 
+            y: 0, 
+            scale: 1, 
+            zIndex: images.length + index,
+            // Add unique feather state for each new image
+            feather: { enabled: false, radius: 25 }
           }));
           setImages([...images, ...newImages]);
+        }
+
+        // --- UPDATED: Handler for changing feather properties on a specific image
+        function setFeatherProperty(id, property, value) {
+          setImages(imgs => imgs.map(img => {
+            if (img.id === id) {
+              return { ...img, feather: { ...img.feather, [property]: value } };
+            }
+            return img;
+          }));
         }
         
         function getCoords(e) {
@@ -260,6 +265,21 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             <div className="flex flex-col items-center justify-center p-4">
               <div className="mb-2">Preview (Output size: {width}×{height})</div>
               <div ref={containerRef} className="relative mx-auto bg-black overflow-hidden shadow-2xl" style={{width,height}}>
+                {/* SVG for masks - this is critical for html2canvas compatibility */}
+                <svg width="0" height="0" className="absolute">
+                  {images.map(img => img.feather.enabled && (
+                    <mask id={`mask-${img.id}`}>
+                      <rect x="0" y="0" width="100%" height="100%" fill="url(#grad-${img.id})" />
+                    </mask>
+                  ))}
+                  {images.map(img => img.feather.enabled && (
+                    <radialGradient id={`grad-${img.id}`} cx="50%" cy="50%" r="50%">
+                      <stop offset={`${100 - img.feather.radius}%`} stopColor="white" stopOpacity="1" />
+                      <stop offset="100%" stopColor="white" stopOpacity="0" />
+                    </radialGradient>
+                  ))}
+                </svg>
+
                 {/* Images */}
                 {images.sort((a, b) => a.zIndex - b.zIndex).map(img => (
                   <img key={img.id} src={img.src} 
@@ -274,9 +294,8 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                          width: fitMode === "stretch" ? "100%" : "auto",
                          height: fitMode === "stretch" ? "100%" : "auto",
                          border: activeImageId === img.id ? '2px solid #3b82f6' : 'none',
-                         // --- ADDED FOR FEATHERING ---
-                         maskImage: feather.enabled ? `radial-gradient(ellipse at center, transparent, black ${feather.radius}%, transparent 100%)` : 'none',
-                         WebkitMaskImage: feather.enabled ? `-webkit-radial-gradient(ellipse at center, transparent, black ${feather.radius}%, transparent 100%)` : 'none'
+                         mask: img.feather.enabled ? `url(#mask-${img.id})` : 'none',
+                         WebkitMask: img.feather.enabled ? `url(#mask-${img.id})` : 'none'
                        }}
                   />
                 ))}
@@ -329,11 +348,9 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                     </svg>
                   </button>
                 </div>
-                {/* All the existing control sections */}
                 <div className="w-full space-y-4">
                   <h2 className="text-xl font-semibold">Controls</h2>
                   
-                  {/* Headline */}
                   <div className="bg-gray-50 p-3 rounded shadow">
                     <label className="block text-sm font-medium">Headline</label>
                     <textarea dir={direction} value={headline} onChange={e=>setHeadline(e.target.value)} className="w-full border p-2 rounded" />
@@ -358,7 +375,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                     </select>
                   </div>
 
-                  {/* Image specific controls for the active image */}
                   {activeImage && (
                     <div className="bg-blue-50 p-3 rounded shadow space-y-2">
                         <h3 className="text-lg font-medium">Image Controls</h3>
@@ -372,23 +388,21 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                             <button onClick={() => bringForward(activeImage.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Bring Forward</button>
                             <button onClick={() => sendBackward(activeImage.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Send Backward</button>
                         </div>
-                        {/* --- ADDED FOR FEATHERING --- */}
                         <div className="bg-white p-3 rounded shadow">
                           <label className="flex items-center">
-                              <input type="checkbox" checked={feather.enabled} onChange={e => setFeather({...feather, enabled: e.target.checked})} />
+                              <input type="checkbox" checked={activeImage.feather.enabled} onChange={e => setFeatherProperty(activeImage.id, 'enabled', e.target.checked)} />
                               <span className="ml-2">Enable Feathering</span>
                           </label>
-                          {feather.enabled && (
+                          {activeImage.feather.enabled && (
                             <div className="mt-2">
-                                <label className="block text-sm">Feather Radius ({feather.radius}%)</label>
-                                <input type="range" min="0" max="100" value={feather.radius} onChange={e => setFeather({...feather, radius: parseInt(e.target.value)})} className="w-full" />
+                                <label className="block text-sm">Feather Radius ({activeImage.feather.radius}%)</label>
+                                <input type="range" min="0" max="100" value={activeImage.feather.radius} onChange={e => setFeatherProperty(activeImage.id, 'radius', parseInt(e.target.value))} className="w-full" />
                             </div>
                           )}
                         </div>
                     </div>
                   )}
 
-                  {/* Rest of the controls */}
                   <div className="bg-gray-50 p-3 rounded shadow">
                     <label className="flex items-center">
                       <input type="checkbox" checked={shadow.enabled} onChange={e=>setShadow({...shadow,enabled:e.target.checked})}/>
@@ -491,7 +505,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             <div className="hidden md:block fixed top-0 left-0 h-full w-96 bg-white p-4 overflow-y-auto shadow-lg z-50">
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold">Controls</h2>
-                {/* All the existing control sections */}
                 <div className="bg-gray-50 p-3 rounded shadow">
                     <label className="block text-sm font-medium">Headline</label>
                     <textarea dir={direction} value={headline} onChange={e=>setHeadline(e.target.value)} className="w-full border p-2 rounded" />
@@ -574,13 +587,13 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                       </div>
                       <div className="bg-white p-3 rounded shadow mt-2">
                         <label className="flex items-center">
-                            <input type="checkbox" checked={feather.enabled} onChange={e => setFeather({...feather, enabled: e.target.checked})} />
+                            <input type="checkbox" checked={img.feather.enabled} onChange={e => setFeatherProperty(img.id, 'enabled', e.target.checked)} />
                             <span className="ml-2">Enable Feathering</span>
                         </label>
-                        {feather.enabled && (
+                        {img.feather.enabled && (
                           <div className="mt-2">
-                              <label className="block text-sm">Feather Radius ({feather.radius}%)</label>
-                              <input type="range" min="0" max="100" value={feather.radius} onChange={e => setFeather({...feather, radius: parseInt(e.target.value)})} className="w-full" />
+                              <label className="block text-sm">Feather Radius ({img.feather.radius}%)</label>
+                              <input type="range" min="0" max="100" value={img.feather.radius} onChange={e => setFeatherProperty(img.id, 'radius', parseInt(e.target.value))} className="w-full" />
                           </div>
                         )}
                       </div>
