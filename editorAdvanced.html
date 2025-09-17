@@ -237,6 +237,8 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                 clonedLine.style.top = currentTop + verticalOffset + "px";
             });
           }}).then((canvas)=>{
+			  // Deselect all images first
+  setActiveImageId(null);
             const link = document.createElement("a");
             link.download = (fileName && fileName.trim()?fileName.trim():"social-card")+".png";
             link.href = canvas.toDataURL("image/png"); link.click();
