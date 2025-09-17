@@ -32,54 +32,78 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
       function SocialCardGenerator() {
         const { useState, useRef, useEffect } = React;
         const containerRef = useRef(null);
-        const textRef = useRef(null);
 
         // --- State variables for the application
         const [images, setImages] = useState([]);
         const [activeImageId, setActiveImageId] = useState(null);
         const [width, setWidth] = useState(1080);
         const [height, setHeight] = useState(1080);
-        const [headline, setHeadline] = useState("Headline here");
-        const [fontSize, setFontSize] = useState(90);
-        const [lineHeight, setLineHeight] = useState(1.2);
-        const [fontFamily, setFontFamily] = useState("JameelNooriNastaliq");
-        const [textColor, setTextColor] = useState("#ffffff");
-        const [textPos, setTextPos] = useState({ x: 100, y: 200 });
-        const [direction, setDirection] = useState("rtl");
         const [logo, setLogo] = useState({ show: true, position: "top-right" });
         const [fileName, setFileName] = useState("social-card");
-        const [sidelineOffset, setSidelineOffset] = useState(0);
-        const [shadow, setShadow] = useState({ enabled: true, offsetX: 2, offsetY: 2, blur: 6, color: "rgba(0,0,0,0.6)" });
-        const [stroke, setStroke] = useState({ enabled: false, width: 1, color: "#000000" });
-        const [sideline, setSideline] = useState({ show: true, width: 30, gap: 60, height: 0, color: "#ff0000", opacity: 1 });
         const [fitMode, setFitMode] = useState("cover");
-		const [vignette, setVignette] = useState({ show: false, x: 0, y: 0, scale: 1 });
+		    const [vignette, setVignette] = useState({ show: false, x: 0, y: 0, scale: 1 });
 
-        // --- ADDED FOR DATA PERSISTENCE & WARNING ---
-        
-        // Load data from local storage on initial render
+        // --- NEW: Multiple Headlines & Collapsible Logic ---
+        const [headlines, setHeadlines] = useState([{
+            id: Date.now(),
+            text: "Headline here",
+            fontSize: 90,
+            lineHeight: 1.2,
+            fontFamily: "JameelNooriNastaliq",
+            textColor: "#ffffff",
+            textPos: { x: 100, y: 200 },
+            direction: "rtl",
+            sidelineOffset: 0,
+            shadow: { enabled: true, offsetX: 2, offsetY: 2, blur: 6, color: "rgba(0,0,0,0.6)" },
+            stroke: { enabled: false, width: 1, color: "#000000" },
+            sideline: { show: true, width: 30, gap: 60, height: 0, color: "#ff0000", opacity: 1 },
+            isCollapsed: false,
+        }]);
+        const [expandedHeadlineId, setExpandedHeadlineId] = useState(null);
+        const headlineRefs = useRef({});
+
+        function addHeadline() {
+            const newHeadline = {
+                id: Date.now(),
+                text: "New Headline",
+                fontSize: 60,
+                lineHeight: 1.2,
+                fontFamily: "JameelNooriNastaliq",
+                textColor: "#ffffff",
+                textPos: { x: 100, y: 300 },
+                direction: "rtl",
+                sidelineOffset: 0,
+                shadow: { enabled: true, offsetX: 2, offsetY: 2, blur: 6, color: "rgba(0,0,0,0.6)" },
+                stroke: { enabled: false, width: 1, color: "#000000" },
+                sideline: { show: true, width: 30, gap: 60, height: 0, color: "#ff0000", opacity: 1 },
+                isCollapsed: false,
+            };
+            setHeadlines([...headlines, newHeadline]);
+        }
+
+        function updateHeadline(id, updatedProps) {
+            setHeadlines(current => current.map(h => h.id === id ? { ...h, ...updatedProps } : h));
+        }
+
+        function deleteHeadline(id) {
+            setHeadlines(current => current.filter(h => h.id !== id));
+            if (expandedHeadlineId === id) {
+                setExpandedHeadlineId(null);
+            }
+        }
+
+        // --- Data Persistence & Warning ---
         useEffect(() => {
           try {
             const savedData = localStorage.getItem('socialCardData');
             if (savedData) {
               const parsedData = JSON.parse(savedData);
-              // Safely set each state variable from the parsed data
-              if (parsedData.headline) setHeadline(parsedData.headline);
+              if (parsedData.headlines) setHeadlines(parsedData.headlines);
               if (parsedData.images) setImages(parsedData.images);
               if (parsedData.width) setWidth(parsedData.width);
               if (parsedData.height) setHeight(parsedData.height);
-              if (parsedData.fontSize) setFontSize(parsedData.fontSize);
-              if (parsedData.lineHeight) setLineHeight(parsedData.lineHeight);
-              if (parsedData.fontFamily) setFontFamily(parsedData.fontFamily);
-              if (parsedData.textColor) setTextColor(parsedData.textColor);
-              if (parsedData.textPos) setTextPos(parsedData.textPos);
-              if (parsedData.direction) setDirection(parsedData.direction);
               if (parsedData.logo) setLogo(parsedData.logo);
               if (parsedData.fileName) setFileName(parsedData.fileName);
-              if (parsedData.sidelineOffset) setSidelineOffset(parsedData.sidelineOffset);
-              if (parsedData.shadow) setShadow(parsedData.shadow);
-              if (parsedData.stroke) setStroke(parsedData.stroke);
-              if (parsedData.sideline) setSideline(parsedData.sideline);
               if (parsedData.fitMode) setFitMode(parsedData.fitMode);
             }
           } catch (e) {
@@ -87,26 +111,21 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           }
         }, []);
 
-        // Save data to local storage whenever a relevant state variable changes
         useEffect(() => {
             const dataToSave = {
-                headline, images, width, height, fontSize, lineHeight, fontFamily, textColor,
-                textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode
+                headlines, images, width, height, logo, fileName, fitMode
             };
             try {
                 localStorage.setItem('socialCardData', JSON.stringify(dataToSave));
             } catch (e) {
                 console.error("Failed to save data to localStorage", e);
             }
-        }, [headline, images, width, height, fontSize, lineHeight, fontFamily, textColor,
-            textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode]);
+        }, [headlines, images, width, height, logo, fileName, fitMode]);
 
-        // Add a warning before the user closes or refreshes the page
         useEffect(() => {
           const handleBeforeUnload = (e) => {
-            // Cancel the event and show the confirmation message
             e.preventDefault();
-            e.returnValue = ''; // Required for older browsers
+            e.returnValue = '';
           };
           window.addEventListener('beforeunload', handleBeforeUnload);
 
@@ -115,13 +134,15 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           };
         }, []);
 
-        // --- END OF ADDED CODE ---
-
+        // Update sideline height dynamically
         useEffect(() => {
-          if (textRef.current && sideline.height === 0) {
-            setSideline((s) => ({ ...s, height: textRef.current.offsetHeight }));
-          }
-        }, [headline, fontSize, lineHeight, fontFamily]);
+            headlines.forEach(headline => {
+                const ref = headlineRefs.current[headline.id];
+                if (ref && headline.sideline.height === 0) {
+                    updateHeadline(headline.id, { sideline: { ...headline.sideline, height: ref.offsetHeight } });
+                }
+            });
+        }, [headlines]);
 
         function onImageUpload(e) {
           const files = e.target.files;
@@ -165,13 +186,14 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           window.addEventListener("touchend", onUp);
         }
 
-        function startDragText(e) {
+        function startDragText(e, id) {
           e.preventDefault();
           const { x: startX, y: startY } = getCoords(e);
-          const initPos = {...textPos};
+          const headline = headlines.find(h => h.id === id);
+          const initPos = {...headline.textPos};
           function onMove(ev) {
             const { x: currentX, y: currentY } = getCoords(ev);
-            setTextPos({x: initPos.x + currentX - startX, y: initPos.y + currentY - startY});
+            updateHeadline(id, { textPos: { x: initPos.x + currentX - startX, y: initPos.y + currentY - startY } });
           }
           function onUp() {
             window.removeEventListener("mousemove", onMove);
@@ -209,8 +231,11 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           if (!containerRef.current) return;
           const verticalOffset = 3;
           html2canvas(containerRef.current, {useCORS:true, scale:1, onclone:(clonedDoc)=> {
-            const clonedLine = clonedDoc.querySelector(".sideline-clone");
-            if(clonedLine){ const currentTop = parseFloat(clonedLine.style.top||"0"); clonedLine.style.top=currentTop+verticalOffset+"px";}
+            const clonedLines = clonedDoc.querySelectorAll(".sideline-clone");
+            clonedLines.forEach(clonedLine => {
+                const currentTop = parseFloat(clonedLine.style.top || "0");
+                clonedLine.style.top = currentTop + verticalOffset + "px";
+            });
           }}).then((canvas)=>{
             const link = document.createElement("a");
             link.download = (fileName && fileName.trim()?fileName.trim():"social-card")+".png";
@@ -227,7 +252,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           const maxZ = Math.max(...images.map(im => im.zIndex));
           setImages((imgs) => imgs.map(im => im.id === id ? { ...im, zIndex: maxZ + 1 } : im));
         }
-
+        
         return (
           <div className="p-4 max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row gap-6">
@@ -235,71 +260,87 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
               <div className="w-full md:w-96 space-y-4">
                 <h2 className="text-xl font-semibold">Controls</h2>
 
-                {/* Headline */}
+                {/* Multiple Headlines */}
                 <div className="bg-white p-3 rounded shadow">
-                  <label className="block text-sm font-medium">Headline</label>
-                  <textarea dir={direction} value={headline} onChange={e=>setHeadline(e.target.value)} className="w-full border p-2 rounded" />
-                  <label className="block text-sm mt-2">Font size</label>
-                  <input type="number" value={fontSize} onChange={e=>setFontSize(parseInt(e.target.value))} className="w-full border p-1 rounded"/>
-                  <label className="block text-sm mt-2">Line height</label>
-                  <input type="number" step="0.1" value={lineHeight} onChange={e=>setLineHeight(parseFloat(e.target.value))} className="w-full border p-1 rounded"/>
-                  <label className="block text-sm mt-2">Text color</label>
-                  <input type="color" value={textColor} onChange={e=>setTextColor(e.target.value)}/>
-                  <label className="block text-sm mt-3">Font family</label>
-                  <select value={fontFamily} onChange={e=>setFontFamily(e.target.value)} className="w-full border p-1 rounded mt-2">
-                    <option value="Jameel Noori Nastaleeq">Jameel Noori Nastaleeq</option>
-					<option value="JameelNooriNastaliq">Jameel Noori embed</option>
-                    <option value="Pangea Afrikan Trial">Pangea</option>
-                    <option value="Tahoma">Tahoma</option>
-                    <option value="Arial">Arial</option>
-                  </select>
-                  <label className="block text-sm mt-3">Text direction</label>
-                  <select value={direction} onChange={e=>setDirection(e.target.value)} className="w-full border p-1 rounded mt-2">
-                    <option value="ltr">Left to Right</option>
-                    <option value="rtl">Right to Left</option>
-                  </select>
-                </div>
+                    <h3 className="text-lg font-medium mb-2">Headlines</h3>
+                    <button onClick={addHeadline} className="w-full bg-green-500 text-white py-1 rounded mb-2">Add New Headline</button>
+                    {headlines.map(headline => (
+                        <div key={headline.id} className="border-b last:border-b-0 py-2">
+                            <div className="flex justify-between items-center cursor-pointer" onClick={() => setExpandedHeadlineId(expandedHeadlineId === headline.id ? null : headline.id)}>
+                                <span className="font-semibold">{headline.text.substring(0, 20)}...</span>
+                                <span>{expandedHeadlineId === headline.id ? '▲' : '▼'}</span>
+                            </div>
+                            {expandedHeadlineId === headline.id && (
+                                <div className="mt-2 space-y-2">
+                                    <label className="block text-sm font-medium">Text</label>
+                                    <textarea dir={headline.direction} value={headline.text} onChange={e => updateHeadline(headline.id, { text: e.target.value })} className="w-full border p-2 rounded" />
+                                    <label className="block text-sm mt-2">Font size</label>
+                                    <input type="number" value={headline.fontSize} onChange={e => updateHeadline(headline.id, { fontSize: parseInt(e.target.value) })} className="w-full border p-1 rounded"/>
+                                    <label className="block text-sm mt-2">Line height</label>
+                                    <input type="number" step="0.1" value={headline.lineHeight} onChange={e => updateHeadline(headline.id, { lineHeight: parseFloat(e.target.value) })} className="w-full border p-1 rounded"/>
+                                    <label className="block text-sm mt-2">Text color</label>
+                                    <input type="color" value={headline.textColor} onChange={e => updateHeadline(headline.id, { textColor: e.target.value })}/>
+                                    <label className="block text-sm mt-3">Font family</label>
+                                    <select value={headline.fontFamily} onChange={e => updateHeadline(headline.id, { fontFamily: e.target.value })} className="w-full border p-1 rounded mt-2">
+                                        <option value="Jameel Noori Nastaleeq">Jameel Noori Nastaleeq</option>
+                                        <option value="JameelNooriNastaliq">Jameel Noori embed</option>
+                                        <option value="Pangea Afrikan Trial">Pangea</option>
+                                        <option value="Tahoma">Tahoma</option>
+                                        <option value="Arial">Arial</option>
+                                    </select>
+                                    <label className="block text-sm mt-3">Text direction</label>
+                                    <select value={headline.direction} onChange={e => updateHeadline(headline.id, { direction: e.target.value })} className="w-full border p-1 rounded mt-2">
+                                        <option value="ltr">Left to Right</option>
+                                        <option value="rtl">Right to Left</option>
+                                    </select>
 
-                {/* Shadow */}
-                <div className="bg-white p-3 rounded shadow">
-                  <label className="flex items-center">
-                    <input type="checkbox" checked={shadow.enabled} onChange={e=>setShadow({...shadow,enabled:e.target.checked})}/>
-                    <span className="ml-2">Enable shadow</span>
-                  </label>
-                  {shadow.enabled && <div className="mt-2 grid grid-cols-2 gap-2">
-                    <label className="text-sm">OffsetX<input type="number" value={shadow.offsetX} onChange={e=>setShadow({...shadow,offsetX:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
-                    <label className="text-sm">OffsetY<input type="number" value={shadow.offsetY} onChange={e=>setShadow({...shadow,offsetY:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
-                    <label className="text-sm">Blur<input type="number" value={shadow.blur} onChange={e=>setShadow({...shadow,blur:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
-                    <label className="text-sm">Color<input type="color" value={shadow.color} onChange={e=>setShadow({...shadow,color:e.target.value})} className="w-full border p-1 rounded"/></label>
-                  </div>}
-                </div>
+                                    {/* Shadow Controls */}
+                                    <div className="mt-4">
+                                        <label className="flex items-center">
+                                            <input type="checkbox" checked={headline.shadow.enabled} onChange={e => updateHeadline(headline.id, { shadow: { ...headline.shadow, enabled: e.target.checked } })}/>
+                                            <span className="ml-2">Enable shadow</span>
+                                        </label>
+                                        {headline.shadow.enabled && <div className="mt-2 grid grid-cols-2 gap-2">
+                                            <label className="text-sm">OffsetX<input type="number" value={headline.shadow.offsetX} onChange={e => updateHeadline(headline.id, { shadow: { ...headline.shadow, offsetX: parseInt(e.target.value) } })} className="w-full border p-1 rounded"/></label>
+                                            <label className="text-sm">OffsetY<input type="number" value={headline.shadow.offsetY} onChange={e => updateHeadline(headline.id, { shadow: { ...headline.shadow, offsetY: parseInt(e.target.value) } })} className="w-full border p-1 rounded"/></label>
+                                            <label className="text-sm">Blur<input type="number" value={headline.shadow.blur} onChange={e => updateHeadline(headline.id, { shadow: { ...headline.shadow, blur: parseInt(e.target.value) } })} className="w-full border p-1 rounded"/></label>
+                                            <label className="text-sm">Color<input type="color" value={headline.shadow.color} onChange={e => updateHeadline(headline.id, { shadow: { ...headline.shadow, color: e.target.value } })} className="w-full border p-1 rounded"/></label>
+                                        </div>}
+                                    </div>
+                                    
+                                    {/* Stroke Controls */}
+                                    <div className="mt-4">
+                                      <label className="flex items-center">
+                                        <input type="checkbox" checked={headline.stroke.enabled} onChange={e=>updateHeadline(headline.id, {stroke:{...headline.stroke,enabled:e.target.checked}})}/>
+                                        <span className="ml-2">Enable stroke</span>
+                                      </label>
+                                      {headline.stroke.enabled && <div className="mt-2 grid grid-cols-2 gap-2">
+                                        <label className="text-sm">Width<input type="number" value={headline.stroke.width} onChange={e=>updateHeadline(headline.id, {stroke:{...headline.stroke,width:parseInt(e.target.value)}})} className="w-full border p-1 rounded"/></label>
+                                        <label className="text-sm">Color<input type="color" value={headline.stroke.color} onChange={e=>updateHeadline(headline.id, {stroke:{...headline.stroke,color:e.target.value}})} className="w-full border p-1 rounded"/></label>
+                                      </div>}
+                                    </div>
 
-                {/* Stroke */}
-                <div className="bg-white p-3 rounded shadow">
-                  <label className="flex items-center">
-                    <input type="checkbox" checked={stroke.enabled} onChange={e=>setStroke({...stroke,enabled:e.target.checked})}/>
-                    <span className="ml-2">Enable stroke</span>
-                  </label>
-                  {stroke.enabled && <div className="mt-2 grid grid-cols-2 gap-2">
-                    <label className="text-sm">Width<input type="number" value={stroke.width} onChange={e=>setStroke({...stroke,width:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
-                    <label className="text-sm">Color<input type="color" value={stroke.color} onChange={e=>setStroke({...stroke,color:e.target.value})} className="w-full border p-1 rounded"/></label>
-                  </div>}
-                </div>
+                                    {/* Sideline Controls */}
+                                    <div className="mt-4">
+                                      <label className="flex items-center">
+                                        <input type="checkbox" checked={headline.sideline.show} onChange={e=>updateHeadline(headline.id, {sideline:{...headline.sideline,show:e.target.checked}})}/>
+                                        <span className="ml-2">Show sideline</span>
+                                      </label>
+                                      {headline.sideline.show && <>
+                                        <label className="block text-sm">Width<input type="number" value={headline.sideline.width} onChange={e=>updateHeadline(headline.id, {sideline:{...headline.sideline,width:parseInt(e.target.value)}})} className="w-full border p-1 rounded"/></label>
+                                        <label className="block text-sm">Gap<input type="number" value={headline.sideline.gap} onChange={e=>updateHeadline(headline.id, {sideline:{...headline.sideline,gap:parseInt(e.target.value)}})} className="w-full border p-1 rounded"/></label>
+                                        <label className="block text-sm">Height<input type="number" value={headline.sideline.height} onChange={e=>updateHeadline(headline.id, {sideline:{...headline.sideline,height:parseInt(e.target.value)}})} className="w-full border p-1 rounded"/></label>
+                                        <label className="block text-sm">Color<input type="color" value={headline.sideline.color} onChange={e=>updateHeadline(headline.id, {sideline:{...headline.sideline,color:e.target.value}})} className="w-full border p-1 rounded"/></label>
+                                        <label className="block text-sm">Transparency<input type="range" min="0" max="1" step="0.05" value={headline.sideline.opacity} onChange={e=>updateHeadline(headline.id, {sideline:{...headline.sideline,opacity:parseFloat(e.target.value)}})} className="w-full"/></label>
+                                        <label className="block text-sm">Vertical offset<input type="number" value={headline.sidelineOffset} onChange={e=>updateHeadline(headline.id, {sidelineOffset:parseInt(e.target.value)})} className="w-full border p-1 rounded mt-1"/></label>
+                                      </>}
+                                    </div>
 
-                {/* Sideline */}
-                <div className="bg-white p-3 rounded shadow">
-                  <label className="flex items-center">
-                    <input type="checkbox" checked={sideline.show} onChange={e=>setSideline({...sideline,show:e.target.checked})}/>
-                    <span className="ml-2">Show sideline</span>
-                  </label>
-                  {sideline.show && <>
-                    <label className="block text-sm">Width<input type="number" value={sideline.width} onChange={e=>setSideline({...sideline,width:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
-                    <label className="block text-sm">Gap<input type="number" value={sideline.gap} onChange={e=>setSideline({...sideline,gap:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
-                    <label className="block text-sm">Height<input type="number" value={sideline.height} onChange={e=>setSideline({...sideline,height:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
-                    <label className="block text-sm">Color<input type="color" value={sideline.color} onChange={e=>setSideline({...sideline,color:e.target.value})} className="w-full border p-1 rounded"/></label>
-                    <label className="block text-sm">Transparency<input type="range" min="0" max="1" step="0.05" value={sideline.opacity} onChange={e=>setSideline({...sideline,opacity:parseFloat(e.target.value)})} className="w-full"/></label>
-                    <label className="block text-sm">Vertical offset<input type="number" value={sidelineOffset} onChange={e=>setSidelineOffset(parseInt(e.target.value))} className="w-full border p-1 rounded mt-1"/></label>
-                  </>}
+                                    <button onClick={() => deleteHeadline(headline.id)} className="w-full bg-red-500 text-white py-1 rounded mt-2">Delete</button>
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
 
 				  <div className="bg-white p-3 rounded shadow space-y-1">
@@ -413,7 +454,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                              width:fitMode==="stretch"?"100%":"auto",
                              height:fitMode==="stretch"?"100%":"auto",
                              maxWidth:fitMode!=="stretch"?"none":"100%",
-                             maxHeight:fitMode!=="stretch"?"none":"100%",
+                             maxHeight:fitMode!=100%"none":"100%",
                              border: activeImageId === img.id ? '2px solid #3b82f6' : 'none'
                            }}
                       />
@@ -439,25 +480,39 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                       ,...(logo.position==="bottom-right"?{right:30,bottom:150}:{})
                     }}/>}
 
-					   {/* Sideline */}
-                    {sideline.show && <div className="sideline-clone" style={{
-                      position:"absolute",
-                      [direction==="ltr"?"left":"right"]:sideline.gap,
-                      top:textPos.y+sidelineOffset,
-                      height:sideline.height||textRef.current?.offsetHeight||0,
-                      width:sideline.width,
-                      background:sideline.color,
-                      opacity:sideline.opacity
-                    }}/>}
-					  
-                    {/* Headline */}
-                    <div ref={textRef} onMouseDown={startDragText} onTouchStart={startDragText} dir={direction} style={{
-                      position:"absolute", left:textPos.x, top:textPos.y,
-                      fontSize,lineHeight,fontFamily,color:textColor,
-                      textShadow: shadow.enabled?`${shadow.offsetX}px ${shadow.offsetY}px ${shadow.blur}px ${shadow.color}`:"none",
-                      WebkitTextStroke: stroke.enabled?`${stroke.width}px ${stroke.color}`:"none",
-                      whiteSpace:"pre-wrap", cursor:"move"
-                    }}>{headline}</div>
+                    {/* Multiple Headlines */}
+                    {headlines.map(headline => (
+                      <React.Fragment key={headline.id}>
+                        {headline.sideline.show && <div className="sideline-clone" style={{
+                            position:"absolute",
+                            [headline.direction==="ltr"?"left":"right"]:headline.textPos.x-headline.sideline.gap,
+                            top:headline.textPos.y+headline.sidelineOffset,
+                            height:headline.sideline.height||0,
+                            width:headline.sideline.width,
+                            background:headline.sideline.color,
+                            opacity:headline.sideline.opacity
+                        }}/>}
+                        <div ref={el => headlineRefs.current[headline.id] = el} 
+                            onMouseDown={e => startDragText(e, headline.id)} 
+                            onTouchStart={e => startDragText(e, headline.id)} 
+                            dir={headline.direction} 
+                            style={{
+                                position:"absolute", 
+                                left:headline.textPos.x, 
+                                top:headline.textPos.y,
+                                fontSize: headline.fontSize,
+                                lineHeight: headline.lineHeight,
+                                fontFamily: headline.fontFamily,
+                                color: headline.textColor,
+                                textShadow: headline.shadow.enabled ? `${headline.shadow.offsetX}px ${headline.shadow.offsetY}px ${headline.shadow.blur}px ${headline.shadow.color}` : "none",
+                                WebkitTextStroke: headline.stroke.enabled ? `${headline.stroke.width}px ${headline.stroke.color}` : "none",
+                                whiteSpace:"pre-wrap", 
+                                cursor:"move"
+                            }}>
+                            {headline.text}
+                        </div>
+                      </React.Fragment>
+                    ))}
                   </div>
                 </div>
               </div>
