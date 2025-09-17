@@ -52,7 +52,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             sidelineOffset: 0,
             shadow: { enabled: true, offsetX: 2, offsetY: 2, blur: 6, color: "rgba(0,0,0,0.6)" },
             stroke: { enabled: false, width: 1, color: "#000000" },
-            sideline: { show: true, width: 4, gap: 8, height: 0, color: "#ff0000", opacity: 1 },
+            sideline: { show: true, width: 20, gap: 30, height: 0, color: "#ff0000", opacity: 1 },
             fitMode: "cover",
             vignette: { show: false, x: 0, y: 0, scale: 1, zIndex: 100 }
         };
@@ -467,7 +467,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                                 {/* Sideline */}
                                 {sideline.show && <div className="sideline-clone" style={{
                                     position:"absolute",
-                                    [direction==="ltr"?"left":"right"]:textPos.x + (direction==="rtl"?textRef.current?.offsetWidth || 0 : 0) + sideline.gap,
+                                    left: textPos.x + (direction === "ltr" ? textRef.current?.offsetWidth || 0 : -sideline.width) + sideline.gap,
                                     top:textPos.y+sidelineOffset, height:sideline.height||textRef.current?.offsetHeight||0,
                                     width:sideline.width, background:sideline.color, opacity:sideline.opacity
                                 }}/>}
