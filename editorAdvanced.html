@@ -466,11 +466,17 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
 
                                 {/* Sideline */}
                                 {sideline.show && <div className="sideline-clone" style={{
-                                    position:"absolute",
-                                    left: textPos.x + (direction === "ltr" ? textRef.current?.offsetWidth || 0 : -sideline.width) + sideline.gap,
-                                    top:textPos.y+sidelineOffset, height:sideline.height||textRef.current?.offsetHeight||0,
-                                    width:sideline.width, background:sideline.color, opacity:sideline.opacity
-                                }}/>}
+    position: "absolute",
+    top: textPos.y + sidelineOffset,
+    height: sideline.height || textRef.current?.offsetHeight || 0,
+    width: sideline.width,
+    background: sideline.color,
+    opacity: sideline.opacity,
+    ...(direction === "ltr"
+        ? { left: textPos.x + (textRef.current?.offsetWidth || 0) + sideline.gap }
+        : { right: (containerRef.current?.offsetWidth || 0) - (textPos.x + (textRef.current?.offsetWidth || 0)) + sideline.gap }
+    )
+}} />}
                                 
                                 {/* Logo */}
                                 {logo.show && <img src="sabah-logo.PNG" alt="Logo" style={{
