@@ -54,8 +54,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             stroke: { enabled: false, width: 1, color: "#000000" },
             sideline: { show: true, width: 20, gap: 30, height: 0, color: "#ff0000", opacity: 1 },
             fitMode: "cover",
-            vignette: { show: false, x: 0, y: 0, scale: 1, zIndex: 100 },
-            headlineZIndex: 200
+            vignette: { show: false, x: 0, y: 0, scale: 1, zIndex: 100 }
         };
 
         const [images, setImages] = useState(defaultState.images);
@@ -77,8 +76,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         const [sideline, setSideline] = useState(defaultState.sideline);
         const [fitMode, setFitMode] = useState(defaultState.fitMode);
         const [vignette, setVignette] = useState(defaultState.vignette);
-        const [headlineZIndex, setHeadlineZIndex] = useState(defaultState.headlineZIndex);
-
+        
         // --- ADDED FOR DATA PERSISTENCE & WARNING ---
         useEffect(() => {
             try {
@@ -103,7 +101,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                     if (parsedData.sideline) setSideline(parsedData.sideline);
                     if (parsedData.fitMode) setFitMode(parsedData.fitMode);
                     if (parsedData.vignette) setVignette(parsedData.vignette);
-                    if (parsedData.headlineZIndex) setHeadlineZIndex(parsedData.headlineZIndex);
                 }
             } catch (e) {
                 console.error("Failed to load data from localStorage", e);
@@ -113,8 +110,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         useEffect(() => {
             const dataToSave = {
                 headline, images, width, height, fontSize, lineHeight, fontFamily, textColor,
-                textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode,
-                vignette, headlineZIndex
+                textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode, vignette
             };
             try {
                 localStorage.setItem('socialCardData', JSON.stringify(dataToSave));
@@ -122,7 +118,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                 console.error("Failed to save data to localStorage", e);
             }
         }, [headline, images, width, height, fontSize, lineHeight, fontFamily, textColor,
-            textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode, vignette, headlineZIndex]);
+            textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode, vignette]);
 
         useEffect(() => {
             const handleBeforeUnload = (e) => {
@@ -201,24 +197,22 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             window.addEventListener("touchend", onUp);
         }
 
-      function startDragImage(e, id) {
-    setActiveImageId(id);
-    const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, headlineZIndex);
-    setImages((imgs) => imgs.map(im => im.id === id ? {...im, zIndex: maxZ + 1} : im));
-    startDrag(e, 'image');
-}
+        function startDragImage(e, id) {
+            setActiveImageId(id);
+            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex);
+            setImages((imgs) => imgs.map(im => im.id === id ? {...im, zIndex: maxZ + 1} : im));
+            startDrag(e, 'image');
+        }
 
-function startDragVignette(e) {
-    setActiveImageId('vignette');
-    const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, headlineZIndex);
-    setVignette(v => ({...v, zIndex: maxZ + 1}));
-    startDrag(e, 'vignette');
-}
+        function startDragVignette(e) {
+            setActiveImageId('vignette');
+            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex);
+            setVignette(v => ({...v, zIndex: maxZ + 1}));
+            startDrag(e, 'vignette');
+        }
 
         function startDragText(e) {
             e.preventDefault();
-            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, headlineZIndex);
-            setHeadlineZIndex(maxZ + 1);
             startDrag(e, 'headline');
         }
 
@@ -236,12 +230,12 @@ function startDragVignette(e) {
         }
 
         function changeImageScale(id, scale){ setImages((imgs)=>imgs.map(im=>im.id===id?{...im, scale}:im)) }
-        function bringForward(id){ const maxZ=Math.max(...images.map(im=>im.zIndex), vignette.zIndex, headlineZIndex); setImages((imgs)=>imgs.map(im=>im.id===id?{...im,zIndex:maxZ+1}:im)) }
-        function sendBackward(id){ const minZ=Math.min(...images.map(im=>im.zIndex), vignette.zIndex, headlineZIndex); setImages((imgs)=>imgs.map(im=>im.id===id?{...im,zIndex:minZ-1}:im)) }
+        function bringForward(id){ const maxZ=Math.max(...images.map(im=>im.zIndex), vignette.zIndex); setImages((imgs)=>imgs.map(im=>im.id===id?{...im,zIndex:maxZ+1}:im)) }
+        function sendBackward(id){ const minZ=Math.min(...images.map(im=>im.zIndex), vignette.zIndex); setImages((imgs)=>imgs.map(im=>im.id===id?{...im,zIndex:minZ-1}:im)) }
         function deleteImage(id){ setImages((imgs)=>imgs.filter(im=>im.id!==id)) }
         function selectImage(id) {
             setActiveImageId(id);
-            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, headlineZIndex);
+            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex);
             setImages((imgs) => imgs.map(im => im.id === id ? { ...im, zIndex: maxZ + 1 } : im));
         }
         
@@ -249,11 +243,11 @@ function startDragVignette(e) {
             setVignette(v => ({...v, scale}));
         }
         function bringVignetteForward() {
-            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, headlineZIndex);
+            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex);
             setVignette(v => ({...v, zIndex: maxZ + 1}));
         }
         function sendVignetteBackward() {
-            const minZ = Math.min(...images.map(im => im.zIndex), vignette.zIndex, headlineZIndex);
+            const minZ = Math.min(...images.map(im => im.zIndex), vignette.zIndex);
             setVignette(v => ({...v, zIndex: minZ - 1}));
         }
 
@@ -279,7 +273,6 @@ function startDragVignette(e) {
                 setSideline(defaultState.sideline);
                 setFitMode(defaultState.fitMode);
                 setVignette(defaultState.vignette);
-                setHeadlineZIndex(defaultState.headlineZIndex);
             }
         }
 
@@ -500,8 +493,7 @@ function startDragVignette(e) {
                                     textShadow: shadow.enabled?`${shadow.offsetX}px ${shadow.offsetY}px ${shadow.blur}px ${shadow.color}`:"none",
                                     WebkitTextStroke: stroke.enabled?`${stroke.width}px ${stroke.color}`:"none",
                                     whiteSpace:"pre-wrap",
-                                    cursor:"move",
-                                    zIndex: headlineZIndex
+                                    cursor:"move"
                                 }}>{headline}</div>
                             </div>
                         </div>
