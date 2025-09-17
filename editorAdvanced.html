@@ -239,10 +239,12 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           }}).then((canvas)=>{
 			  // Deselect all images first
   setActiveImageId(null);
+			  setTimeout(() => {
             const link = document.createElement("a");
             link.download = (fileName && fileName.trim()?fileName.trim():"social-card")+".png";
             link.href = canvas.toDataURL("image/png"); link.click();
           });
+			    }, 0);
         }
 
         function changeImageScale(id, scale){ setImages((imgs)=>imgs.map(im=>im.id===id?{...im, scale}:im)) }
