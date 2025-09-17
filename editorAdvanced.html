@@ -366,7 +366,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
               <div className="flex-1 max-w-full mt-6 md:mt-0">
                 <div className="sticky top-4">
                   <div className="mb-2">Preview (Output size: {width}×{height})</div>
-                  <div ref={containerRef} className="relative mx-auto bg-black overflow-auto" style={{width,height}}>
+                  <div ref={containerRef} className="relative mx-auto bg-black overflow-hidden" style={{width,height}}>
                     {/* Images */}
                     {images.sort((a,b)=>a.zIndex-b.zIndex).map(img=>(
                       <img key={img.id} src={img.src} 
