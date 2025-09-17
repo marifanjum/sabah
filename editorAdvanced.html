@@ -419,16 +419,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                       />
                     ))}
 
-                    {/* Sideline */}
-                    {sideline.show && <div className="sideline-clone" style={{
-                      position:"absolute",
-                      [direction==="ltr"?"left":"right"]:sideline.gap,
-                      top:textPos.y+sidelineOffset,
-                      height:sideline.height||textRef.current?.offsetHeight||0,
-                      width:sideline.width,
-                      background:sideline.color,
-                      opacity:sideline.opacity
-                    }}/>}
+                   
 
 					  {vignette.show && <img src="Vignette.png" alt="Vignette" onMouseDown={startDragVignette} onTouchStart={startDragVignette} style={{
     position: "absolute",
@@ -447,7 +438,18 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                       ,...(logo.position==="bottom-left"?{left:30,bottom:150}:{})
                       ,...(logo.position==="bottom-right"?{right:30,bottom:150}:{})
                     }}/>}
-                    
+
+					   {/* Sideline */}
+                    {sideline.show && <div className="sideline-clone" style={{
+                      position:"absolute",
+                      [direction==="ltr"?"left":"right"]:sideline.gap,
+                      top:textPos.y+sidelineOffset,
+                      height:sideline.height||textRef.current?.offsetHeight||0,
+                      width:sideline.width,
+                      background:sideline.color,
+                      opacity:sideline.opacity
+                    }}/>}
+					  
                     {/* Headline */}
                     <div ref={textRef} onMouseDown={startDragText} onTouchStart={startDragText} dir={direction} style={{
                       position:"absolute", left:textPos.x, top:textPos.y,
