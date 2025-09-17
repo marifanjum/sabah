@@ -66,7 +66,8 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         const [lineHeight, setLineHeight] = useState(defaultState.lineHeight);
         const [fontFamily, setFontFamily] = useState(defaultState.fontFamily);
         const [textColor, setTextColor] = useState(defaultState.textColor);
-        const [textPos, setTextPos] = useState(defaultState.textPos);
+        // Added zIndex to textPos state
+        const [textPos, setTextPos] = useState({ ...defaultState.textPos, zIndex: 200 });
         const [direction, setDirection] = useState(defaultState.direction);
         const [logo, setLogo] = useState(defaultState.logo);
         const [fileName, setFileName] = useState(defaultState.fileName);
@@ -91,7 +92,8 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                     if (parsedData.lineHeight) setLineHeight(parsedData.lineHeight);
                     if (parsedData.fontFamily) setFontFamily(parsedData.fontFamily);
                     if (parsedData.textColor) setTextColor(parsedData.textColor);
-                    if (parsedData.textPos) setTextPos(parsedData.textPos);
+                    // Updated to handle new zIndex property
+                    if (parsedData.textPos) setTextPos({ ...parsedData.textPos, zIndex: parsedData.textPos.zIndex || 200 });
                     if (parsedData.direction) setDirection(parsedData.direction);
                     if (parsedData.logo) setLogo(parsedData.logo);
                     if (parsedData.fileName) setFileName(parsedData.fileName);
@@ -182,7 +184,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                 } else if (type === 'vignette') {
                     setState(v => ({ ...v, x: initX + currentX - startX, y: initY + currentY - startY }));
                 } else {
-                    setState({x: initX + currentX - startX, y: initY + currentY - startY});
+                    setState(pos => ({...pos, x: initX + currentX - startX, y: initY + currentY - startY}));
                 }
             }
 
@@ -200,21 +202,29 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
 
         function startDragImage(e, id) {
             setActiveImageId(id);
-            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex);
+            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, textPos.zIndex);
             setImages((imgs) => imgs.map(im => im.id === id ? {...im, zIndex: maxZ + 1} : im));
             startDrag(e, 'image');
         }
 
         function startDragVignette(e) {
             setActiveImageId('vignette');
-            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex);
+            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, textPos.zIndex);
             setVignette(v => ({...v, zIndex: maxZ + 1}));
             startDrag(e, 'vignette');
         }
 
         function startDragText(e) {
             e.preventDefault();
+            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, textPos.zIndex);
+            setTextPos(pos => ({...pos, zIndex: maxZ + 1}));
             startDrag(e, 'headline');
+        }
+
+        // New function to handle "Bring Forward" for the headline
+        function bringHeadlineForward() {
+            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, textPos.zIndex);
+            setTextPos(pos => ({...pos, zIndex: maxZ + 1}));
         }
 
         function exportAsImage() {
@@ -231,12 +241,12 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         }
 
         function changeImageScale(id, scale){ setImages((imgs)=>imgs.map(im=>im.id===id?{...im, scale}:im)) }
-        function bringForward(id){ const maxZ=Math.max(...images.map(im=>im.zIndex), vignette.zIndex); setImages((imgs)=>imgs.map(im=>im.id===id?{...im,zIndex:maxZ+1}:im)) }
-        function sendBackward(id){ const minZ=Math.min(...images.map(im=>im.zIndex), vignette.zIndex); setImages((imgs)=>imgs.map(im=>im.id===id?{...im,zIndex:minZ-1}:im)) }
+        function bringForward(id){ const maxZ=Math.max(...images.map(im=>im.zIndex), vignette.zIndex, textPos.zIndex); setImages((imgs)=>imgs.map(im=>im.id===id?{...im,zIndex:maxZ+1}:im)) }
+        function sendBackward(id){ const minZ=Math.min(...images.map(im=>im.zIndex), vignette.zIndex, textPos.zIndex); setImages((imgs)=>imgs.map(im=>im.id===id?{...im,zIndex:minZ-1}:im)) }
         function deleteImage(id){ setImages((imgs)=>imgs.filter(im=>im.id!==id)) }
         function selectImage(id) {
             setActiveImageId(id);
-            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex);
+            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, textPos.zIndex);
             setImages((imgs) => imgs.map(im => im.id === id ? { ...im, zIndex: maxZ + 1 } : im));
         }
         
@@ -244,11 +254,11 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             setVignette(v => ({...v, scale}));
         }
         function bringVignetteForward() {
-            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex);
+            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, textPos.zIndex);
             setVignette(v => ({...v, zIndex: maxZ + 1}));
         }
         function sendVignetteBackward() {
-            const minZ = Math.min(...images.map(im => im.zIndex), vignette.zIndex);
+            const minZ = Math.min(...images.map(im => im.zIndex), vignette.zIndex, textPos.zIndex);
             setVignette(v => ({...v, zIndex: minZ - 1}));
         }
 
@@ -264,6 +274,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                 setLineHeight(defaultState.lineHeight);
                 setFontFamily(defaultState.fontFamily);
                 setTextColor(defaultState.textColor);
+                // Resetting to the default textPos object, including zIndex
                 setTextPos(defaultState.textPos);
                 setDirection(defaultState.direction);
                 setLogo(defaultState.logo);
@@ -309,6 +320,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                                 <option value="ltr">Left to Right</option>
                                 <option value="rtl">Right to Left</option>
                             </select>
+                            <button onClick={bringHeadlineForward} className="mt-2 w-full bg-gray-200 px-2 py-1 rounded text-sm">Bring Headline Forward</button>
                         </div>
 
                         {/* Shadow */}
@@ -470,7 +482,8 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
     ...(direction === "ltr"
         ? { left: textPos.x + (textRef.current?.offsetWidth || 0) + sideline.gap }
         : { right: (containerRef.current?.offsetWidth || 0) - (textPos.x + (textRef.current?.offsetWidth || 0)) - sideline.gap }
-    )
+    ),
+    zIndex: textPos.zIndex
 }} />}
                                 
                                 {/* Logo */}
@@ -494,7 +507,8 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                                     textShadow: shadow.enabled?`${shadow.offsetX}px ${shadow.offsetY}px ${shadow.blur}px ${shadow.color}`:"none",
                                     WebkitTextStroke: stroke.enabled?`${stroke.width}px ${stroke.color}`:"none",
                                     whiteSpace:"pre-wrap",
-                                    cursor:"move"
+                                    cursor:"move",
+                                    zIndex: textPos.zIndex
                                 }}>{headline}</div>
                             </div>
                         </div>
