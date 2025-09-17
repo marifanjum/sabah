@@ -154,6 +154,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
         }
 
+        // --- Combined Dragging Logic ---
         function startDrag(e, type) {
             e.preventDefault();
             const stateSetters = {
