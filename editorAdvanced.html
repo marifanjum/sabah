@@ -232,24 +232,36 @@ const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
 }
 
         function exportAsImage() {
-          if (!containerRef.current) return;
-          const verticalOffset = 3;
-          html2canvas(containerRef.current, {useCORS:true, scale:1, onclone:(clonedDoc)=> {
-            const clonedLines = clonedDoc.querySelectorAll(".sideline-clone");
-            clonedLines.forEach(clonedLine => {
-                const currentTop = parseFloat(clonedLine.style.top || "0");
-                clonedLine.style.top = currentTop + verticalOffset + "px";
-            });
-          }}).then((canvas)=>{
-			  // Deselect all images first
+  if (!containerRef.current) return;
+
+  // Deselect first so selection overlays are removed before capture
   setActiveImageId(null);
-			  setTimeout(() => {
-            const link = document.createElement("a");
-            link.download = (fileName && fileName.trim()?fileName.trim():"social-card")+".png";
-            link.href = canvas.toDataURL("image/png"); link.click();
-          });
-			    }, 0);
-        }
+
+  // Allow React to re-render to remove selection overlay
+  setTimeout(() => {
+    const verticalOffset = 3;
+    html2canvas(containerRef.current, {
+      useCORS: true,
+      scale: 1,
+      onclone: (clonedDoc) => {
+        const clonedLines = clonedDoc.querySelectorAll(".sideline-clone");
+        clonedLines.forEach(clonedLine => {
+          const currentTop = parseFloat(clonedLine.style.top || "0");
+          clonedLine.style.top = currentTop + verticalOffset + "px";
+        });
+      }
+    })
+    .then((canvas) => {
+      const link = document.createElement("a");
+      link.download = (fileName && fileName.trim() ? fileName.trim() : "social-card") + ".png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    })
+    .catch(err => {
+      console.error("export failed:", err);
+    });
+  }, 0);
+		}
 
         function changeImageScale(id, scale){ setImages((imgs)=>imgs.map(im=>im.id===id?{...im, scale}:im)) }
         function bringForward(id){ const maxZ=Math.max(...images.map(im=>im.zIndex)); setImages((imgs)=>imgs.map(im=>im.id===id?{...im,zIndex:maxZ+1}:im)) }
