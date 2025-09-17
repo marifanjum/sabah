@@ -153,7 +153,7 @@ const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
           const newImages = Array.from(files).map((file, index) => ({
             id: Date.now() + index,
             src: URL.createObjectURL(file),
-            x: 0, y: 0, scale: 1, zIndex: images.length + index
+            x: 0, y: 0, scale: 1, zIndex: images.length + index,
 			borderEnabled: false, // 👈 default: no border
           }));
           setImages([...images, ...newImages]);
