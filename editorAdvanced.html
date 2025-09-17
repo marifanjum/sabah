@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Social Card Generator</title>
-	  <link href="
+      <link href="
 https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
 " rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,7 +12,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-	  
+      
     <style>
       @font-face {
         font-family: "Pangea Afrikan Trial";
@@ -29,408 +29,475 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
     <div id="root"></div>
 
     <script type="text/babel">
-     
-		function SocialCardGenerator() {
-    const { useState, useRef, useEffect } = React;
-    const containerRef = useRef(null);
-    const textRef = useRef(null);
+      function SocialCardGenerator() {
+        const { useState, useRef, useEffect } = React;
+        const containerRef = useRef(null);
+        const textRef = useRef(null);
 
-    // --- Define initial state values to be used for reset ---
-    const defaultState = {
-        images: [],
-        activeImageId: null,
-        width: 1080,
-        height: 1080,
-        headline: "Headline here",
-        fontSize: 72,
-        lineHeight: 1.2,
-        fontFamily: "Jameel Noori Nastaleeq",
-        textColor: "#ffffff",
-        textPos: { x: 100, y: 200 },
-        direction: "rtl",
-        logo: { show: true, position: "top-right" },
-        fileName: "social-card",
-        sidelineOffset: 0,
-        shadow: { enabled: true, offsetX: 2, offsetY: 2, blur: 6, color: "rgba(0,0,0,0.6)" },
-        stroke: { enabled: false, width: 1, color: "#000000" },
-        sideline: { show: true, width: 4, gap: 8, height: 0, color: "#ff0000", opacity: 1 },
-        fitMode: "cover"
-    };
+        // --- Define initial state values to be used for reset ---
+        const defaultState = {
+            images: [],
+            activeImageId: null,
+            width: 1080,
+            height: 1080,
+            headline: "Headline here",
+            fontSize: 72,
+            lineHeight: 1.2,
+            fontFamily: "Jameel Noori Nastaleeq",
+            textColor: "#ffffff",
+            textPos: { x: 100, y: 200 },
+            direction: "rtl",
+            logo: { show: true, position: "top-right" },
+            fileName: "social-card",
+            sidelineOffset: 0,
+            shadow: { enabled: true, offsetX: 2, offsetY: 2, blur: 6, color: "rgba(0,0,0,0.6)" },
+            stroke: { enabled: false, width: 1, color: "#000000" },
+            sideline: { show: true, width: 4, gap: 8, height: 0, color: "#ff0000", opacity: 1 },
+            fitMode: "cover",
+            vignette: { show: false, x: 0, y: 0, scale: 1, zIndex: 100 }
+        };
 
-    const [images, setImages] = useState(defaultState.images);
-    const [activeImageId, setActiveImageId] = useState(defaultState.activeImageId);
-    const [width, setWidth] = useState(defaultState.width);
-    const [height, setHeight] = useState(defaultState.height);
-    const [headline, setHeadline] = useState(defaultState.headline);
-    const [fontSize, setFontSize] = useState(defaultState.fontSize);
-    const [lineHeight, setLineHeight] = useState(defaultState.lineHeight);
-    const [fontFamily, setFontFamily] = useState(defaultState.fontFamily);
-    const [textColor, setTextColor] = useState(defaultState.textColor);
-    const [textPos, setTextPos] = useState(defaultState.textPos);
-    const [direction, setDirection] = useState(defaultState.direction);
-    const [logo, setLogo] = useState(defaultState.logo);
-    const [fileName, setFileName] = useState(defaultState.fileName);
-    const [sidelineOffset, setSidelineOffset] = useState(defaultState.sidelineOffset);
-    const [shadow, setShadow] = useState(defaultState.shadow);
-    const [stroke, setStroke] = useState(defaultState.stroke);
-    const [sideline, setSideline] = useState(defaultState.sideline);
-    const [fitMode, setFitMode] = useState(defaultState.fitMode);
+        const [images, setImages] = useState(defaultState.images);
+        const [activeImageId, setActiveImageId] = useState(defaultState.activeImageId);
+        const [width, setWidth] = useState(defaultState.width);
+        const [height, setHeight] = useState(defaultState.height);
+        const [headline, setHeadline] = useState(defaultState.headline);
+        const [fontSize, setFontSize] = useState(defaultState.fontSize);
+        const [lineHeight, setLineHeight] = useState(defaultState.lineHeight);
+        const [fontFamily, setFontFamily] = useState(defaultState.fontFamily);
+        const [textColor, setTextColor] = useState(defaultState.textColor);
+        const [textPos, setTextPos] = useState(defaultState.textPos);
+        const [direction, setDirection] = useState(defaultState.direction);
+        const [logo, setLogo] = useState(defaultState.logo);
+        const [fileName, setFileName] = useState(defaultState.fileName);
+        const [sidelineOffset, setSidelineOffset] = useState(defaultState.sidelineOffset);
+        const [shadow, setShadow] = useState(defaultState.shadow);
+        const [stroke, setStroke] = useState(defaultState.stroke);
+        const [sideline, setSideline] = useState(defaultState.sideline);
+        const [fitMode, setFitMode] = useState(defaultState.fitMode);
+        const [vignette, setVignette] = useState(defaultState.vignette);
 
-    // --- ADDED FOR DATA PERSISTENCE & WARNING ---
-    useEffect(() => {
-        try {
-            const savedData = localStorage.getItem('socialCardData');
-            if (savedData) {
-                const parsedData = JSON.parse(savedData);
-                if (parsedData.headline) setHeadline(parsedData.headline);
-                if (parsedData.images) setImages(parsedData.images);
-                if (parsedData.width) setWidth(parsedData.width);
-                if (parsedData.height) setHeight(parsedData.height);
-                if (parsedData.fontSize) setFontSize(parsedData.fontSize);
-                if (parsedData.lineHeight) setLineHeight(parsedData.lineHeight);
-                if (parsedData.fontFamily) setFontFamily(parsedData.fontFamily);
-                if (parsedData.textColor) setTextColor(parsedData.textColor);
-                if (parsedData.textPos) setTextPos(parsedData.textPos);
-                if (parsedData.direction) setDirection(parsedData.direction);
-                if (parsedData.logo) setLogo(parsedData.logo);
-                if (parsedData.fileName) setFileName(parsedData.fileName);
-                if (parsedData.sidelineOffset) setSidelineOffset(parsedData.sidelineOffset);
-                if (parsedData.shadow) setShadow(parsedData.shadow);
-                if (parsedData.stroke) setStroke(parsedData.stroke);
-                if (parsedData.sideline) setSideline(parsedData.sideline);
-                if (parsedData.fitMode) setFitMode(parsedData.fitMode);
+        // --- ADDED FOR DATA PERSISTENCE & WARNING ---
+        useEffect(() => {
+            try {
+                const savedData = localStorage.getItem('socialCardData');
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+                    if (parsedData.headline) setHeadline(parsedData.headline);
+                    if (parsedData.images) setImages(parsedData.images);
+                    if (parsedData.width) setWidth(parsedData.width);
+                    if (parsedData.height) setHeight(parsedData.height);
+                    if (parsedData.fontSize) setFontSize(parsedData.fontSize);
+                    if (parsedData.lineHeight) setLineHeight(parsedData.lineHeight);
+                    if (parsedData.fontFamily) setFontFamily(parsedData.fontFamily);
+                    if (parsedData.textColor) setTextColor(parsedData.textColor);
+                    if (parsedData.textPos) setTextPos(parsedData.textPos);
+                    if (parsedData.direction) setDirection(parsedData.direction);
+                    if (parsedData.logo) setLogo(parsedData.logo);
+                    if (parsedData.fileName) setFileName(parsedData.fileName);
+                    if (parsedData.sidelineOffset) setSidelineOffset(parsedData.sidelineOffset);
+                    if (parsedData.shadow) setShadow(parsedData.shadow);
+                    if (parsedData.stroke) setStroke(parsedData.stroke);
+                    if (parsedData.sideline) setSideline(parsedData.sideline);
+                    if (parsedData.fitMode) setFitMode(parsedData.fitMode);
+                    if (parsedData.vignette) setVignette(parsedData.vignette);
+                }
+            } catch (e) {
+                console.error("Failed to load data from localStorage", e);
             }
-        } catch (e) {
-            console.error("Failed to load data from localStorage", e);
-        }
-    }, []);
+        }, []);
 
-    useEffect(() => {
-        const dataToSave = {
-            headline, images, width, height, fontSize, lineHeight, fontFamily, textColor,
-            textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode
-        };
-        try {
-            localStorage.setItem('socialCardData', JSON.stringify(dataToSave));
-        } catch (e) {
-            console.error("Failed to save data to localStorage", e);
-        }
-    }, [headline, images, width, height, fontSize, lineHeight, fontFamily, textColor,
-        textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode]);
+        useEffect(() => {
+            const dataToSave = {
+                headline, images, width, height, fontSize, lineHeight, fontFamily, textColor,
+                textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode,
+                vignette
+            };
+            try {
+                localStorage.setItem('socialCardData', JSON.stringify(dataToSave));
+            } catch (e) {
+                console.error("Failed to save data to localStorage", e);
+            }
+        }, [headline, images, width, height, fontSize, lineHeight, fontFamily, textColor,
+            textPos, direction, logo, fileName, sidelineOffset, shadow, stroke, sideline, fitMode, vignette]);
 
-    useEffect(() => {
-        const handleBeforeUnload = (e) => {
+        useEffect(() => {
+            const handleBeforeUnload = (e) => {
+                e.preventDefault();
+                e.returnValue = '';
+            };
+            window.addEventListener('beforeunload', handleBeforeUnload);
+            return () => {
+                window.removeEventListener('beforeunload', handleBeforeUnload);
+            };
+        }, []);
+
+        // --- END OF ADDED CODE ---
+
+        useEffect(() => {
+            if (textRef.current && sideline.height === 0) {
+                setSideline((s) => ({ ...s, height: textRef.current.offsetHeight }));
+            }
+        }, [headline, fontSize, lineHeight, fontFamily]);
+
+        function onImageUpload(e) {
+            const files = e.target.files;
+            if (!files) return;
+            const newImages = Array.from(files).map((file, index) => ({
+                id: Date.now() + index,
+                src: URL.createObjectURL(file),
+                x: 0, y: 0, scale: 1, zIndex: images.length + index
+            }));
+            setImages([...images, ...newImages]);
+        }
+
+        function getCoords(e) {
+            return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+        }
+
+        function startDrag(e, type) {
             e.preventDefault();
-            e.returnValue = '';
-        };
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-        };
-    }, []);
+            const stateSetters = {
+                'image': { setState: setImages, activeId: activeImageId },
+                'vignette': { setState: setVignette, activeId: 'vignette' }
+            };
+            const { setState, activeId } = stateSetters[type];
 
-    // --- END OF ADDED CODE ---
+            const { x: startX, y: startY } = getCoords(e);
+            const element = type === 'image' ? images.find(im => im.id === activeId) : vignette;
+            const initX = element.x, initY = element.y;
 
-    useEffect(() => {
-        if (textRef.current && sideline.height === 0) {
-            setSideline((s) => ({ ...s, height: textRef.current.offsetHeight }));
-        }
-    }, [headline, fontSize, lineHeight, fontFamily]);
+            function onMove(ev) {
+                const { x: currentX, y: currentY } = getCoords(ev);
+                if (type === 'image') {
+                    setState(imgs => imgs.map(im => im.id === activeId ? { ...im, x: initX + currentX - startX, y: initY + currentY - startY } : im));
+                } else {
+                    setState(v => ({ ...v, x: initX + currentX - startX, y: initY + currentY - startY }));
+                }
+            }
 
-    function onImageUpload(e) {
-        const files = e.target.files;
-        if (!files) return;
-        const newImages = Array.from(files).map((file, index) => ({
-            id: Date.now() + index,
-            src: URL.createObjectURL(file),
-            x: 0, y: 0, scale: 1, zIndex: images.length + index
-        }));
-        setImages([...images, ...newImages]);
-    }
-
-    function getCoords(e) {
-        return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
-    }
-
-    function startDragImage(e, id) {
-        e.preventDefault();
-        setActiveImageId(id);
-        const { x: startX, y: startY } = getCoords(e);
-        const img = images.find(im => im.id === id);
-        const initX = img.x, initY = img.y;
-        const maxZ = Math.max(...images.map(im => im.zIndex));
-        setImages((imgs) => imgs.map(im => im.id === id ? {...im, zIndex: maxZ + 1} : im));
-
-        function onMove(ev) {
-            const { x: currentX, y: currentY } = getCoords(ev);
-            setImages((imgs) => imgs.map(im => im.id === id ? {...im, x: initX + currentX - startX, y: initY + currentY - startY} : im));
+            function onUp() {
+                window.removeEventListener("mousemove", onMove);
+                window.removeEventListener("mouseup", onUp);
+                window.removeEventListener("touchmove", onMove);
+                window.removeEventListener("touchend", onUp);
+            }
+            window.addEventListener("mousemove", onMove);
+            window.addEventListener("mouseup", onUp);
+            window.addEventListener("touchmove", onMove);
+            window.addEventListener("touchend", onUp);
         }
 
-        function onUp() {
-            window.removeEventListener("mousemove", onMove);
-            window.removeEventListener("mouseup", onUp);
-            window.removeEventListener("touchmove", onMove);
-            window.removeEventListener("touchend", onUp);
+        function startDragImage(e, id) {
+            setActiveImageId(id);
+            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex);
+            setImages((imgs) => imgs.map(im => im.id === id ? {...im, zIndex: maxZ + 1} : im));
+            startDrag(e, 'image');
         }
-        window.addEventListener("mousemove", onMove);
-        window.addEventListener("mouseup", onUp);
-        window.addEventListener("touchmove", onMove);
-        window.addEventListener("touchend", onUp);
-    }
 
-    function startDragText(e) {
-        e.preventDefault();
-        const { x: startX, y: startY } = getCoords(e);
-        const initPos = {...textPos};
-        function onMove(ev) {
-            const { x: currentX, y: currentY } = getCoords(ev);
-            setTextPos({x: initPos.x + currentX - startX, y: initPos.y + currentY - startY});
+        function startDragVignette(e) {
+            setActiveImageId('vignette');
+            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex);
+            setVignette(v => ({...v, zIndex: maxZ + 1}));
+            startDrag(e, 'vignette');
         }
-        function onUp() {
-            window.removeEventListener("mousemove", onMove);
-            window.removeEventListener("mouseup", onUp);
-            window.removeEventListener("touchmove", onMove);
-            window.removeEventListener("touchend", onUp);
+
+        function startDragText(e) {
+            e.preventDefault();
+            const { x: startX, y: startY } = getCoords(e);
+            const initPos = {...textPos};
+            function onMove(ev) {
+                const { x: currentX, y: currentY } = getCoords(ev);
+                setTextPos({x: initPos.x + currentX - startX, y: initPos.y + currentY - startY});
+            }
+            function onUp() {
+                window.removeEventListener("mousemove", onMove);
+                window.removeEventListener("mouseup", onUp);
+                window.removeEventListener("touchmove", onMove);
+                window.removeEventListener("touchend", onUp);
+            }
+            window.addEventListener("mousemove", onMove);
+            window.addEventListener("mouseup", onUp);
+            window.addEventListener("touchmove", onMove);
+            window.addEventListener("touchend", onUp);
         }
-        window.addEventListener("mousemove", onMove);
-        window.addEventListener("mouseup", onUp);
-        window.addEventListener("touchmove", onMove);
-        window.addEventListener("touchend", onUp);
-    }
 
-    function exportAsImage() {
-        if (!containerRef.current) return;
-        const verticalOffset = 3;
-        html2canvas(containerRef.current, {useCORS:true, scale:1, onclone:(clonedDoc)=> {
-            const clonedLine = clonedDoc.querySelector(".sideline-clone");
-            if(clonedLine){ const currentTop = parseFloat(clonedLine.style.top||"0"); clonedLine.style.top=currentTop+verticalOffset+"px";}
-        }}).then((canvas)=>{
-            const link = document.createElement("a");
-            link.download = (fileName && fileName.trim()?fileName.trim():"social-card")+".png";
-            link.href = canvas.toDataURL("image/png"); link.click();
-        });
-    }
+        function exportAsImage() {
+            if (!containerRef.current) return;
+            const verticalOffset = 3;
+            html2canvas(containerRef.current, {useCORS:true, scale:1, onclone:(clonedDoc)=> {
+                const clonedLine = clonedDoc.querySelector(".sideline-clone");
+                if(clonedLine){ const currentTop = parseFloat(clonedLine.style.top||"0"); clonedLine.style.top=currentTop+verticalOffset+"px";}
+            }}).then((canvas)=>{
+                const link = document.createElement("a");
+                link.download = (fileName && fileName.trim()?fileName.trim():"social-card")+".png";
+                link.href = canvas.toDataURL("image/png"); link.click();
+            });
+        }
 
-    function changeImageScale(id, scale){ setImages((imgs)=>imgs.map(im=>im.id===id?{...im, scale}:im)) }
-    function bringForward(id){ const maxZ=Math.max(...images.map(im=>im.zIndex)); setImages((imgs)=>imgs.map(im=>im.id===id?{...im,zIndex:maxZ+1}:im)) }
-    function sendBackward(id){ const minZ=Math.min(...images.map(im=>im.zIndex)); setImages((imgs)=>imgs.map(im=>im.id===id?{...im,zIndex:minZ-1}:im)) }
-    function deleteImage(id){ setImages((imgs)=>imgs.filter(im=>im.id!==id)) }
-    function selectImage(id) {
-        setActiveImageId(id);
-        const maxZ = Math.max(...images.map(im => im.zIndex));
-        setImages((imgs) => imgs.map(im => im.id === id ? { ...im, zIndex: maxZ + 1 } : im));
-    }
-    
-    // --- NEW: Reset function ---
-    function resetFields() {
-        setImages(defaultState.images);
-        setActiveImageId(defaultState.activeImageId);
-        setWidth(defaultState.width);
-        setHeight(defaultState.height);
-        setHeadline(defaultState.headline);
-        setFontSize(defaultState.fontSize);
-        setLineHeight(defaultState.lineHeight);
-        setFontFamily(defaultState.fontFamily);
-        setTextColor(defaultState.textColor);
-        setTextPos(defaultState.textPos);
-        setDirection(defaultState.direction);
-        setLogo(defaultState.logo);
-        setFileName(defaultState.fileName);
-        setSidelineOffset(defaultState.sidelineOffset);
-        setShadow(defaultState.shadow);
-        setStroke(defaultState.stroke);
-        setSideline(defaultState.sideline);
-        setFitMode(defaultState.fitMode);
-    }
+        function changeImageScale(id, scale){ setImages((imgs)=>imgs.map(im=>im.id===id?{...im, scale}:im)) }
+        function bringForward(id){ const maxZ=Math.max(...images.map(im=>im.zIndex), vignette.zIndex); setImages((imgs)=>imgs.map(im=>im.id===id?{...im,zIndex:maxZ+1}:im)) }
+        function sendBackward(id){ const minZ=Math.min(...images.map(im=>im.zIndex), vignette.zIndex); setImages((imgs)=>imgs.map(im=>im.id===id?{...im,zIndex:minZ-1}:im)) }
+        function deleteImage(id){ setImages((imgs)=>imgs.filter(im=>im.id!==id)) }
+        function selectImage(id) {
+            setActiveImageId(id);
+            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex);
+            setImages((imgs) => imgs.map(im => im.id === id ? { ...im, zIndex: maxZ + 1 } : im));
+        }
+        
+        function changeVignetteScale(scale) {
+            setVignette(v => ({...v, scale}));
+        }
+        function bringVignetteForward() {
+            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex);
+            setVignette(v => ({...v, zIndex: maxZ + 1}));
+        }
+        function sendVignetteBackward() {
+            const minZ = Math.min(...images.map(im => im.zIndex), vignette.zIndex);
+            setVignette(v => ({...v, zIndex: minZ - 1}));
+        }
 
-    return (
-        <div className="p-4 max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row gap-6">
-                {/* Controls */}
-                <div className="w-full md:w-96 space-y-4">
-                    <h2 className="text-xl font-semibold">Controls</h2>
-                    
-                    {/* NEW: Reset button */}
-                    <button onClick={resetFields} className="w-full bg-red-600 text-white py-2 rounded">Reset All</button>
+        // --- UPDATED: Reset function with confirmation ---
+        function resetFields() {
+            if (window.confirm("Are you sure you want to reset all fields to their default values? This action cannot be undone.")) {
+                setImages(defaultState.images);
+                setActiveImageId(defaultState.activeImageId);
+                setWidth(defaultState.width);
+                setHeight(defaultState.height);
+                setHeadline(defaultState.headline);
+                setFontSize(defaultState.fontSize);
+                setLineHeight(defaultState.lineHeight);
+                setFontFamily(defaultState.fontFamily);
+                setTextColor(defaultState.textColor);
+                setTextPos(defaultState.textPos);
+                setDirection(defaultState.direction);
+                setLogo(defaultState.logo);
+                setFileName(defaultState.fileName);
+                setSidelineOffset(defaultState.sidelineOffset);
+                setShadow(defaultState.shadow);
+                setStroke(defaultState.stroke);
+                setSideline(defaultState.sideline);
+                setFitMode(defaultState.fitMode);
+                setVignette(defaultState.vignette);
+            }
+        }
 
-                    {/* Headline */}
-                    <div className="bg-white p-3 rounded shadow">
-                        <label className="block text-sm font-medium">Headline</label>
-                        <textarea dir={direction} value={headline} onChange={e=>setHeadline(e.target.value)} className="w-full border p-2 rounded" />
-                        <label className="block text-sm mt-2">Font size</label>
-                        <input type="number" value={fontSize} onChange={e=>setFontSize(parseInt(e.target.value))} className="w-full border p-1 rounded"/>
-                        <label className="block text-sm mt-2">Line height</label>
-                        <input type="number" step="0.1" value={lineHeight} onChange={e=>setLineHeight(parseFloat(e.target.value))} className="w-full border p-1 rounded"/>
-                        <label className="block text-sm mt-2">Text color</label>
-                        <input type="color" value={textColor} onChange={e=>setTextColor(e.target.value)}/>
-                        <label className="block text-sm mt-3">Font family</label>
-                        <select value={fontFamily} onChange={e=>setFontFamily(e.target.value)} className="w-full border p-1 rounded mt-2">
-                            <option value="Jameel Noori Nastaleeq">Jameel Noori Nastaleeq</option>
-                            <option value="JameelNooriNastaliq">Jameel Noori embed</option>
-                            <option value="Pangea Afrikan Trial">Pangea</option>
-                            <option value="Tahoma">Tahoma</option>
-                            <option value="Arial">Arial</option>
-                        </select>
-                        <label className="block text-sm mt-3">Text direction</label>
-                        <select value={direction} onChange={e=>setDirection(e.target.value)} className="w-full border p-1 rounded mt-2">
-                            <option value="ltr">Left to Right</option>
-                            <option value="rtl">Right to Left</option>
-                        </select>
-                    </div>
+        return (
+            <div className="p-4 max-w-7xl mx-auto">
+                <div className="flex flex-col md:flex-row gap-6">
+                    {/* Controls */}
+                    <div className="w-full md:w-96 space-y-4">
+                        <h2 className="text-xl font-semibold">Controls</h2>
+                        
+                        <button onClick={resetFields} className="w-full bg-red-600 text-white py-2 rounded">Reset All</button>
 
-                    {/* Shadow */}
-                    <div className="bg-white p-3 rounded shadow">
-                        <label className="flex items-center">
-                            <input type="checkbox" checked={shadow.enabled} onChange={e=>setShadow({...shadow,enabled:e.target.checked})}/>
-                            <span className="ml-2">Enable shadow</span>
-                        </label>
-                        {shadow.enabled && <div className="mt-2 grid grid-cols-2 gap-2">
-                            <label className="text-sm">OffsetX<input type="number" value={shadow.offsetX} onChange={e=>setShadow({...shadow,offsetX:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
-                            <label className="text-sm">OffsetY<input type="number" value={shadow.offsetY} onChange={e=>setShadow({...shadow,offsetY:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
-                            <label className="text-sm">Blur<input type="number" value={shadow.blur} onChange={e=>setShadow({...shadow,blur:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
-                            <label className="text-sm">Color<input type="color" value={shadow.color} onChange={e=>setShadow({...shadow,color:e.target.value})} className="w-full border p-1 rounded"/></label>
-                        </div>}
-                    </div>
-
-                    {/* Stroke */}
-                    <div className="bg-white p-3 rounded shadow">
-                        <label className="flex items-center">
-                            <input type="checkbox" checked={stroke.enabled} onChange={e=>setStroke({...stroke,enabled:e.target.checked})}/>
-                            <span className="ml-2">Enable stroke</span>
-                        </label>
-                        {stroke.enabled && <div className="mt-2 grid grid-cols-2 gap-2">
-                            <label className="text-sm">Width<input type="number" value={stroke.width} onChange={e=>setStroke({...stroke,width:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
-                            <label className="text-sm">Color<input type="color" value={stroke.color} onChange={e=>setStroke({...stroke,color:e.target.value})} className="w-full border p-1 rounded"/></label>
-                        </div>}
-                    </div>
-
-                    {/* Sideline */}
-                    <div className="bg-white p-3 rounded shadow">
-                        <label className="flex items-center">
-                            <input type="checkbox" checked={sideline.show} onChange={e=>setSideline({...sideline,show:e.target.checked})}/>
-                            <span className="ml-2">Show sideline</span>
-                        </label>
-                        {sideline.show && <>
-                            <label className="block text-sm">Width<input type="number" value={sideline.width} onChange={e=>setSideline({...sideline,width:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
-                            <label className="block text-sm">Gap<input type="number" value={sideline.gap} onChange={e=>setSideline({...sideline,gap:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
-                            <label className="block text-sm">Height<input type="number" value={sideline.height} onChange={e=>setSideline({...sideline,height:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
-                            <label className="block text-sm">Color<input type="color" value={sideline.color} onChange={e=>setSideline({...sideline,color:e.target.value})} className="w-full border p-1 rounded"/></label>
-                            <label className="block text-sm">Transparency<input type="range" min="0" max="1" step="0.05" value={sideline.opacity} onChange={e=>setSideline({...sideline,opacity:parseFloat(e.target.value)})} className="w-full"/></label>
-                            <label className="block text-sm">Vertical offset<input type="number" value={sidelineOffset} onChange={e=>setSidelineOffset(parseInt(e.target.value))} className="w-full border p-1 rounded mt-1"/></label>
-                        </>}
-                    </div>
-
-                    {/* Upload images */}
-                    <div className="bg-white p-3 rounded shadow">
-                        <label className="block text-sm font-medium">Upload images</label>
-                        <input type="file" accept="image/*" multiple onChange={onImageUpload} className="mt-2"/>
-                    </div>
-
-                    {/* Per-image controls */}
-                    {images.map(img=>(
-                        <div key={img.id} className={`bg-white p-3 rounded shadow space-y-1 ${activeImageId === img.id ? 'border-2 border-blue-500' : ''}`}>
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm">Image {img.id}</span>
-                                <button onClick={()=>deleteImage(img.id)} className="text-red-500 text-sm">Delete</button>
-                            </div>
-                            <label className="block text-sm">Zoom</label>
-                            <input type="range" min="0.1" max="3" step="0.05" value={img.scale} onChange={e => changeImageScale(img.id, parseFloat(e.target.value))} className={`w-full ${activeImageId === img.id ? 'border-blue-500' : ''}`} />
-                            <div className="flex gap-2 mt-1">
-                                <button onClick={()=>bringForward(img.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Bring Forward</button>
-                                <button onClick={()=>sendBackward(img.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Send Backward</button>
-                            </div>
-                        </div>
-                    ))}
-
-                    {/* Logo */}
-                    <div className="bg-white p-3 rounded shadow">
-                        <label className="flex items-center">
-                            <input type="checkbox" checked={logo.show} onChange={e=>setLogo({...logo,show:e.target.checked})}/>
-                            <span className="ml-2">Show Logo</span>
-                        </label>
-                        {logo.show &&
-                            <select value={logo.position} onChange={e=>setLogo({...logo,position:e.target.value})} className="w-full border p-1 rounded mt-2">
-                                <option value="top-left">Top Left</option>
-                                <option value="top-right">Top Right</option>
-                                <option value="bottom-left">Bottom Left</option>
-                                <option value="bottom-right">Bottom Right</option>
+                        {/* Headline */}
+                        <div className="bg-white p-3 rounded shadow">
+                            <label className="block text-sm font-medium">Headline</label>
+                            <textarea dir={direction} value={headline} onChange={e=>setHeadline(e.target.value)} className="w-full border p-2 rounded" />
+                            <label className="block text-sm mt-2">Font size</label>
+                            <input type="number" value={fontSize} onChange={e=>setFontSize(parseInt(e.target.value))} className="w-full border p-1 rounded"/>
+                            <label className="block text-sm mt-2">Line height</label>
+                            <input type="number" step="0.1" value={lineHeight} onChange={e=>setLineHeight(parseFloat(e.target.value))} className="w-full border p-1 rounded"/>
+                            <label className="block text-sm mt-2">Text color</label>
+                            <input type="color" value={textColor} onChange={e=>setTextColor(e.target.value)}/>
+                            <label className="block text-sm mt-3">Font family</label>
+                            <select value={fontFamily} onChange={e=>setFontFamily(e.target.value)} className="w-full border p-1 rounded mt-2">
+                                <option value="Jameel Noori Nastaleeq">Jameel Noori Nastaleeq</option>
+                                <option value="JameelNooriNastaliq">Jameel Noori embed</option>
+                                <option value="Pangea Afrikan Trial">Pangea</option>
+                                <option value="Tahoma">Tahoma</option>
+                                <option value="Arial">Arial</option>
                             </select>
-                        }
-                    </div>
-                    
-                    {/* Canvas presets */}
-                    <div className="bg-white p-3 rounded shadow">
-                        <label className="block text-sm font-medium">Canvas size</label>
-                        <div className="flex gap-2 mt-2 flex-wrap">
-                            <button onClick={() => { setWidth(1080); setHeight(1080); }} className="bg-gray-200 px-3 py-1 rounded">Instagram Square</button>
-                            <button onClick={() => { setWidth(1080); setHeight(1920); }} className="bg-gray-200 px-3 py-1 rounded">Instagram Story</button>
-                            <button onClick={() => { setWidth(1200); setHeight(720); }} className="bg-gray-200 px-3 py-1 rounded">YouTube</button>
+                            <label className="block text-sm mt-3">Text direction</label>
+                            <select value={direction} onChange={e=>setDirection(e.target.value)} className="w-full border p-1 rounded mt-2">
+                                <option value="ltr">Left to Right</option>
+                                <option value="rtl">Right to Left</option>
+                            </select>
+                        </div>
+
+                        {/* Shadow */}
+                        <div className="bg-white p-3 rounded shadow">
+                            <label className="flex items-center">
+                                <input type="checkbox" checked={shadow.enabled} onChange={e=>setShadow({...shadow,enabled:e.target.checked})}/>
+                                <span className="ml-2">Enable shadow</span>
+                            </label>
+                            {shadow.enabled && <div className="mt-2 grid grid-cols-2 gap-2">
+                                <label className="text-sm">OffsetX<input type="number" value={shadow.offsetX} onChange={e=>setShadow({...shadow,offsetX:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
+                                <label className="text-sm">OffsetY<input type="number" value={shadow.offsetY} onChange={e=>setShadow({...shadow,offsetY:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
+                                <label className="text-sm">Blur<input type="number" value={shadow.blur} onChange={e=>setShadow({...shadow,blur:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
+                                <label className="text-sm">Color<input type="color" value={shadow.color} onChange={e=>setShadow({...shadow,color:e.target.value})} className="w-full border p-1 rounded"/></label>
+                            </div>}
+                        </div>
+
+                        {/* Stroke */}
+                        <div className="bg-white p-3 rounded shadow">
+                            <label className="flex items-center">
+                                <input type="checkbox" checked={stroke.enabled} onChange={e=>setStroke({...stroke,enabled:e.target.checked})}/>
+                                <span className="ml-2">Enable stroke</span>
+                            </label>
+                            {stroke.enabled && <div className="mt-2 grid grid-cols-2 gap-2">
+                                <label className="text-sm">Width<input type="number" value={stroke.width} onChange={e=>setStroke({...stroke,width:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
+                                <label className="text-sm">Color<input type="color" value={stroke.color} onChange={e=>setStroke({...stroke,color:e.target.value})} className="w-full border p-1 rounded"/></label>
+                            </div>}
+                        </div>
+
+                        {/* Sideline */}
+                        <div className="bg-white p-3 rounded shadow">
+                            <label className="flex items-center">
+                                <input type="checkbox" checked={sideline.show} onChange={e=>setSideline({...sideline,show:e.target.checked})}/>
+                                <span className="ml-2">Show sideline</span>
+                            </label>
+                            {sideline.show && <>
+                                <label className="block text-sm">Width<input type="number" value={sideline.width} onChange={e=>setSideline({...sideline,width:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
+                                <label className="block text-sm">Gap<input type="number" value={sideline.gap} onChange={e=>setSideline({...sideline,gap:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
+                                <label className="block text-sm">Height<input type="number" value={sideline.height} onChange={e=>setSideline({...sideline,height:parseInt(e.target.value)})} className="w-full border p-1 rounded"/></label>
+                                <label className="block text-sm">Color<input type="color" value={sideline.color} onChange={e=>setSideline({...sideline,color:e.target.value})} className="w-full border p-1 rounded"/></label>
+                                <label className="block text-sm">Transparency<input type="range" min="0" max="1" step="0.05" value={sideline.opacity} onChange={e=>setSideline({...sideline,opacity:parseFloat(e.target.value)})} className="w-full"/></label>
+                                <label className="block text-sm">Vertical offset<input type="number" value={sidelineOffset} onChange={e=>setSidelineOffset(parseInt(e.target.value))} className="w-full border p-1 rounded mt-1"/></label>
+                            </>}
+                        </div>
+
+                        {/* Vignette Controls */}
+                        <div className="bg-white p-3 rounded shadow space-y-1">
+                            <label className="flex items-center">
+                                <input type="checkbox" checked={vignette.show} onChange={e=>setVignette({...vignette, show: e.target.checked})}/>
+                                <span className="ml-2">Show Vignette</span>
+                            </label>
+                            {vignette.show && <>
+                                <label className="block text-sm">Zoom</label>
+                                <input type="range" min="0.1" max="3" step="0.05" value={vignette.scale} onChange={e => changeVignetteScale(parseFloat(e.target.value))} className={`w-full ${activeImageId === 'vignette' ? 'border-blue-500' : ''}`} />
+                                <div className="flex gap-2 mt-1">
+                                    <button onClick={bringVignetteForward} className="bg-gray-200 px-2 py-1 rounded text-sm">Bring Forward</button>
+                                    <button onClick={sendVignetteBackward} className="bg-gray-200 px-2 py-1 rounded text-sm">Send Backward</button>
+                                </div>
+                            </>}
+                        </div>
+
+                        {/* Upload images */}
+                        <div className="bg-white p-3 rounded shadow">
+                            <label className="block text-sm font-medium">Upload images</label>
+                            <input type="file" accept="image/*" multiple onChange={onImageUpload} className="mt-2"/>
+                        </div>
+
+                        {/* Per-image controls */}
+                        {images.map(img=>(
+                            <div key={img.id} className={`bg-white p-3 rounded shadow space-y-1 ${activeImageId === img.id ? 'border-2 border-blue-500' : ''}`}>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm">Image {img.id}</span>
+                                    <button onClick={()=>deleteImage(img.id)} className="text-red-500 text-sm">Delete</button>
+                                </div>
+                                <label className="block text-sm">Zoom</label>
+                                <input type="range" min="0.1" max="3" step="0.05" value={img.scale} onChange={e => changeImageScale(img.id, parseFloat(e.target.value))} className={`w-full ${activeImageId === img.id ? 'border-blue-500' : ''}`} />
+                                <div className="flex gap-2 mt-1">
+                                    <button onClick={()=>bringForward(img.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Bring Forward</button>
+                                    <button onClick={()=>sendBackward(img.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Send Backward</button>
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* Logo */}
+                        <div className="bg-white p-3 rounded shadow">
+                            <label className="flex items-center">
+                                <input type="checkbox" checked={logo.show} onChange={e=>setLogo({...logo,show:e.target.checked})}/>
+                                <span className="ml-2">Show Logo</span>
+                            </label>
+                            {logo.show &&
+                                <select value={logo.position} onChange={e=>setLogo({...logo,position:e.target.value})} className="w-full border p-1 rounded mt-2">
+                                    <option value="top-left">Top Left</option>
+                                    <option value="top-right">Top Right</option>
+                                    <option value="bottom-left">Bottom Left</option>
+                                    <option value="bottom-right">Bottom Right</option>
+                                </select>
+                            }
+                        </div>
+                        
+                        {/* Canvas presets */}
+                        <div className="bg-white p-3 rounded shadow">
+                            <label className="block text-sm font-medium">Canvas size</label>
+                            <div className="flex gap-2 mt-2 flex-wrap">
+                                <button onClick={() => { setWidth(1080); setHeight(1080); }} className="bg-gray-200 px-3 py-1 rounded">Instagram Square</button>
+                                <button onClick={() => { setWidth(1080); setHeight(1920); }} className="bg-gray-200 px-3 py-1 rounded">Instagram Story</button>
+                                <button onClick={() => { setWidth(1200); setHeight(720); }} className="bg-gray-200 px-3 py-1 rounded">YouTube</button>
+                            </div>
+                        </div>
+
+                        {/* Canvas & File */}
+                        <div className="bg-white p-3 rounded shadow space-y-2">
+                            <label className="block text-sm">File name</label>
+                            <input type="text" value={fileName} onChange={e=>setFileName(e.target.value)} className="w-full border p-1 rounded"/>
+                            <label className="block text-sm">Fit mode</label>
+                            <select value={fitMode} onChange={e=>setFitMode(e.target.value)} className="w-full border p-1 rounded">
+                                <option value="cover">Cover</option>
+                                <option value="contain">Contain</option>
+                                <option value="stretch">Stretch</option>
+                            </select>
+                            <button onClick={exportAsImage} className="w-full bg-blue-600 text-white py-2 rounded mt-2">Export PNG</button>
                         </div>
                     </div>
 
-                    {/* Canvas & File */}
-                    <div className="bg-white p-3 rounded shadow space-y-2">
-                        <label className="block text-sm">File name</label>
-                        <input type="text" value={fileName} onChange={e=>setFileName(e.target.value)} className="w-full border p-1 rounded"/>
-                        <label className="block text-sm">Fit mode</label>
-                        <select value={fitMode} onChange={e=>setFitMode(e.target.value)} className="w-full border p-1 rounded">
-                            <option value="cover">Cover</option>
-                            <option value="contain">Contain</option>
-                            <option value="stretch">Stretch</option>
-                        </select>
-                        <button onClick={exportAsImage} className="w-full bg-blue-600 text-white py-2 rounded mt-2">Export PNG</button>
-                    </div>
-                </div>
+                    {/* Preview */}
+                    <div className="flex-1 max-w-full mt-6 md:mt-0">
+                        <div className="sticky top-4">
+                            <div className="mb-2">Preview (Output size: {width}×{height})</div>
+                            <div ref={containerRef} className="relative mx-auto bg-black overflow-hidden" style={{width,height}}>
+                                {/* Images */}
+                                {images.sort((a,b)=>a.zIndex-b.zIndex).map(img=>(
+                                    <img key={img.id} src={img.src} onMouseDown={e => startDragImage(e, img.id)} onTouchStart={e => startDragImage(e, img.id)} style={{
+                                        position:"absolute", left:img.x, top:img.y, transform:`scale(${img.scale})`, cursor:"grab",
+                                        width:fitMode==="stretch"?"100%":"auto", height:fitMode==="stretch"?"100%":"auto",
+                                        maxWidth:fitMode!=="stretch"?"none":"100%", maxHeight:fitMode!=="stretch"?"none":"100%",
+                                        border: activeImageId === img.id ? '2px solid #3b82f6' : 'none', zIndex: img.zIndex
+                                    }}/>
+                                ))}
 
-                {/* Preview */}
-                <div className="flex-1 max-w-full mt-6 md:mt-0">
-                    <div className="sticky top-4">
-                        <div className="mb-2">Preview (Output size: {width}×{height})</div>
-                        <div ref={containerRef} className="relative mx-auto bg-black overflow-hidden" style={{width,height}}>
-                            {/* Images */}
-                            {images.sort((a,b)=>a.zIndex-b.zIndex).map(img=>(
-                                <img key={img.id} src={img.src} onMouseDown={e => startDragImage(e, img.id)} onTouchStart={e => startDragImage(e, img.id)} style={{
-                                    position:"absolute", left:img.x, top:img.y, transform:`scale(${img.scale})`, cursor:"grab",
-                                    width:fitMode==="stretch"?"100%":"auto", height:fitMode==="stretch"?"100%":"auto",
-                                    maxWidth:fitMode!=="stretch"?"none":"100%", maxHeight:fitMode!=="stretch"?"none":"100%",
-                                    border: activeImageId === img.id ? '2px solid #3b82f6' : 'none'
-                                }}/>
-                            ))}
+                                {/* Vignette */}
+                                {vignette.show && <img src="Vignette.png" alt="Vignette" onMouseDown={startDragVignette} onTouchStart={startDragVignette} style={{
+                                    position: "absolute",
+                                    left: vignette.x,
+                                    top: vignette.y,
+                                    transform: `scale(${vignette.scale})`,
+                                    zIndex: vignette.zIndex,
+                                    cursor: "grab",
+                                    width: "100%",
+                                    height: "100%",
+                                    border: activeImageId === 'vignette' ? '2px solid #3b82f6' : 'none'
+                                }} />}
 
-                            {/* Sideline */}
-                            {sideline.show && <div className="sideline-clone" style={{
-                                position:"absolute",
-                                [direction==="ltr"?"left":"right"]:textPos.x + (direction==="rtl"?headline.length * fontSize * 0.5 : 0) + sideline.gap,
-                                top:textPos.y+sidelineOffset, height:sideline.height||textRef.current?.offsetHeight||0,
-                                width:sideline.width, background:sideline.color, opacity:sideline.opacity
-                            }}/>}
-                            
-                            {/* Logo */}
-                            {logo.show && <img src="sabah-logo.PNG" alt="Logo" style={{
-                                position:"absolute", width:120,height:60,
-                                ...(logo.position==="top-left"?{left:30,top:150}:{})
-                                ,...(logo.position==="top-right"?{right:30,top:150}:{})
-                                ,...(logo.position==="bottom-left"?{left:30,bottom:150}:{})
-                                ,...(logo.position==="bottom-right"?{right:30,bottom:150}:{})
-                            }}/>}
-                            
-                            {/* Headline */}
-                            <div ref={textRef} onMouseDown={startDragText} onTouchStart={startDragText} dir={direction} style={{
-                                position:"absolute", left:textPos.x, top:textPos.y,
-                                fontSize,lineHeight,fontFamily,color:textColor,
-                                textShadow: shadow.enabled?`${shadow.offsetX}px ${shadow.offsetY}px ${shadow.blur}px ${shadow.color}`:"none",
-                                WebkitTextStroke: stroke.enabled?`${stroke.width}px ${stroke.color}`:"none",
-                                whiteSpace:"pre-wrap", cursor:"move"
-                            }}>{headline}</div>
+                                {/* Sideline */}
+                                {sideline.show && <div className="sideline-clone" style={{
+                                    position:"absolute",
+                                    [direction==="ltr"?"left":"right"]:textPos.x + (direction==="rtl"?textRef.current?.offsetWidth || 0 : 0) + sideline.gap,
+                                    top:textPos.y+sidelineOffset, height:sideline.height||textRef.current?.offsetHeight||0,
+                                    width:sideline.width, background:sideline.color, opacity:sideline.opacity
+                                }}/>}
+                                
+                                {/* Logo */}
+                                {logo.show && <img src="sabah-logo.PNG" alt="Logo" style={{
+                                    position:"absolute", width:120,height:60,
+                                    ...(logo.position==="top-left"?{left:30,top:150}:{})
+                                    ,...(logo.position==="top-right"?{right:30,top:150}:{})
+                                    ,...(logo.position==="bottom-left"?{left:30,bottom:150}:{})
+                                    ,...(logo.position==="bottom-right"?{right:30,bottom:150}:{})
+                                }}/>}
+                                
+                                {/* Headline */}
+                                <div ref={textRef} onMouseDown={startDragText} onTouchStart={startDragText} dir={direction} style={{
+                                    position:"absolute", left:textPos.x, top:textPos.y,
+                                    fontSize,lineHeight,fontFamily,color:textColor,
+                                    textShadow: shadow.enabled?`${shadow.offsetX}px ${shadow.offsetY}px ${shadow.blur}px ${shadow.color}`:"none",
+                                    WebkitTextStroke: stroke.enabled?`${stroke.width}px ${stroke.color}`:"none",
+                                    whiteSpace:"pre-wrap", cursor:"move"
+                                }}>{headline}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    )
-}
+        )
+      }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<SocialCardGenerator />);
+      ReactDOM.createRoot(document.getElementById("root")).render(<SocialCardGenerator />);
     </script>
   </body>
 </html>
