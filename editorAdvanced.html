@@ -454,7 +454,8 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                              width:fitMode==="stretch"?"100%":"auto",
                              height:fitMode==="stretch"?"100%":"auto",
                              maxWidth:fitMode!=="stretch"?"none":"100%",
-                             maxHeight:fitMode!=100%"none":"100%",
+                             // FIX: Changed this line to use a string comparison
+                             maxHeight:fitMode !== "stretch" ? "none" : "100%",
                              border: activeImageId === img.id ? '2px solid #3b82f6' : 'none'
                            }}
                       />
