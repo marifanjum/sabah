@@ -201,19 +201,19 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             window.addEventListener("touchend", onUp);
         }
 
-        function startDragImage(e, id) {
-            setActiveImageId(id);
-            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, headlineZIndex);
-            setImages((imgs) => imgs.map(im => im.id === id ? {...im, zIndex: maxZ + 1} : im));
-            startDrag(e, 'image');
-        }
+      function startDragImage(e, id) {
+    setActiveImageId(id);
+    const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, headlineZIndex);
+    setImages((imgs) => imgs.map(im => im.id === id ? {...im, zIndex: maxZ + 1} : im));
+    startDrag(e, 'image');
+}
 
-        function startDragVignette(e) {
-            setActiveImageId('vignette');
-            const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, headlineZIndex);
-            setVignette(v => ({...v, zIndex: maxZ + 1}));
-            startDrag(e, 'vignette');
-        }
+function startDragVignette(e) {
+    setActiveImageId('vignette');
+    const maxZ = Math.max(...images.map(im => im.zIndex), vignette.zIndex, headlineZIndex);
+    setVignette(v => ({...v, zIndex: maxZ + 1}));
+    startDrag(e, 'vignette');
+}
 
         function startDragText(e) {
             e.preventDefault();
