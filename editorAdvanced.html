@@ -33,6 +33,9 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         const { useState, useRef, useEffect } = React;
         const containerRef = useRef(null);
 
+		  // New global border settings
+const [globalBorderColor, setGlobalBorderColor] = useState("#ffffff"); // default white
+const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
         // --- State variables for the application
         const [images, setImages] = useState([]);
         const [activeImageId, setActiveImageId] = useState(null);
@@ -383,6 +386,24 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                   </div>
                 ))}
 
+				  <div className="flex items-center gap-2 mb-4">
+  <label className="text-sm">Border color:</label>
+  <input
+    type="color"
+    value={globalBorderColor}
+    onChange={(e) => setGlobalBorderColor(e.target.value)}
+    className="w-10 h-8 p-0 border rounded"
+  />
+  <label className="text-sm ml-2">Size:</label>
+  <input
+    type="number"
+    value={globalBorderSize}
+    onChange={(e) => setGlobalBorderSize(Number(e.target.value))}
+    className="w-16 px-2 py-1 border rounded"
+    min="0"
+  />
+</div>
+
                 {/* Logo */}
                 <div className="bg-white p-3 rounded shadow">
                   <label className="flex items-center">
@@ -469,6 +490,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             style={{
                 width: "100%",
                 height: "100%",
+				 border: `${globalBorderSize}px solid ${globalBorderColor}`, // 👈 new line
                 // The border is no longer here
             }}
         />
