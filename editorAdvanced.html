@@ -154,6 +154,7 @@ const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
             id: Date.now() + index,
             src: URL.createObjectURL(file),
             x: 0, y: 0, scale: 1, zIndex: images.length + index
+			borderEnabled: false, // 👈 default: no border
           }));
           setImages([...images, ...newImages]);
         }
@@ -386,6 +387,27 @@ const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
                   </div>
                 ))}
 
+				  {activeImageId && (
+  <div className="flex items-center gap-2 mb-4">
+    <label className="text-sm">Show border</label>
+    <input
+      type="checkbox"
+      checked={
+        images.find((img) => img.id === activeImageId)?.borderEnabled ?? false
+      }
+      onChange={(e) =>
+        setImages((prev) =>
+          prev.map((img) =>
+            img.id === activeImageId
+              ? { ...img, borderEnabled: e.target.checked }
+              : img
+          )
+        )
+      }
+    />
+  </div>
+)}
+
 				  <div className="flex items-center gap-2 mb-4">
   <label className="text-sm">Border color:</label>
   <input
@@ -490,7 +512,9 @@ const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
             style={{
                 width: "100%",
                 height: "100%",
-				 border: `${globalBorderSize}px solid ${globalBorderColor}`, // 👈 new line
+				 border: img.borderEnabled
+      ? `${globalBorderSize}px solid ${globalBorderColor}`
+      : "none",// 👈 new line
                 // The border is no longer here
             }}
         />
