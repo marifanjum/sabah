@@ -46,6 +46,14 @@ const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
         const [fitMode, setFitMode] = useState("cover");
 		    const [vignette, setVignette] = useState({ show: false, x: 0, y: 0, scale: 1 });
 
+		  const updateImage = React.useCallback((id, updates) => {
+  setImages(current =>
+    current.map(img =>
+      img.id === id ? { ...img, ...updates } : img
+    )
+  );
+}, []);
+
         // --- NEW: Multiple Headlines & Collapsible Logic ---
         const [headlines, setHeadlines] = useState([{
             id: Date.now(),
@@ -87,6 +95,8 @@ const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
         function updateHeadline(id, updatedProps) {
             setHeadlines(current => current.map(h => h.id === id ? { ...h, ...updatedProps } : h));
         }
+
+		  
 
         function deleteHeadline(id) {
             setHeadlines(current => current.filter(h => h.id !== id));
@@ -512,11 +522,16 @@ useEffect(() => {
                   <div className="mb-2">Preview (Output size: {width}×{height})</div>
                   <div ref={containerRef} className="relative mx-auto bg-black overflow-hidden" style={{width,height}}>
                     {/* Images */}
-                     {images.sort((a, b) => a.zIndex - b.zIndex).map(img => (
+                 {images.sort((a, b) => a.zIndex - b.zIndex).map(img => (
   <div
     key={img.id}
     onMouseDown={e => startDragImage(e, img.id)}
     onTouchStart={e => startDragImage(e, img.id)}
+    onWheel={e => {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.05 : -0.05; // zoom in/out
+      updateImage(img.id, { scale: Math.max(0.1, img.scale + delta) }); // prevent flipping
+    }}
     className="absolute"
     style={{
       left: img.x,
