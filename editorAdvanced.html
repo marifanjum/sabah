@@ -138,15 +138,22 @@ const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
         }, []);
 
         // Update sideline height dynamically
-  useEffect(() => {
+// Update sideline height dynamically for each headline
+useEffect(() => {
   headlines.forEach(h => {
     const el = headlineRefs.current[h.id];
-    if (el) {
-      const newHeight = el.offsetHeight;
-      updateHeadline(h.id, { sideline: { ...h.sideline, height: newHeight } });
+    if (!el) return;
+
+    const newHeight = el.offsetHeight;
+
+    if ((h.sideline?.height || 0) !== newHeight) {
+      updateHeadline(h.id, {
+        sideline: { ...h.sideline, height: newHeight }
+      });
     }
   });
-}, [headlines]);
+}, [headlines, updateHeadline]);
+
 
 
 
