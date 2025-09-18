@@ -138,25 +138,12 @@ const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
         }, []);
 
         // Update sideline height dynamically
-      useEffect(() => {
-  headlines.forEach(h => {
-    const el = headlineRefs.current[h.id];
-    if (!el) return;
+     useEffect(() => {
+  if (textRef.current) {
+    setSideline((s) => ({ ...s, height: textRef.current.offsetHeight }));
+  }
+}, [headline.text, fontSize, lineHeight, fontFamily, headline.direction]);
 
-    const measuredHeight = el.offsetHeight;
-
-    // Always sync sideline height to text block height
-    if ((h.sideline?.height || 0) !== measuredHeight) {
-      updateHeadline(h.id, {
-        sideline: { ...h.sideline, height: measuredHeight }
-      });
-    }
-  });
-}, [
-  headlines.map(h => 
-    `${h.id}|${h.text}|${h.fontSize}|${h.fontFamily}|${h.lineHeight}|${h.direction}`
-  ).join("||")
-]);
 
 
 
