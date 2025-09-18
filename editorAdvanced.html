@@ -558,15 +558,26 @@ const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
                     {/* Multiple Headlines */}
                     {headlines.map(headline => (
                       <React.Fragment key={headline.id}>
-                        {headline.sideline.show && <div className="sideline-clone" style={{
-                            position:"absolute",
-                            [headline.direction==="ltr"?"left":"right"]:headline.textPos.x-headline.sideline.gap,
-                            top:headline.textPos.y+headline.sidelineOffset,
-                            height:headline.sideline.height||0,
-                            width:headline.sideline.width,
-                            background:headline.sideline.color,
-                            opacity:headline.sideline.opacity
-                        }}/>}
+                        {headline.sideline.show && (
+  <div
+    className="sideline-clone"
+    style={{
+      position: "absolute",
+      left: headline.direction === "ltr"
+        ? headline.textPos.x - headline.sideline.gap - headline.sideline.width
+        : "auto",
+      right: headline.direction === "rtl"
+        ? (width - headline.textPos.x) - headline.sideline.gap - headline.sideline.width
+        : "auto",
+      top: headline.textPos.y + headline.sidelineOffset,
+      height: headline.sideline.height || 0,
+      width: headline.sideline.width,
+      background: headline.sideline.color,
+      opacity: headline.sideline.opacity,
+    }}
+  />
+)}
+
                         <div ref={el => headlineRefs.current[headline.id] = el} 
                             onMouseDown={e => startDragText(e, headline.id)} 
                             onTouchStart={e => startDragText(e, headline.id)} 
