@@ -139,13 +139,25 @@ const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
 
         // Update sideline height dynamically
         useEffect(() => {
-            headlines.forEach(headline => {
-                const ref = headlineRefs.current[headline.id];
-                if (ref && headline.sideline.height === 0) {
-                    updateHeadline(headline.id, { sideline: { ...headline.sideline, height: ref.offsetHeight } });
-                }
-            });
-        }, [headlines]);
+  headlines.forEach(h => {
+    const el = headlineRefs.current[h.id];
+    if (!el) return;
+
+    const measuredWidth = el.offsetWidth;
+    const measuredHeight = el.offsetHeight;
+
+    // update sideline height if changed
+    if ((h.sideline && h.sideline.height) !== measuredHeight) {
+      updateHeadline(h.id, { sideline: { ...h.sideline, height: measuredHeight } });
+    }
+    // update textWidth if changed
+    if (h.textWidth !== measuredWidth) {
+      updateHeadline(h.id, { textWidth: measuredWidth });
+    }
+  });
+// re-run when headlines content/size-related props change
+}, [headlines.map(h => h.text + "|" + h.fontSize + "|" + h.fontFamily + "|" + h.direction).join("||"), width, height]);
+
 
         function onImageUpload(e) {
           const files = e.target.files;
@@ -556,51 +568,52 @@ const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
                     }}/>}
 
                     {/* Multiple Headlines */}
-                    {headlines.map(headline => (
-                      <React.Fragment key={headline.id}>
-                       {{headline.sideline.show && (
-  <div
-    className="sideline-clone"
-    style={{
-      position: "absolute",
-      left: headline.direction === "ltr"
-        ? headline.textPos.x + headline.textWidth + headline.sideline.gap
-        : "auto",
-      right: headline.direction === "rtl"
-        ? (width - headline.textPos.x) + headline.textWidth + headline.sideline.gap
-        : "auto",
-      top: headline.textPos.y + headline.sidelineOffset,
-      height: headline.sideline.height || 0,
-      width: headline.sideline.width,
-      background: headline.sideline.color,
-      opacity: headline.sideline.opacity,
-    }}
-  />
-)}
+                   {/* Multiple Headlines */}
+{headlines.map(headline => (
+  <React.Fragment key={headline.id}>
+    {headline.sideline.show && (
+      <div
+        className="sideline-clone"
+        style={{
+          position: "absolute",
+          // place the sideline at the end (right) of the rendered text box
+          left: (headline.textPos.x || 0) + (headline.textWidth || 0) + (headline.sideline.gap || 0),
+          top: headline.textPos.y + (headline.sidelineOffset || 0),
+          height: headline.sideline.height || 0,
+          width: headline.sideline.width,
+          background: headline.sideline.color,
+          opacity: headline.sideline.opacity,
+          pointerEvents: "none"     // allow clicks/drags through the line
+        }}
+      />
+    )}
 
+    <div
+      ref={el => headlineRefs.current[headline.id] = el}
+      onMouseDown={e => startDragText(e, headline.id)}
+      onTouchStart={e => startDragText(e, headline.id)}
+      dir={headline.direction}
+      style={{
+        position: "absolute",
+        left: headline.textPos.x,
+        top: headline.textPos.y,
+        display: "inline-block",          // shrink-wrap to content so offsetWidth = text width
+        fontSize: headline.fontSize,
+        lineHeight: headline.lineHeight,
+        fontFamily: headline.fontFamily,
+        color: headline.textColor,
+        textShadow: headline.shadow.enabled ? `${headline.shadow.offsetX}px ${headline.shadow.offsetY}px ${headline.shadow.blur}px ${headline.shadow.color}` : "none",
+        WebkitTextStroke: headline.stroke.enabled ? `${headline.stroke.width}px ${headline.stroke.color}` : "none",
+        whiteSpace: "pre-wrap",
+        textAlign: headline.direction === "rtl" ? "right" : "left",
+        cursor: "move",
+      }}
+    >
+      {headline.text}
+    </div>
+  </React.Fragment>
+))}
 
-
-                        <div ref={el => headlineRefs.current[headline.id] = el} 
-                            onMouseDown={e => startDragText(e, headline.id)} 
-                            onTouchStart={e => startDragText(e, headline.id)} 
-                            dir={headline.direction} 
-                            style={{
-                                position:"absolute", 
-                                left:headline.textPos.x, 
-                                top:headline.textPos.y,
-                                fontSize: headline.fontSize,
-                                lineHeight: headline.lineHeight,
-                                fontFamily: headline.fontFamily,
-                                color: headline.textColor,
-                                textShadow: headline.shadow.enabled ? `${headline.shadow.offsetX}px ${headline.shadow.offsetY}px ${headline.shadow.blur}px ${headline.shadow.color}` : "none",
-                                WebkitTextStroke: headline.stroke.enabled ? `${headline.stroke.width}px ${headline.stroke.color}` : "none",
-                                whiteSpace:"pre-wrap", 
-                                cursor:"move"
-                            }}>
-                            {headline.text}
-                        </div>
-                      </React.Fragment>
-                    ))}
                   </div>
                 </div>
               </div>
