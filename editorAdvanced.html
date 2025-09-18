@@ -138,7 +138,7 @@ const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
         }, []);
 
         // Update sideline height dynamically
-     useEffect(() => {
+   useEffect(() => {
   if (textRef.current) {
     setSideline((s) => ({ ...s, height: textRef.current.offsetHeight }));
   }
