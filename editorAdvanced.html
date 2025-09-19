@@ -9,9 +9,9 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
 " rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 	  
     <style>
       @font-face {
@@ -85,12 +85,19 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             "images": [
               {
                 "id": 1758252358755,
-                "src": "blob:https://marifanjum.github.io/0a9a49ae-89e5-43f0-adf4-aa3dcc060349",
-                "x": -762.9685821533203,
-                "y": 288.6867980957031,
+                "src": "https://marifanjum.github.io/socialcard/bg.png",
+                "x": 0,
+                "y": 0,
                 "scale": 1,
                 "zIndex": 7,
-                "borderEnabled": false
+                "borderEnabled": false,
+                "stretchEnabled": false,
+                "fitMode": {
+                  "top": true,
+                  "right": true,
+                  "bottom": true,
+                  "left": true
+                }
               }
             ],
             "width": 1080,
@@ -100,6 +107,10 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
               "position": "top-right"
             },
             "fileName": "social-card",
+            "background": {
+              "type": "solid",
+              "color": "#000000"
+            },
             "fitMode": "cover",
             "vignette": {
               "show": false,
@@ -109,10 +120,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             },
             "globalBorderColor": "#ffffff",
             "globalBorderSize": 4,
-            "background": {
-              "type": "image",
-              "imageSrc": "bg.png"
-            }
           },
           "Twoline normal": {
             "headlines": [
@@ -318,8 +325,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         const [height, setHeight] = useState(1080);
         const [logo, setLogo] = useState({ show: true, position: "top-right" });
         const [fileName, setFileName] = useState("social-card");
-        const [fitMode, setFitMode] = useState("cover");
-        const [vignette, setVignette] = useState({ show: false, x: 0, y: 0, scale: 1 });
         const [background, setBackground] = useState({
           type: 'solid',
           color: '#000000',
@@ -331,8 +336,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           imageSrc: 'bg.png'
         });
 		  
-		  
-
         const [presets, setPresets] = React.useState(() => {
           const saved = localStorage.getItem("userPresets");
           return { ...DEFAULT_PRESETS, ...(saved ? JSON.parse(saved) : {}) };
@@ -348,13 +351,14 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           setHeadlines(preset.headlines || []);
           setImages(preset.images.map(img => ({
               ...img,
-              scale: img.scale !== undefined ? img.scale : 1 
+              scale: img.scale !== undefined ? img.scale : 1,
+              fitMode: img.fitMode || { top: false, right: false, bottom: false, left: false },
+              stretchEnabled: img.stretchEnabled || false,
           })) || []);
           if (preset.width) setWidth(preset.width);
           if (preset.height) setHeight(preset.height);
           if (preset.logo) setLogo(preset.logo);
           if (preset.fileName) setFileName(preset.fileName);
-          if (preset.fitMode) setFitMode(preset.fitMode);
           if (preset.vignette !== undefined) setVignette(preset.vignette);
           if (preset.globalBorderColor) setGlobalBorderColor(preset.globalBorderColor);
           if (preset.globalBorderSize !== undefined) setGlobalBorderSize(preset.globalBorderSize);
@@ -381,9 +385,11 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                 y: img.y,
                 scale: img.scale,
                 zIndex: img.zIndex,
-                borderEnabled: img.borderEnabled
+                borderEnabled: img.borderEnabled,
+                stretchEnabled: img.stretchEnabled,
+                fitMode: img.fitMode,
             })),
-            width, height, logo, fileName, fitMode, vignette,
+            width, height, logo, fileName, vignette,
             globalBorderColor, globalBorderSize, background
           };
 
@@ -502,12 +508,15 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             if (savedData) {
               const parsedData = JSON.parse(savedData);
               if (parsedData.headlines) setHeadlines(parsedData.headlines);
-              if (parsedData.images) setImages(parsedData.images);
+              if (parsedData.images) setImages(parsedData.images.map(img => ({
+                ...img,
+                fitMode: img.fitMode || { top: false, right: false, bottom: false, left: false },
+                stretchEnabled: img.stretchEnabled || false,
+              })));
               if (parsedData.width) setWidth(parsedData.width);
               if (parsedData.height) setHeight(parsedData.height);
               if (parsedData.logo) setLogo(parsedData.logo);
               if (parsedData.fileName) setFileName(parsedData.fileName);
-              if (parsedData.fitMode) setFitMode(parsedData.fitMode);
               if (parsedData.background) setBackground(parsedData.background);
             }
           } catch (e) {
@@ -517,14 +526,14 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
 
         useEffect(() => {
           const dataToSave = {
-            headlines, images, width, height, logo, fileName, fitMode, background
+            headlines, images, width, height, logo, fileName, background
           };
           try {
             localStorage.setItem('socialCardData', JSON.stringify(dataToSave));
           } catch (e) {
             console.error("Failed to save data to localStorage", e);
           }
-        }, [headlines, images, width, height, logo, fileName, fitMode, background]);
+        }, [headlines, images, width, height, logo, fileName, background]);
 
         useEffect(() => {
           const handleBeforeUnload = (e) => {
@@ -561,6 +570,8 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             src: URL.createObjectURL(file),
             x: 0, y: 0, scale: 1, zIndex: images.length + index,
             borderEnabled: false,
+            stretchEnabled: false,
+            fitMode: { top: false, right: false, bottom: false, left: false }
           }));
           setImages([...images, ...newImages]);
         }
@@ -589,6 +600,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           setActiveImageId(id);
           const { x: startX, y: startY } = getCoords(e);
           const img = images.find(im => im.id === id);
+          if (img.stretchEnabled) return; 
           const initX = img.x, initY = img.y;
           const maxZ = Math.max(...images.map(im => im.zIndex));
           setImages((imgs) => imgs.map(im => im.id === id ? { ...im, zIndex: maxZ + 1 } : im));
@@ -678,9 +690,42 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                 link.click();
               })
               .catch(err => {
-                console.                log("export failed:", err);
+                console.log("export failed:", err);
               });
           }, 0);
+        }
+
+        function updateImage(id, updatedProps) {
+          setImages(current => current.map(im => im.id === id ? { ...im, ...updatedProps } : im));
+        }
+
+        function updateImageFitMode(id, corner) {
+          setImages(current => current.map(im => {
+            if (im.id === id) {
+              const newFitMode = { ...im.fitMode, [corner]: !im.fitMode[corner] };
+              return {
+                ...im,
+                stretchEnabled: Object.values(newFitMode).some(val => val),
+                fitMode: newFitMode
+              };
+            }
+            return im;
+          }));
+        }
+        
+        function stretchToAllCorners(id) {
+          setImages(current => current.map(im => {
+            if (im.id === id) {
+              const stretch = !im.stretchEnabled || Object.values(im.fitMode).some(val => !val);
+              const newFitMode = stretch ? { top: true, right: true, bottom: true, left: true } : { top: false, right: false, bottom: false, left: false };
+              return {
+                ...im,
+                stretchEnabled: stretch,
+                fitMode: newFitMode
+              };
+            }
+            return im;
+          }));
         }
 
         function changeImageScale(id, scale) { 
@@ -717,14 +762,76 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             case 'image':
               return {
                 backgroundImage: `url('${background.imageSrc}')`,
-                backgroundSize: fitMode === 'cover' ? 'cover' : fitMode === 'contain' ? 'contain' : '100% 100%',
+                backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat'
               };
             default:
               return {};
           }
-        }, [background, fitMode]);
+        }, [background]);
+
+        function getImageStyle(img, containerWidth, containerHeight) {
+          if (!img.stretchEnabled) {
+            return {
+              left: img.x,
+              top: img.y,
+              transform: `scale(${img.scale})`,
+              transformOrigin: 'center center',
+              width: 'auto',
+              height: 'auto'
+            };
+          }
+        
+          const { top, right, bottom, left } = img.fitMode;
+          const style = {};
+        
+          // Width and Horizontal Position
+          if (left && right) {
+            style.width = containerWidth;
+            style.left = 0;
+          } else if (left) {
+            style.left = 0;
+            style.width = 'auto'; // Will be determined by height and aspect ratio
+          } else if (right) {
+            style.right = 0;
+            style.width = 'auto'; // Will be determined by height and aspect ratio
+          } else {
+            style.left = '50%';
+            style.transform = 'translateX(-50%)';
+            style.width = 'auto';
+          }
+        
+          // Height and Vertical Position
+          if (top && bottom) {
+            style.height = containerHeight;
+            style.top = 0;
+          } else if (top) {
+            style.top = 0;
+            style.height = 'auto'; // Will be determined by width and aspect ratio
+          } else if (bottom) {
+            style.bottom = 0;
+            style.height = 'auto'; // Will be determined by width and aspect ratio
+          } else {
+            style.top = '50%';
+            if (style.transform) {
+              style.transform += ' translateY(-50%)';
+            } else {
+              style.transform = 'translateY(-50%)';
+            }
+            style.height = 'auto';
+          }
+        
+          // If only one axis is stretched, the other should maintain aspect ratio
+          if ((left || right) && !(top || bottom)) {
+            style.height = 'auto';
+          }
+          if ((top || bottom) && !(left || right)) {
+            style.width = 'auto';
+          }
+        
+          return style;
+        }
 
         return (
           <div className="p-4 max-w-7xl mx-auto">
@@ -954,6 +1061,35 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                               <button onClick={() => bringForward(img.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Bring Forward</button>
                               <button onClick={() => sendBackward(img.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Send Backward</button>
                             </div>
+
+                            {/* New Fit controls */}
+                            <div className="mt-4">
+                                <label className="flex items-center">
+                                    <input type="checkbox" checked={img.stretchEnabled} onChange={() => updateImage(img.id, { stretchEnabled: !img.stretchEnabled })} />
+                                    <span className="ml-2 text-sm font-semibold">Stretch Image</span>
+                                </label>
+                                {img.stretchEnabled && (
+                                    <div className="space-y-2 mt-2">
+                                        <button onClick={() => stretchToAllCorners(img.id)} className="w-full bg-gray-200 py-1 rounded text-sm">Stretch to Fill All</button>
+                                        <div className="flex items-center justify-around mt-2">
+                                            <label className="flex items-center gap-1 text-xs">
+                                                <input type="checkbox" checked={img.fitMode.top} onChange={() => updateImageFitMode(img.id, 'top')} /> Top
+                                            </label>
+                                            <label className="flex items-center gap-1 text-xs">
+                                                <input type="checkbox" checked={img.fitMode.right} onChange={() => updateImageFitMode(img.id, 'right')} /> Right
+                                            </label>
+                                            <label className="flex items-center gap-1 text-xs">
+                                                <input type="checkbox" checked={img.fitMode.bottom} onChange={() => updateImageFitMode(img.id, 'bottom')} /> Bottom
+                                            </label>
+                                            <label className="flex items-center gap-1 text-xs">
+                                                <input type="checkbox" checked={img.fitMode.left} onChange={() => updateImageFitMode(img.id, 'left')} /> Left
+                                            </label>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+
                           </div>
                         ))}
 
@@ -1188,12 +1324,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                     <div className="mt-2 space-y-2">
                       <label className="block text-sm">File name</label>
                       <input type="text" value={fileName} onChange={e => setFileName(e.target.value)} className="w-full border p-1 rounded" />
-                      <label className="block text-sm">Fit mode</label>
-                      <select value={fitMode} onChange={e => setFitMode(e.target.value)} className="w-full border p-1 rounded">
-                        <option value="cover">Cover</option>
-                        <option value="contain">Contain</option>
-                        <option value="stretch">Stretch</option>
-                      </select>
                       <button onClick={exportAsImage} className="w-full bg-blue-600 text-white py-2 rounded mt-2">Export PNG</button>
                     </div>
                   )}
@@ -1214,24 +1344,16 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                         onTouchStart={e => startDragImage(e, img.id)}
                         className="absolute"
                         style={{
-                          left: img.x,
-                          top: img.y,
-                          cursor: "grab",
                           zIndex: img.zIndex,
-                          border: activeImageId === img.id ? "2px solid #3b82f6" : "none",
+                          cursor: img.stretchEnabled ? 'default' : 'grab',
+                          ...(getImageStyle(img, width, height)),
                         }}
                       >
                         <img
                           src={img.src}
                           alt="Uploaded Image"
                           style={{
-                            transform: `scale(${img.scale})`,
-                            transformOrigin: "center center",
                             display: "block",
-                            width: fitMode === "stretch" ? "100%" : "auto",
-                            height: fitMode === "stretch" ? "100%" : "auto",
-                            maxWidth: fitMode !== "stretch" ? "none" : "100%",
-                            maxHeight: fitMode !== "stretch" ? "none" : "100%",
                             border: img.borderEnabled
                               ? `${globalBorderSize}px solid ${globalBorderColor}`
                               : "none",
@@ -1239,6 +1361,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                         />
                       </div>
                     ))}
+                    
 
                     {/* Vignette */}
                     {vignette.show && (
