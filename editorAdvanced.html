@@ -38,29 +38,49 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         const { useState, useRef, useEffect } = React;
         const containerRef = useRef(null);
 
-const DEFAULT_PRESETS = {
+// pressts
+
+		  const DEFAULT_PRESETS = {
   instagramSquare: {
     width: 1080,
     height: 1080,
     fileName: "instagram_post.png",
     fitMode: "cover",
-    vignette: {
-      show: true,
-      x: 0,
-      y: 0,
-      scale: 1
-    },
+    vignette: { show: true, x: 0, y: 0, scale: 1 },
     globalBorderColor: "#000000",
     globalBorderSize: 5,
     headlines: [
       {
         id: 1,
         text: "Instagram Headline",
-        x: 100,
-        y: 200,
         fontSize: 48,
+        lineHeight: 1.2,
         fontFamily: "Arial",
-        color: "#ffffff"
+        textColor: "#ffffff",
+        textPos: { x: 100, y: 200 },
+        direction: "ltr",
+        sidelineOffset: 0,
+        shadow: {
+          enabled: false,
+          offsetX: 0,
+          offsetY: 0,
+          blur: 0,
+          color: "rgba(0,0,0,0.6)"
+        },
+        stroke: {
+          enabled: false,
+          width: 1,
+          color: "#000000"
+        },
+        sideline: {
+          show: false,
+          width: 30,
+          gap: 100,
+          height: 108,
+          color: "#ff0000",
+          opacity: 1
+        },
+        isCollapsed: false
       }
     ],
     images: [
@@ -74,10 +94,7 @@ const DEFAULT_PRESETS = {
         borderEnabled: false
       }
     ],
-    logo: {
-      show: true,
-      position: "top-right"
-    }
+    logo: { show: true, position: "top-right" }
   },
 
   youtubeThumbnail: {
@@ -85,23 +102,41 @@ const DEFAULT_PRESETS = {
     height: 720,
     fileName: "youtube_thumbnail.png",
     fitMode: "contain",
-    vignette: {
-      show: false,
-      x: 0,
-      y: 0,
-      scale: 1
-    },
+    vignette: { show: false, x: 0, y: 0, scale: 1 },
     globalBorderColor: "#ff0000",
     globalBorderSize: 10,
     headlines: [
       {
         id: 1,
         text: "YouTube Title Here",
-        x: 150,
-        y: 300,
         fontSize: 60,
+        lineHeight: 1.2,
         fontFamily: "Arial",
-        color: "#ff0000"
+        textColor: "#ff0000",
+        textPos: { x: 150, y: 300 },
+        direction: "ltr",
+        sidelineOffset: 0,
+        shadow: {
+          enabled: false,
+          offsetX: 0,
+          offsetY: 0,
+          blur: 0,
+          color: "rgba(0,0,0,0.6)"
+        },
+        stroke: {
+          enabled: false,
+          width: 1,
+          color: "#000000"
+        },
+        sideline: {
+          show: false,
+          width: 30,
+          gap: 100,
+          height: 108,
+          color: "#ff0000",
+          opacity: 1
+        },
+        isCollapsed: false
       }
     ],
     images: [
@@ -115,13 +150,65 @@ const DEFAULT_PRESETS = {
         borderEnabled: false
       }
     ],
-    logo: {
-      show: false,
-      position: "bottom-left"
-    }
+    logo: { show: false, position: "bottom-left" }
+  },
+
+  First: {
+    headlines: [
+      {
+        id: 1758252239236,
+        text: "یہ ایک نئی ہیڈلائن ",
+        fontSize: 90,
+        lineHeight: 1.2,
+        fontFamily: "JameelNooriNastaliq",
+        textColor: "#ffffff",
+        textPos: { x: 559.46728515625, y: 687.0537414550781 },
+        direction: "rtl",
+        sidelineOffset: 0,
+        shadow: {
+          enabled: true,
+          offsetX: 2,
+          offsetY: 2,
+          blur: 6,
+          color: "rgba(0,0,0,0.6)"
+        },
+        stroke: {
+          enabled: false,
+          width: 1,
+          color: "#000000"
+        },
+        sideline: {
+          show: true,
+          width: 30,
+          gap: 100,
+          height: 108,
+          color: "#ff0000",
+          opacity: 1
+        },
+        isCollapsed: false
+      }
+    ],
+    images: [
+      {
+        id: 1758252358755,
+        src: "blob:https://marifanjum.github.io/0a9a49ae-89e5-43f0-adf4-aa3dcc060349",
+        x: -762.9685821533203,
+        y: 288.6867980957031,
+        scale: 1,
+        zIndex: 7,
+        borderEnabled: false
+      }
+    ],
+    width: 1080,
+    height: 1080,
+    logo: { show: true, position: "top-right" },
+    fileName: "social-card",
+    fitMode: "cover",
+    vignette: { show: false, x: 0, y: 0, scale: 1 },
+    globalBorderColor: "#ffffff",
+    globalBorderSize: 4
   }
 };
-		  
 		  // New global border settings
 const [globalBorderColor, setGlobalBorderColor] = useState("#ffffff"); // default white
 const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
