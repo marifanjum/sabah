@@ -30,8 +30,14 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
 
     <script type="text/babel">
 
-// Built-in presets
-		// Built-in presets
+
+
+
+		
+      function SocialCardGenerator() {
+        const { useState, useRef, useEffect } = React;
+        const containerRef = useRef(null);
+
 const DEFAULT_PRESETS = {
   instagramSquare: {
     width: 1080,
@@ -63,13 +69,14 @@ const DEFAULT_PRESETS = {
         src: "https://picsum.photos/600",
         x: 0,
         y: 0,
-        scale: 1
+        scale: 1,
+        zIndex: 1,
+        borderEnabled: false
       }
     ],
     logo: {
       show: true,
-      position: "top-right",
-      src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Example.jpg"
+      position: "top-right"
     }
   },
 
@@ -103,23 +110,17 @@ const DEFAULT_PRESETS = {
         src: "https://picsum.photos/800",
         x: 50,
         y: 50,
-        scale: 1.2
+        scale: 1.2,
+        zIndex: 1,
+        borderEnabled: false
       }
     ],
     logo: {
       show: false,
-      position: "bottom-left",
-      src: ""
+      position: "bottom-left"
     }
   }
 };
-
-		
-      function SocialCardGenerator() {
-        const { useState, useRef, useEffect } = React;
-        const containerRef = useRef(null);
-
-
 		  
 		  // New global border settings
 const [globalBorderColor, setGlobalBorderColor] = useState("#ffffff"); // default white
