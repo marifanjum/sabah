@@ -31,40 +31,89 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
     <script type="text/babel">
 
 // Built-in presets
+		// Built-in presets
 const DEFAULT_PRESETS = {
   instagramSquare: {
     width: 1080,
     height: 1080,
     fileName: "instagram_post.png",
     fitMode: "cover",
-    vignette: true,
+    vignette: {
+      show: true,
+      x: 0,
+      y: 0,
+      scale: 1
+    },
     globalBorderColor: "#000000",
     globalBorderSize: 5,
     headlines: [
-      { id: 1, text: "Instagram Headline", x: 100, y: 200, fontSize: 48, fontFamily: "Arial", color: "#ffffff" }
+      {
+        id: 1,
+        text: "Instagram Headline",
+        x: 100,
+        y: 200,
+        fontSize: 48,
+        fontFamily: "Arial",
+        color: "#ffffff"
+      }
     ],
     images: [
-      { id: 1, src: "https://picsum.photos/600", x: 0, y: 0, scale: 1 }
+      {
+        id: 1,
+        src: "https://picsum.photos/600",
+        x: 0,
+        y: 0,
+        scale: 1
+      }
     ],
-    logo: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Example.jpg"
+    logo: {
+      show: true,
+      position: "top-right",
+      src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Example.jpg"
+    }
   },
+
   youtubeThumbnail: {
     width: 1280,
     height: 720,
     fileName: "youtube_thumbnail.png",
     fitMode: "contain",
-    vignette: false,
+    vignette: {
+      show: false,
+      x: 0,
+      y: 0,
+      scale: 1
+    },
     globalBorderColor: "#ff0000",
     globalBorderSize: 10,
     headlines: [
-      { id: 1, text: "YouTube Title Here", x: 150, y: 300, fontSize: 60, fontFamily: "Arial", color: "#ff0000" }
+      {
+        id: 1,
+        text: "YouTube Title Here",
+        x: 150,
+        y: 300,
+        fontSize: 60,
+        fontFamily: "Arial",
+        color: "#ff0000"
+      }
     ],
     images: [
-      { id: 1, src: "https://picsum.photos/800", x: 50, y: 50, scale: 1.2 }
+      {
+        id: 1,
+        src: "https://picsum.photos/800",
+        x: 50,
+        y: 50,
+        scale: 1.2
+      }
     ],
-    logo: ""
+    logo: {
+      show: false,
+      position: "bottom-left",
+      src: ""
+    }
   }
 };
+
 		
       function SocialCardGenerator() {
         const { useState, useRef, useEffect } = React;
