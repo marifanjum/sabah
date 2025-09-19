@@ -316,15 +316,15 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         const [fitMode, setFitMode] = useState("cover");
         const [vignette, setVignette] = useState({ show: false, x: 0, y: 0, scale: 1 });
         const [background, setBackground] = useState({
-  type: 'solid',
-  color: '#000000',
-  gradient: {
-    color1: '#ffffff',
-    color2: '#000000',
-    direction: 'to bottom right'
-  },
-  imageSrc: 'bg.png'
-});
+          type: 'solid',
+          color: '#000000',
+          gradient: {
+            color1: '#ffffff',
+            color2: '#000000',
+            direction: 'to bottom right'
+          },
+          imageSrc: 'bg.png'
+        });
 		  
 		  
 
@@ -437,6 +437,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           textColor: "#ffffff",
           textPos: { x: 100, y: 200 },
           direction: "rtl",
+          textAlign: "right",
           sidelineOffset: 0,
           shadow: { enabled: true, offsetX: 2, offsetY: 2, blur: 6, color: "rgba(0,0,0,0.6)" },
           stroke: { enabled: false, width: 1, color: "#000000" },
@@ -456,6 +457,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             textColor: "#ffffff",
             textPos: { x: 100, y: 300 },
             direction: "rtl",
+            textAlign: "right",
             sidelineOffset: 0,
             shadow: { enabled: true, offsetX: 2, offsetY: 2, blur: 6, color: "rgba(0,0,0,0.6)" },
             stroke: { enabled: false, width: 1, color: "#000000" },
@@ -734,23 +736,23 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                       )}
 
                       {background.type === 'image' && (
-  <div className="space-y-2">
-    <label className="block text-sm font-medium">Image from File</label>
-    <div className="flex gap-2 items-center">
-      <input type="file" accept="image/png, image/jpeg" onChange={onBackgroundUpload} className="mt-2" />
-      <button
-        onClick={() => setBackground({
-          ...background,
-          type: 'image',
-          imageSrc: 'bg.png'
-        })}
-        className="bg-blue-500 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
-      >
-        Reset
-      </button>
-    </div>
-  </div>
-)}
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium">Image from File</label>
+                          <div className="flex gap-2 items-center">
+                            <input type="file" accept="image/png, image/jpeg" onChange={onBackgroundUpload} className="mt-2" />
+                            <button
+                              onClick={() => setBackground({
+                                ...background,
+                                type: 'image',
+                                imageSrc: 'bg.png'
+                              })}
+                              className="bg-blue-500 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
+                            >
+                              Reset
+                            </button>
+                          </div>
+                        </div>
+                      )}
 
 
                       {background.type === 'gradient' && (
@@ -826,6 +828,13 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                           <select value={headline.direction} onChange={e => updateHeadline(headline.id, { direction: e.target.value })} className="w-full border p-1 rounded mt-2">
                             <option value="ltr">Left to Right</option>
                             <option value="rtl">Right to Left</option>
+                          </select>
+                          <label className="block text-sm mt-3">Text align</label>
+                          <select value={headline.textAlign} onChange={e => updateHeadline(headline.id, { textAlign: e.target.value })} className="w-full border p-1 rounded mt-2">
+                            <option value="left">Left</option>
+                            <option value="right">Right</option>
+                            <option value="center">Center</option>
+                            <option value="justify">Justify</option>
                           </select>
 
                           {/* Shadow Controls */}
@@ -1252,7 +1261,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                             textShadow: headline.shadow.enabled ? `${headline.shadow.offsetX}px ${headline.shadow.offsetY}px ${headline.shadow.blur}px ${headline.shadow.color}` : "none",
                             WebkitTextStroke: headline.stroke.enabled ? `${headline.stroke.width}px ${headline.stroke.color}` : "none",
                             whiteSpace: "pre-wrap",
-                            textAlign: headline.direction === "rtl" ? "right" : "left",
+                            textAlign: headline.textAlign,
                             cursor: "move",
                             zIndex: 200,
                           }}
