@@ -346,10 +346,9 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           }
 
           setHeadlines(preset.headlines || []);
-          // *** UPDATED: Load images with 'scale' and other properties ***
           setImages(preset.images.map(img => ({
               ...img,
-              scale: img.scale !== undefined ? img.scale : 1 // Use saved scale or default to 1
+              scale: img.scale !== undefined ? img.scale : 1 
           })) || []);
           if (preset.width) setWidth(preset.width);
           if (preset.height) setHeight(preset.height);
@@ -375,7 +374,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
 
           const newPreset = {
             headlines, 
-            // *** UPDATED: Save images with 'scale' and other properties ***
             images: images.map(img => ({
                 id: img.id,
                 src: img.src,
@@ -680,12 +678,25 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                 link.click();
               })
               .catch(err => {
-                console.error("export failed:", err);
+                console.                log("export failed:", err);
               });
           }, 0);
         }
 
-        function changeImageScale(id, scale) { setImages((imgs) => imgs.map(im => im.id === id ? { ...im, scale } : im)) }
+        function changeImageScale(id, scale) { 
+            const newScale = parseFloat(scale);
+            if (!isNaN(newScale)) {
+                setImages((imgs) => imgs.map(im => im.id === id ? { ...im, scale: newScale } : im)) 
+            }
+        }
+        
+        function changeVignetteScale(scale) {
+            const newScale = parseFloat(scale);
+            if (!isNaN(newScale)) {
+                setVignette(v => ({ ...v, scale: newScale }));
+            }
+        }
+
         function bringForward(id) { const maxZ = Math.max(...images.map(im => im.zIndex)); setImages((imgs) => imgs.map(im => im.id === id ? { ...im, zIndex: maxZ + 1 } : im)) }
         function sendBackward(id) { const minZ = Math.min(...images.map(im => im.zIndex)); setImages((imgs) => imgs.map(im => im.id === id ? { ...im, zIndex: minZ - 1 } : im)) }
         function deleteImage(id) { setImages((imgs) => imgs.filter(im => im.id !== id)) }
@@ -926,9 +937,19 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                               <button onClick={() => deleteImage(img.id)} className="text-red-500 text-sm">Delete</button>
                             </div>
                             <label className="block text-sm">Zoom</label>
-                            <input type="range" min="0.1" max="3" step="0.05" value={img.scale} onChange={e => changeImageScale(img.id, parseFloat(e.target.value))}
-                              className={`w-full ${activeImageId === img.id ? 'border-blue-500' : ''}`} />
-
+                            <div className="flex items-center gap-2 mt-1">
+                                <button onClick={() => changeImageScale(img.id, img.scale - 0.01)} className="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold">-</button>
+                                <input
+                                    type="number"
+                                    min="0.1"
+                                    max="3"
+                                    step="0.01"
+                                    value={img.scale}
+                                    onChange={e => changeImageScale(img.id, e.target.value)}
+                                    className="w-full border p-1 rounded text-center"
+                                />
+                                <button onClick={() => changeImageScale(img.id, img.scale + 0.01)} className="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold">+</button>
+                            </div>
                             <div className="flex gap-2 mt-1">
                               <button onClick={() => bringForward(img.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Bring Forward</button>
                               <button onClick={() => sendBackward(img.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Send Backward</button>
@@ -995,7 +1016,19 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                       </label>
                       {vignette.show && <>
                         <label className="block text-sm">Zoom</label>
-                        <input type="range" min="0.1" max="3" step="0.05" value={vignette.scale} onChange={e => setVignette({ ...vignette, scale: parseFloat(e.target.value) })} className="w-full" />
+                        <div className="flex items-center gap-2 mt-1">
+                            <button onClick={() => changeVignetteScale(vignette.scale - 0.01)} className="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold">-</button>
+                            <input
+                                type="number"
+                                min="0.1"
+                                max="3"
+                                step="0.01"
+                                value={vignette.scale}
+                                onChange={e => changeVignetteScale(e.target.value)}
+                                className="w-full border p-1 rounded text-center"
+                            />
+                            <button onClick={() => changeVignetteScale(vignette.scale + 0.01)} className="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold">+</button>
+                        </div>
                       </>}
                     </div>
                   )}
@@ -1135,7 +1168,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                       <button
                         onClick={importPresets}
                         className="w-full bg-yellow-500 text-white py-1 rounded"
-                      >
+                        >
                         Import Presets (Paste JSON)
                       </button>
                     </div>
