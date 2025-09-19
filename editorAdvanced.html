@@ -615,6 +615,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
 
         function startDragImage(e, id) {
           e.preventDefault();
+          e.stopPropagation();
           setActiveImageId(id);
           const { x: startX, y: startY } = getCoords(e);
           const img = images.find(im => im.id === id);
@@ -641,6 +642,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
 
         function startDragText(e, id) {
           e.preventDefault();
+          e.stopPropagation();
           const { x: startX, y: startY } = getCoords(e);
           const headline = headlines.find(h => h.id === id);
           const initPos = { ...headline.textPos };
@@ -664,6 +666,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
 
         function startDragVignette(e) {
           e.preventDefault();
+          e.stopPropagation();
           const { x: startX, y: startY } = getCoords(e);
           const initX = vignette.x, initY = vignette.y;
           function onMove(ev) {
