@@ -57,6 +57,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                   "y": 687.0537414550781
                 },
                 "direction": "rtl",
+                "textAlign": "right",
                 "sidelineOffset": 0,
                 "shadow": {
                   "enabled": true,
@@ -127,6 +128,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                   "y": 835.5854797363281
                 },
                 "direction": "rtl",
+                "textAlign": "right",
                 "sidelineOffset": 0,
                 "shadow": {
                   "enabled": true,
@@ -162,6 +164,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                   "y": 654.4373474121094
                 },
                 "direction": "rtl",
+                "textAlign": "right",
                 "sidelineOffset": 0,
                 "shadow": {
                   "enabled": true,
@@ -222,6 +225,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                   "y": 623.6142883300781
                 },
                 "direction": "rtl",
+                "textAlign": "right",
                 "sidelineOffset": 0,
                 "shadow": {
                   "enabled": true,
@@ -257,6 +261,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                   "y": 813.2811584472656
                 },
                 "direction": "rtl",
+                "textAlign": "right",
                 "sidelineOffset": 0,
                 "shadow": {
                   "enabled": true,
@@ -341,7 +346,11 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           }
 
           setHeadlines(preset.headlines || []);
-          setImages(preset.images || []);
+          // *** UPDATED: Load images with 'scale' and other properties ***
+          setImages(preset.images.map(img => ({
+              ...img,
+              scale: img.scale !== undefined ? img.scale : 1 // Use saved scale or default to 1
+          })) || []);
           if (preset.width) setWidth(preset.width);
           if (preset.height) setHeight(preset.height);
           if (preset.logo) setLogo(preset.logo);
@@ -365,7 +374,18 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           }
 
           const newPreset = {
-            headlines, images, width, height, logo, fileName, fitMode, vignette,
+            headlines, 
+            // *** UPDATED: Save images with 'scale' and other properties ***
+            images: images.map(img => ({
+                id: img.id,
+                src: img.src,
+                x: img.x,
+                y: img.y,
+                scale: img.scale,
+                zIndex: img.zIndex,
+                borderEnabled: img.borderEnabled
+            })),
+            width, height, logo, fileName, fitMode, vignette,
             globalBorderColor, globalBorderSize, background
           };
 
