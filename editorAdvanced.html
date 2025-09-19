@@ -41,6 +41,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         const [isLogoCollapsed, setIsLogoCollapsed] = useState(false);
         const [isCanvasCollapsed, setIsCanvasCollapsed] = useState(false);
         const [isFileNameCollapsed, setIsFileNameCollapsed] = useState(false);
+        const [vignette, setVignette] = useState({ show: false, x: 0, y: 0, scale: 1 });
         
         const DEFAULT_PRESETS = {
           "Single Line": {
@@ -335,9 +336,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           },
           imageSrc: 'bg.png'
         });
-
-		  const [vignette, setVignette] = useState({ show: false, x: 0, y: 0, scale: 1 });
-		  
 		  
         const [presets, setPresets] = React.useState(() => {
           const saved = localStorage.getItem("userPresets");
@@ -568,15 +566,32 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         function onImageUpload(e) {
           const files = e.target.files;
           if (!files) return;
-          const newImages = Array.from(files).map((file, index) => ({
-            id: Date.now() + index,
-            src: URL.createObjectURL(file),
-            x: 0, y: 0, scale: 1, zIndex: images.length + index,
-            borderEnabled: false,
-            stretchEnabled: false,
-            fitMode: { top: false, right: false, bottom: false, left: false }
-          }));
-          setImages([...images, ...newImages]);
+        
+          const newImages = Array.from(files).map((file, index) => {
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            return new Promise((resolve) => {
+              img.onload = () => {
+                const newImg = {
+                  id: Date.now() + index,
+                  src: img.src,
+                  x: 0,
+                  y: 0,
+                  scale: 1,
+                  zIndex: images.length + index,
+                  borderEnabled: false,
+                  fitMode: { top: false, right: false, bottom: false, left: false },
+                  originalWidth: img.naturalWidth,
+                  originalHeight: img.naturalHeight,
+                };
+                resolve(newImg);
+              };
+            });
+          });
+        
+          Promise.all(newImages).then(resolvedImages => {
+            setImages([...images, ...resolvedImages]);
+          });
         }
 
         function onBackgroundUpload(e) {
@@ -603,7 +618,6 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           setActiveImageId(id);
           const { x: startX, y: startY } = getCoords(e);
           const img = images.find(im => im.id === id);
-          if (img.stretchEnabled) return; 
           const initX = img.x, initY = img.y;
           const maxZ = Math.max(...images.map(im => im.zIndex));
           setImages((imgs) => imgs.map(im => im.id === id ? { ...im, zIndex: maxZ + 1 } : im));
@@ -706,10 +720,26 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           setImages(current => current.map(im => {
             if (im.id === id) {
               const newFitMode = { ...im.fitMode, [corner]: !im.fitMode[corner] };
+              let newX = im.x;
+              let newY = im.y;
+              let newScale = im.scale;
+              
+              const scaledWidth = im.originalWidth * im.scale;
+              const scaledHeight = im.originalHeight * im.scale;
+
+              if (newFitMode.top && !newFitMode.bottom) newY = 0;
+              if (newFitMode.bottom && !newFitMode.top) newY = height - scaledHeight;
+              if (!newFitMode.top && !newFitMode.bottom) newY = (height - scaledHeight) / 2;
+
+              if (newFitMode.left && !newFitMode.right) newX = 0;
+              if (newFitMode.right && !newFitMode.left) newX = width - scaledWidth;
+              if (!newFitMode.left && !newFitMode.right) newX = (width - scaledWidth) / 2;
+
               return {
                 ...im,
-                stretchEnabled: Object.values(newFitMode).some(val => val),
-                fitMode: newFitMode
+                fitMode: newFitMode,
+                x: newX,
+                y: newY
               };
             }
             return im;
@@ -719,13 +749,29 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         function stretchToAllCorners(id) {
           setImages(current => current.map(im => {
             if (im.id === id) {
-              const stretch = !im.stretchEnabled || Object.values(im.fitMode).some(val => !val);
+              const stretch = Object.values(im.fitMode).some(val => !val);
               const newFitMode = stretch ? { top: true, right: true, bottom: true, left: true } : { top: false, right: false, bottom: false, left: false };
-              return {
-                ...im,
-                stretchEnabled: stretch,
-                fitMode: newFitMode
-              };
+              
+              if (stretch) {
+                const xScale = width / im.originalWidth;
+                const yScale = height / im.originalHeight;
+                const newScale = Math.max(xScale, yScale);
+                
+                const newScaledWidth = im.originalWidth * newScale;
+                const newScaledHeight = im.originalHeight * newScale;
+                const newX = (width - newScaledWidth) / 2;
+                const newY = (height - newScaledHeight) / 2;
+                
+                return {
+                  ...im,
+                  fitMode: newFitMode,
+                  scale: newScale,
+                  x: newX,
+                  y: newY
+                };
+              } else {
+                 return { ...im, fitMode: newFitMode, scale: 1, x: 0, y: 0 };
+              }
             }
             return im;
           }));
@@ -774,67 +820,20 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           }
         }, [background]);
 
-        function getImageStyle(img, containerWidth, containerHeight) {
-          if (!img.stretchEnabled) {
-            return {
-              left: img.x,
-              top: img.y,
-              transform: `scale(${img.scale})`,
-              transformOrigin: 'center center',
-              width: 'auto',
-              height: 'auto'
-            };
-          }
-        
-          const { top, right, bottom, left } = img.fitMode;
-          const style = {};
-        
-          // Width and Horizontal Position
-          if (left && right) {
-            style.width = containerWidth;
-            style.left = 0;
-          } else if (left) {
-            style.left = 0;
-            style.width = 'auto'; // Will be determined by height and aspect ratio
-          } else if (right) {
-            style.right = 0;
-            style.width = 'auto'; // Will be determined by height and aspect ratio
-          } else {
-            style.left = '50%';
-            style.transform = 'translateX(-50%)';
-            style.width = 'auto';
-          }
-        
-          // Height and Vertical Position
-          if (top && bottom) {
-            style.height = containerHeight;
-            style.top = 0;
-          } else if (top) {
-            style.top = 0;
-            style.height = 'auto'; // Will be determined by width and aspect ratio
-          } else if (bottom) {
-            style.bottom = 0;
-            style.height = 'auto'; // Will be determined by width and aspect ratio
-          } else {
-            style.top = '50%';
-            if (style.transform) {
-              style.transform += ' translateY(-50%)';
-            } else {
-              style.transform = 'translateY(-50%)';
-            }
-            style.height = 'auto';
-          }
-        
-          // If only one axis is stretched, the other should maintain aspect ratio
-          if ((left || right) && !(top || bottom)) {
-            style.height = 'auto';
-          }
-          if ((top || bottom) && !(left || right)) {
-            style.width = 'auto';
-          }
-        
-          return style;
+        function getImageStyle(img) {
+          return {
+            left: img.x,
+            top: img.y,
+            transform: `scale(${img.scale})`,
+            transformOrigin: 'top left',
+            width: img.originalWidth,
+            height: img.originalHeight,
+          };
         }
+
+        const isStretched = (img) => {
+          return Object.values(img.fitMode).some(val => val);
+        };
 
         return (
           <div className="p-4 max-w-7xl mx-auto">
@@ -1068,28 +1067,25 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                             {/* New Fit controls */}
                             <div className="mt-4">
                                 <label className="flex items-center">
-                                    <input type="checkbox" checked={img.stretchEnabled} onChange={() => updateImage(img.id, { stretchEnabled: !img.stretchEnabled })} />
                                     <span className="ml-2 text-sm font-semibold">Stretch Image</span>
                                 </label>
-                                {img.stretchEnabled && (
-                                    <div className="space-y-2 mt-2">
-                                        <button onClick={() => stretchToAllCorners(img.id)} className="w-full bg-gray-200 py-1 rounded text-sm">Stretch to Fill All</button>
-                                        <div className="flex items-center justify-around mt-2">
-                                            <label className="flex items-center gap-1 text-xs">
-                                                <input type="checkbox" checked={img.fitMode.top} onChange={() => updateImageFitMode(img.id, 'top')} /> Top
-                                            </label>
-                                            <label className="flex items-center gap-1 text-xs">
-                                                <input type="checkbox" checked={img.fitMode.right} onChange={() => updateImageFitMode(img.id, 'right')} /> Right
-                                            </label>
-                                            <label className="flex items-center gap-1 text-xs">
-                                                <input type="checkbox" checked={img.fitMode.bottom} onChange={() => updateImageFitMode(img.id, 'bottom')} /> Bottom
-                                            </label>
-                                            <label className="flex items-center gap-1 text-xs">
-                                                <input type="checkbox" checked={img.fitMode.left} onChange={() => updateImageFitMode(img.id, 'left')} /> Left
-                                            </label>
-                                        </div>
+                                <div className="space-y-2 mt-2">
+                                    <button onClick={() => stretchToAllCorners(img.id)} className="w-full bg-gray-200 py-1 rounded text-sm">Stretch to Fill All</button>
+                                    <div className="flex items-center justify-around mt-2">
+                                        <label className="flex items-center gap-1 text-xs">
+                                            <input type="checkbox" checked={img.fitMode.top} onChange={() => updateImageFitMode(img.id, 'top')} /> Top
+                                        </label>
+                                        <label className="flex items-center gap-1 text-xs">
+                                            <input type="checkbox" checked={img.fitMode.right} onChange={() => updateImageFitMode(img.id, 'right')} /> Right
+                                        </label>
+                                        <label className="flex items-center gap-1 text-xs">
+                                            <input type="checkbox" checked={img.fitMode.bottom} onChange={() => updateImageFitMode(img.id, 'bottom')} /> Bottom
+                                        </label>
+                                        <label className="flex items-center gap-1 text-xs">
+                                            <input type="checkbox" checked={img.fitMode.left} onChange={() => updateImageFitMode(img.id, 'left')} /> Left
+                                        </label>
                                     </div>
-                                )}
+                                </div>
                             </div>
 
 
@@ -1348,8 +1344,8 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                         className="absolute"
                         style={{
                           zIndex: img.zIndex,
-                          cursor: img.stretchEnabled ? 'default' : 'grab',
-                          ...(getImageStyle(img, width, height)),
+                          cursor: "grab",
+                          ...getImageStyle(img),
                         }}
                       >
                         <img
@@ -1357,6 +1353,9 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                           alt="Uploaded Image"
                           style={{
                             display: "block",
+                            width: "100%",
+                            height: "100%",
+                            objectFit: isStretched(img) && img.fitMode.top && img.fitMode.bottom && img.fitMode.left && img.fitMode.right ? 'cover' : 'none',
                             border: img.borderEnabled
                               ? `${globalBorderSize}px solid ${globalBorderColor}`
                               : "none",
