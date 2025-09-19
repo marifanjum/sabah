@@ -28,7 +28,7 @@
   <script type="text/babel">
 
     function SocialCardGenerator() {
-      const { useState, useRef, useEffect } = React;
+      const { useState, useRef } = React;
       const containerRef = useRef(null);
 
       // --- New Background Options ---
@@ -44,7 +44,6 @@
 
       // --- Existing States ---
       const [images, setImages] = useState([]);
-      const [activeImageId, setActiveImageId] = useState(null);
       const [width, setWidth] = useState(1080);
       const [height, setHeight] = useState(1080);
       const [logo, setLogo] = useState({ show: true, position: "top-right" });
@@ -64,16 +63,13 @@
         textColor: "#ffffff",
         textPos: { x: 100, y: 200 },
         direction: "rtl",
-        sidelineOffset: 0,
         shadow: { enabled: true, offsetX: 2, offsetY: 2, blur: 6, color: "rgba(0,0,0,0.6)" },
         stroke: { enabled: false, width: 1, color: "#000000" },
-        sideline: { show: true, width: 30, gap: 60, height: 0, color: "#ff0000", opacity: 1 },
         isCollapsed: false,
       }]);
 
-      // --- Presets (shortened for demo, keep your full DEFAULT_PRESETS) ---
+      // --- Presets ---
       const DEFAULT_PRESETS = {};
-
       const [presets, setPresets] = useState(() => {
         const saved = localStorage.getItem("userPresets");
         return { ...DEFAULT_PRESETS, ...(saved ? JSON.parse(saved) : {}) };
@@ -98,7 +94,6 @@
         const updatedPresets = { ...presets, [name]: newPreset };
         setPresets(updatedPresets);
         localStorage.setItem("userPresets", JSON.stringify(updatedPresets));
-
         alert(`Preset "${name}" saved!`);
       }
 
@@ -136,7 +131,7 @@
         setUseBackgroundImage(true);
       }
 
-      // --- Render ---
+      // --- Background Style ---
       const backgroundStyle = {};
       if (useBackgroundImage && backgroundImage) {
         backgroundStyle.backgroundImage = `url(${backgroundImage})`;
