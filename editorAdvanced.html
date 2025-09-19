@@ -159,7 +159,42 @@ useEffect(() => {
 }, [headlines, updateHeadline]);
 
 
+function exportLayout() {
+  const dataToExport = {
+    headlines, images, width, height, logo, fileName, fitMode, vignette,
+    globalBorderColor, globalBorderSize
+  };
+  const json = JSON.stringify(dataToExport, null, 2);
+  
+  // Copy to clipboard
+  navigator.clipboard.writeText(json)
+    .then(() => alert("Layout copied to clipboard!"))
+    .catch(err => console.error("Clipboard copy failed", err));
+}
 
+function importLayout() {
+  const json = prompt("Paste layout JSON here:");
+  if (!json) return;
+  try {
+    const parsed = JSON.parse(json);
+    if (parsed.headlines) setHeadlines(parsed.headlines);
+    if (parsed.images) setImages(parsed.images);
+    if (parsed.width) setWidth(parsed.width);
+    if (parsed.height) setHeight(parsed.height);
+    if (parsed.logo) setLogo(parsed.logo);
+    if (parsed.fileName) setFileName(parsed.fileName);
+    if (parsed.fitMode) setFitMode(parsed.fitMode);
+    if (parsed.vignette) setVignette(parsed.vignette);
+    if (parsed.globalBorderColor) setGlobalBorderColor(parsed.globalBorderColor);
+    if (parsed.globalBorderSize) setGlobalBorderSize(parsed.globalBorderSize);
+    alert("Layout loaded!");
+  } catch (e) {
+    alert("Invalid layout JSON");
+    console.error("Import failed:", e);
+  }
+}
+
+		  
 
         function onImageUpload(e) {
           const files = e.target.files;
@@ -510,6 +545,20 @@ useEffect(() => {
                   <button onClick={exportAsImage} className="w-full bg-blue-600 text-white py-2 rounded mt-2">Export PNG</button>
                 </div>
               </div>
+
+				<div className="bg-white p-3 rounded shadow">
+  <h3 className="text-lg font-medium mb-2">Save / Load Layout</h3>
+  <button 
+    onClick={exportLayout} 
+    className="w-full bg-blue-500 text-white py-1 rounded mb-2">
+    Export Layout (Copy JSON)
+  </button>
+  <button 
+    onClick={importLayout} 
+    className="w-full bg-green-500 text-white py-1 rounded">
+    Import Layout (Paste JSON)
+  </button>
+</div>
 
               {/* Preview */}
       {/* Preview */}
