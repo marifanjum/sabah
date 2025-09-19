@@ -3,14 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Social Card Generator</title>
-    <link href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    q<title>Social Card Generator</title>
+	  <link href="
+https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
+" rel="stylesheet">
+    <scrilpt src="https://cdn.tailwindcss.cm"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
+	  
     <style>
       @font-face {
         font-family: "Pangea Afrikan Trial";
@@ -26,216 +28,1209 @@
   <body class="bg-gray-100">
     <div id="root"></div>
 
+    
     <script type="text/babel">
-      function SocialCardGenerator() {
-        const { useState, useRef, useEffect } = React;
-        const containerRef = useRef(null);
+  function SocialCardGenerator() {
+    const { useState, useRef, useEffect } = React;
+    const containerRef = useRef(null);
 
-        // --- New background states ---
-        const [useBackgroundImage, setUseBackgroundImage] = useState(false);
-        const [backgroundImage, setBackgroundImage] = useState(null);
-        const [useGradient, setUseGradient] = useState(false);
-        const [gradient, setGradient] = useState({
-          color1: "#000000",
-          color2: "#ffffff",
-          direction: "to bottom",
-        });
+    // pressts
 
-        // --- Existing states ---
-        const [images, setImages] = useState([]);
-        const [activeImageId, setActiveImageId] = useState(null);
-        const [width, setWidth] = useState(1080);
-        const [height, setHeight] = useState(1080);
-        const [logo, setLogo] = useState({ show: true, position: "top-right" });
-        const [fileName, setFileName] = useState("social-card");
-        const [fitMode, setFitMode] = useState("cover");
-        const [vignette, setVignette] = useState({ show: false, x: 0, y: 0, scale: 1 });
-        const [globalBorderColor, setGlobalBorderColor] = useState("#ffffff");
-        const [globalBorderSize, setGlobalBorderSize] = useState(4);
-
-        // Headlines
-        const [headlines, setHeadlines] = useState([
+    const DEFAULT_PRESETS = {
+      "Single Line": {
+        "headlines": [
           {
-            id: Date.now(),
-            text: "Headline here",
-            fontSize: 90,
-            lineHeight: 1.2,
-            fontFamily: "JameelNooriNastaliq",
-            textColor: "#ffffff",
-            textPos: { x: 100, y: 200 },
-            direction: "rtl",
-            sidelineOffset: 0,
-            shadow: { enabled: true, offsetX: 2, offsetY: 2, blur: 6, color: "rgba(0,0,0,0.6)" },
-            stroke: { enabled: false, width: 1, color: "#000000" },
-            sideline: { show: true, width: 30, gap: 60, height: 0, color: "#ff0000", opacity: 1 },
-            isCollapsed: false,
+            "id": 1758252239236,
+            "text": "یہ ایک نئی ہیڈلائن ",
+            "fontSize": 90,
+            "lineHeight": 1.2,
+            "fontFamily": "JameelNooriNastaliq",
+            "textColor": "#ffffff",
+            "textPos": {
+              "x": 559.46728515625,
+              "y": 687.0537414550781
+            },
+            "direction": "rtl",
+            "sidelineOffset": 0,
+            "shadow": {
+              "enabled": true,
+              "offsetX": 2,
+              "offsetY": 2,
+              "blur": 6,
+              "color": "rgba(0,0,0,0.6)"
+            },
+            "stroke": {
+              "enabled": false,
+              "width": 1,
+              "color": "#000000"
+            },
+            "sideline": {
+              "show": true,
+              "width": 30,
+              "gap": 100,
+              "height": 108,
+              "color": "#ff0000",
+              "opacity": 1
+            },
+            "isCollapsed": false
+          }
+        ],
+        "images": [
+          {
+            "id": 1758252358755,
+            "src": "blob:https://marifanjum.github.io/0a9a49ae-89e5-43f0-adf4-aa3dcc060349",
+            "x": -762.9685821533203,
+            "y": 288.6867980957031,
+            "scale": 1,
+            "zIndex": 7,
+            "borderEnabled": false
+          }
+        ],
+        "width": 1080,
+        "height": 1080,
+        "logo": {
+          "show": true,
+          "position": "top-right"
+        },
+        "fileName": "social-card",
+        "fitMode": "cover",
+        "vignette": {
+          "show": false,
+          "x": 0,
+          "y": 0,
+          "scale": 1
+        },
+        "globalBorderColor": "#ffffff",
+        "globalBorderSize": 4,
+        "background": {
+          "type": "solid",
+          "color": "#000000"
+        }
+      },
+      "Twoline normal": {
+        "headlines": [
+          {
+            "id": 1758256662235,
+            "text": "سب ہیڈنگ",
+            "fontSize": 60,
+            "lineHeight": 1.2,
+            "fontFamily": "Tahoma",
+            "textColor": "#ffff00",
+            "textPos": {
+              "x": 730.349853515625,
+              "y": 835.5854797363281
+            },
+            "direction": "rtl",
+            "sidelineOffset": 0,
+            "shadow": {
+              "enabled": true,
+              "offsetX": 2,
+              "offsetY": 2,
+              "blur": 6,
+              "color": "rgba(0,0,0,0.6)"
+            },
+            "stroke": {
+              "enabled": true,
+              "width": 1,
+              "color": "#ffff00"
+            },
+            "sideline": {
+              "show": false,
+              "width": 30,
+              "gap": 60,
+              "height": 72,
+              "color": "#ff0000",
+              "opacity": 1
+            },
+            "isCollapsed": false
           },
-        ]);
+          {
+            "id": 1758256736357,
+            "text": "نئی ہیڈلائن",
+            "fontSize": 120,
+            "lineHeight": 1.2,
+            "fontFamily": "JameelNooriNastaliq",
+            "textColor": "#ffffff",
+            "textPos": {
+              "x": 671.0325927734375,
+              "y": 654.4373474121094
+            },
+            "direction": "rtl",
+            "sidelineOffset": 0,
+            "shadow": {
+              "enabled": true,
+              "offsetX": 2,
+              "offsetY": 2,
+              "blur": 6,
+              "color": "rgba(0,0,0,0.6)"
+            },
+            "stroke": {
+              "enabled": false,
+              "width": 1,
+              "color": "#000000"
+            },
+            "sideline": {
+              "show": true,
+              "width": 30,
+              "gap": 60,
+              "height": 144,
+              "color": "#ff0000",
+              "opacity": 1
+            },
+            "isCollapsed": false
+          }
+        ],
+        "images": [],
+        "width": 1080,
+        "height": 1080,
+        "logo": {
+          "show": true,
+          "position": "top-right"
+        },
+        "fileName": "social-card",
+        "fitMode": "cover",
+        "vignette": {
+          "show": false,
+          "x": 0,
+          "y": 0,
+          "scale": 1
+        },
+        "globalBorderColor": "#ffffff",
+        "globalBorderSize": 4,
+        "background": {
+          "type": "solid",
+          "color": "#000000"
+        }
+      },
+      "Bold Two Lines": {
+        "headlines": [
+          {
+            "id": 1758256736357,
+            "text": "نئی ہیڈلائن",
+            "fontSize": 140,
+            "lineHeight": 1.2,
+            "fontFamily": "JameelNooriNastaliq",
+            "textColor": "#ffffff",
+            "textPos": {
+              "x": 628.6456298828125,
+              "y": 623.6142883300781
+            },
+            "direction": "rtl",
+            "sidelineOffset": 0,
+            "shadow": {
+              "enabled": true,
+              "offsetX": 2,
+              "offsetY": 2,
+              "blur": 6,
+              "color": "rgba(0,0,0,0.6)"
+            },
+            "stroke": {
+              "enabled": false,
+              "width": 1,
+              "color": "#000000"
+            },
+            "sideline": {
+              "show": true,
+              "width": 30,
+              "gap": 60,
+              "height": 168,
+              "color": "#ff0000",
+              "opacity": 1
+            },
+            "isCollapsed": false
+          },
+          {
+            "id": 1758256845811,
+            "text": "سب ہیڈنگ",
+            "fontSize": 80,
+            "lineHeight": 1.2,
+            "fontFamily": "Tahoma",
+            "textColor": "#ffff00",
+            "textPos": {
+              "x": 703.7202758789062,
+              "y": 813.2811584472656
+            },
+            "direction": "rtl",
+            "sidelineOffset": 0,
+            "shadow": {
+              "enabled": true,
+              "offsetX": 2,
+              "offsetY": 2,
+              "blur": 6,
+              "color": "rgba(0,0,0,0.6)"
+            },
+            "stroke": {
+              "enabled": true,
+              "width": 1,
+              "color": "#ffff00"
+            },
+            "sideline": {
+              "show": false,
+              "width": 30,
+              "gap": 60,
+              "height": 96,
+              "color": "#ff0000",
+              "opacity": 1
+            },
+            "isCollapsed": false
+          }
+        ],
+        "images": [],
+        "width": 1080,
+        "height": 1080,
+        "logo": {
+          "show": true,
+          "position": "top-right"
+        },
+        "fileName": "social-card",
+        "fitMode": "cover",
+        "vignette": {
+          "show": false,
+          "x": 0,
+          "y": 0,
+          "scale": 1
+        },
+        "globalBorderColor": "#ffffff",
+        "globalBorderSize": 4,
+        "background": {
+          "type": "solid",
+          "color": "#000000"
+        }
+      }
+    };
 
-        // --- Background style ---
-        const backgroundStyle = {};
-        if (useBackgroundImage && backgroundImage) {
-          backgroundStyle.backgroundImage = `url(${backgroundImage})`;
-          backgroundStyle.backgroundSize = "cover";
-          backgroundStyle.backgroundPosition = "center";
-        } else if (useGradient) {
-          backgroundStyle.backgroundImage = `linear-gradient(${gradient.direction}, ${gradient.color1}, ${gradient.color2})`;
+
+    // New global border settings
+    const [globalBorderColor, setGlobalBorderColor] = useState("#ffffff"); // default white
+    const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
+    // --- State variables for the application
+    const [images, setImages] = useState([]);
+    const [activeImageId, setActiveImageId] = useState(null);
+    const [width, setWidth] = useState(1080);
+    const [height, setHeight] = useState(1080);
+    const [logo, setLogo] = useState({ show: true, position: "top-right" });
+    const [fileName, setFileName] = useState("social-card");
+    const [fitMode, setFitMode] = useState("cover");
+    const [vignette, setVignette] = useState({ show: false, x: 0, y: 0, scale: 1 });
+    // --- NEW BACKGROUND STATE
+    const [background, setBackground] = useState({
+      type: 'solid',
+      color: '#000000',
+      gradient: {
+        color1: '#ffffff',
+        color2: '#000000',
+        direction: 'to bottom right'
+      },
+      imageSrc: ''
+    });
+
+
+    // Presets state (merge defaults + saved ones from localStorage)
+    const [presets, setPresets] = React.useState(() => {
+      const saved = localStorage.getItem("userPresets");
+      return { ...DEFAULT_PRESETS, ...(saved ? JSON.parse(saved) : {}) };
+    });
+
+    // Load preset
+    function loadPreset(name) {
+      const preset = presets[name];
+      if (!preset) {
+        alert("Preset not found");
+        return;
+      }
+
+      setHeadlines(preset.headlines || []);
+      setImages(preset.images || []);
+      if (preset.width) setWidth(preset.width);
+      if (preset.height) setHeight(preset.height);
+      if (preset.logo) setLogo(preset.logo);
+      if (preset.fileName) setFileName(preset.fileName);
+      if (preset.fitMode) setFitMode(preset.fitMode);
+      if (preset.vignette !== undefined) setVignette(preset.vignette);
+      if (preset.globalBorderColor) setGlobalBorderColor(preset.globalBorderColor);
+      if (preset.globalBorderSize !== undefined) setGlobalBorderSize(preset.globalBorderSize);
+      if (preset.background) {
+        // Handle loading the image from a path or blob
+        if (preset.background.type === 'image' && preset.background.imageSrc) {
+          const reader = new FileReader();
+          fetch(preset.background.imageSrc)
+            .then(res => res.blob())
+            .then(blob => {
+              const file = new File([blob], 'bg.png');
+              const newSrc = URL.createObjectURL(file);
+              setBackground({ ...preset.background, imageSrc: newSrc });
+            })
+            .catch(e => console.error("Failed to fetch image for preset", e));
         } else {
-          backgroundStyle.backgroundColor = "#000";
+          setBackground(preset.background);
         }
+      }
 
-        // --- Presets save/load (with background) ---
-        function savePreset(name) {
-          if (!name) {
-            alert("Please enter a preset name");
-            return;
+      alert(`${name} preset loaded!`);
+    }
+
+    // Save current layout as preset
+    function savePreset(name) {
+      if (!name) {
+        alert("Please enter a preset name");
+        return;
+      }
+
+      const newPreset = {
+        headlines, images, width, height, logo, fileName, fitMode, vignette,
+        globalBorderColor, globalBorderSize, background
+      };
+
+      const updatedPresets = { ...presets, [name]: newPreset };
+      setPresets(updatedPresets);
+      localStorage.setItem("userPresets", JSON.stringify(updatedPresets));
+
+      alert(`Preset "${name}" saved!`);
+    }
+
+    // Delete preset
+    function deletePreset(name) {
+      if (!name) {
+        alert("Please select a preset to delete");
+        return;
+      }
+      if (DEFAULT_PRESETS[name]) {
+        alert("Default presets cannot be deleted");
+        return;
+      }
+
+      const updatedPresets = { ...presets };
+      delete updatedPresets[name];
+      setPresets(updatedPresets);
+      localStorage.setItem("userPresets", JSON.stringify(updatedPresets));
+
+      alert(`Preset "${name}" deleted!`);
+    }
+
+    // Reset to defaults only
+    function resetPresets() {
+      if (!window.confirm("This will delete all your saved presets and restore only the defaults. Continue?")) {
+        return;
+      }
+      setPresets(DEFAULT_PRESETS);
+      localStorage.removeItem("userPresets");
+      alert("Presets reset to default!");
+    }
+
+    // Export presets
+    function exportPresets() {
+      const json = JSON.stringify(presets, null, 2);
+      navigator.clipboard.writeText(json)
+        .then(() => alert("All presets copied to clipboard!"))
+        .catch(err => console.error("Clipboard copy failed", err));
+    }
+
+    // Import presets
+    function importPresets() {
+      const json = prompt("Paste presets JSON here:");
+      if (!json) return;
+      try {
+        const parsed = JSON.parse(json);
+        if (typeof parsed !== "object") throw new Error("Invalid format");
+
+        const updatedPresets = { ...DEFAULT_PRESETS, ...parsed };
+        setPresets(updatedPresets);
+        localStorage.setItem("userPresets", JSON.stringify(parsed));
+
+        alert("Presets imported successfully!");
+      } catch (e) {
+        alert("Invalid presets JSON");
+        console.error("Import failed:", e);
+      }
+    }
+
+
+
+
+    // --- NEW: Multiple Headlines & Collapsible Logic ---
+    const [headlines, setHeadlines] = useState([{
+      id: Date.now(),
+      text: "Headline here",
+      fontSize: 90,
+      lineHeight: 1.2,
+      fontFamily: "JameelNooriNastaliq",
+      textColor: "#ffffff",
+      textPos: { x: 100, y: 200 },
+      direction: "rtl",
+      sidelineOffset: 0,
+      shadow: { enabled: true, offsetX: 2, offsetY: 2, blur: 6, color: "rgba(0,0,0,0.6)" },
+      stroke: { enabled: false, width: 1, color: "#000000" },
+      sideline: { show: true, width: 30, gap: 60, height: 0, color: "#ff0000", opacity: 1 },
+      isCollapsed: false,
+    }]);
+    const [expandedHeadlineId, setExpandedHeadlineId] = useState(null);
+    const headlineRefs = useRef({});
+
+    function addHeadline() {
+      const newHeadline = {
+        id: Date.now(),
+        text: "New Headline",
+        fontSize: 60,
+        lineHeight: 1.2,
+        fontFamily: "JameelNooriNastaliq",
+        textColor: "#ffffff",
+        textPos: { x: 100, y: 300 },
+        direction: "rtl",
+        sidelineOffset: 0,
+        shadow: { enabled: true, offsetX: 2, offsetY: 2, blur: 6, color: "rgba(0,0,0,0.6)" },
+        stroke: { enabled: false, width: 1, color: "#000000" },
+        sideline: { show: true, width: 30, gap: 60, height: 0, color: "#ff0000", opacity: 1 },
+        isCollapsed: false,
+      };
+      setHeadlines([...headlines, newHeadline]);
+    }
+
+    function updateHeadline(id, updatedProps) {
+      setHeadlines(current => current.map(h => h.id === id ? { ...h, ...updatedProps } : h));
+    }
+
+
+
+    function deleteHeadline(id) {
+      setHeadlines(current => current.filter(h => h.id !== id));
+      if (expandedHeadlineId === id) {
+        setExpandedHeadlineId(null);
+      }
+    }
+
+    // --- Data Persistence & Warning ---
+    useEffect(() => {
+      try {
+        const savedData = localStorage.getItem('socialCardData');
+        if (savedData) {
+          const parsedData = JSON.parse(savedData);
+          if (parsedData.headlines) setHeadlines(parsedData.headlines);
+          if (parsedData.images) setImages(parsedData.images);
+          if (parsedData.width) setWidth(parsedData.width);
+          if (parsedData.height) setHeight(parsedData.height);
+          if (parsedData.logo) setLogo(parsedData.logo);
+          if (parsedData.fileName) setFileName(parsedData.fileName);
+          if (parsedData.fitMode) setFitMode(parsedData.fitMode);
+          if (parsedData.background) setBackground(parsedData.background);
+        }
+      } catch (e) {
+        console.error("Failed to load data from localStorage", e);
+      }
+    }, []);
+
+    useEffect(() => {
+      const dataToSave = {
+        headlines, images, width, height, logo, fileName, fitMode, background
+      };
+      try {
+        localStorage.setItem('socialCardData', JSON.stringify(dataToSave));
+      } catch (e) {
+        console.error("Failed to save data to localStorage", e);
+      }
+    }, [headlines, images, width, height, logo, fileName, fitMode, background]);
+
+    useEffect(() => {
+      const handleBeforeUnload = (e) => {
+        e.preventDefault();
+        e.returnValue = '';
+      };
+      window.addEventListener('beforeunload', handleBeforeUnload);
+
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+      };
+    }, []);
+
+    // Update sideline height dynamically
+    // Update sideline height dynamically for each headline
+    useEffect(() => {
+      headlines.forEach(h => {
+        const el = headlineRefs.current[h.id];
+        if (!el) return;
+
+        const newHeight = el.offsetHeight;
+
+        if ((h.sideline?.height || 0) !== newHeight) {
+          updateHeadline(h.id, {
+            sideline: { ...h.sideline, height: newHeight }
+          });
+        }
+      });
+    }, [headlines, updateHeadline]);
+
+
+
+
+    function onImageUpload(e) {
+      const files = e.target.files;
+      if (!files) return;
+      const newImages = Array.from(files).map((file, index) => ({
+        id: Date.now() + index,
+        src: URL.createObjectURL(file),
+        x: 0, y: 0, scale: 1, zIndex: images.length + index,
+        borderEnabled: false, // 👈 default: no border
+      }));
+      setImages([...images, ...newImages]);
+    }
+
+    // --- NEW: Background image from file ---
+    function onBackgroundUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setBackground({
+            ...background,
+            type: 'image',
+            imageSrc: event.target.result
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+
+    // --- Shared Dragging Logic ---
+    function getCoords(e) {
+      return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+    }
+
+    function startDragImage(e, id) {
+      e.preventDefault();
+      setActiveImageId(id);
+      const { x: startX, y: startY } = getCoords(e);
+      const img = images.find(im => im.id === id);
+      const initX = img.x, initY = img.y;
+      const maxZ = Math.max(...images.map(im => im.zIndex));
+      setImages((imgs) => imgs.map(im => im.id === id ? { ...im, zIndex: maxZ + 1 } : im));
+
+      function onMove(ev) {
+        const { x: currentX, y: currentY } = getCoords(ev);
+        setImages((imgs) => imgs.map(im => im.id === id ? { ...im, x: initX + currentX - startX, y: initY + currentY - startY } : im));
+      }
+
+      function onUp() {
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseup", onUp);
+        window.removeEventListener("touchmove", onMove);
+        window.removeEventListener("touchend", onUp);
+      }
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onUp);
+      window.addEventListener("touchmove", onMove);
+      window.addEventListener("touchend", onUp);
+    }
+
+    function startDragText(e, id) {
+      e.preventDefault();
+      const { x: startX, y: startY } = getCoords(e);
+      const headline = headlines.find(h => h.id === id);
+      const initPos = { ...headline.textPos };
+      function onMove(ev) {
+        const { x: currentX, y: currentY } = getCoords(ev);
+        updateHeadline(id, { textPos: { x: initPos.x + currentX - startX, y: initPos.y + currentY - startY } });
+      }
+      function onUp() {
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseup", onUp);
+        window.removeEventListener("touchmove", onMove);
+        window.removeEventListener("touchend", onUp);
+      }
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onUp);
+      window.addEventListener("touchmove", onMove);
+      window.addEventListener("touchend", onUp);
+    }
+
+    function startDragVignette(e) {
+      e.preventDefault();
+      const { x: startX, y: startY } = getCoords(e);
+      const initX = vignette.x, initY = vignette.y;
+      function onMove(ev) {
+        const { x: currentX, y: currentY } = getCoords(ev);
+        setVignette(v => ({ ...v, x: initX + currentX - startX, y: initY + currentY - startY }));
+      }
+      function onUp() {
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseup", onUp);
+        window.removeEventListener("touchmove", onMove);
+        window.removeEventListener("touchend", onUp);
+      }
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onUp);
+      window.addEventListener("touchmove", onMove);
+      window.addEventListener("touchend", onUp);
+    }
+
+    function exportAsImage() {
+      if (!containerRef.current) return;
+
+      // Deselect first so selection overlays are removed before capture
+      setActiveImageId(null);
+
+      // Allow React to re-render to remove selection overlay
+      setTimeout(() => {
+        const verticalOffset = 3;
+        html2canvas(containerRef.current, {
+          useCORS: true,
+          scale: 1,
+          onclone: (clonedDoc) => {
+            const clonedLines = clonedDoc.querySelectorAll(".sideline-clone");
+            clonedLines.forEach(clonedLine => {
+              const currentTop = parseFloat(clonedLine.style.top || "0");
+              clonedLine.style.top = currentTop + verticalOffset + "px";
+            });
           }
-          const newPreset = {
-            headlines,
-            images,
-            width,
-            height,
-            logo,
-            fileName,
-            fitMode,
-            vignette,
-            globalBorderColor,
-            globalBorderSize,
-            useBackgroundImage,
-            backgroundImage,
-            useGradient,
-            gradient,
+        })
+          .then((canvas) => {
+            const link = document.createElement("a");
+            link.download = (fileName && fileName.trim() ? fileName.trim() : "social-card") + ".png";
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+          })
+          .catch(err => {
+            console.error("export failed:", err);
+          });
+      }, 0);
+    }
+
+    function changeImageScale(id, scale) { setImages((imgs) => imgs.map(im => im.id === id ? { ...im, scale } : im)) }
+    function bringForward(id) { const maxZ = Math.max(...images.map(im => im.zIndex)); setImages((imgs) => imgs.map(im => im.id === id ? { ...im, zIndex: maxZ + 1 } : im)) }
+    function sendBackward(id) { const minZ = Math.min(...images.map(im => im.zIndex)); setImages((imgs) => imgs.map(im => im.id === id ? { ...im, zIndex: minZ - 1 } : im)) }
+    function deleteImage(id) { setImages((imgs) => imgs.filter(im => im.id !== id)) }
+    function selectImage(id) {
+      setActiveImageId(id);
+      const maxZ = Math.max(...images.map(im => im.zIndex));
+      setImages((imgs) => imgs.map(im => im.id === id ? { ...im, zIndex: maxZ + 1 } : im));
+    }
+
+
+    const backgroundStyle = React.useMemo(() => {
+      switch (background.type) {
+        case 'solid':
+          return { backgroundColor: background.color };
+        case 'gradient':
+          return {
+            backgroundImage: `linear-gradient(${background.gradient.direction}, ${background.gradient.color1}, ${background.gradient.color2})`
           };
-          const saved = localStorage.getItem("userPresets");
-          const presets = saved ? JSON.parse(saved) : {};
-          const updated = { ...presets, [name]: newPreset };
-          localStorage.setItem("userPresets", JSON.stringify(updated));
-          alert(`Preset "${name}" saved!`);
-        }
+        case 'image':
+          return {
+            backgroundImage: `url('${background.imageSrc}')`,
+            backgroundSize: fitMode === 'cover' ? 'cover' : fitMode === 'contain' ? 'contain' : '100% 100%',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          };
+        default:
+          return {};
+      }
+    }, [background, fitMode]);
 
-        function loadPreset(name) {
-          const saved = localStorage.getItem("userPresets");
-          const presets = saved ? JSON.parse(saved) : {};
-          const preset = presets[name];
-          if (!preset) {
-            alert("Preset not found");
-            return;
-          }
-          setHeadlines(preset.headlines || []);
-          setImages(preset.images || []);
-          if (preset.width) setWidth(preset.width);
-          if (preset.height) setHeight(preset.height);
-          if (preset.logo) setLogo(preset.logo);
-          if (preset.fileName) setFileName(preset.fileName);
-          if (preset.fitMode) setFitMode(preset.fitMode);
-          if (preset.vignette) setVignette(preset.vignette);
-          if (preset.globalBorderColor) setGlobalBorderColor(preset.globalBorderColor);
-          if (preset.globalBorderSize !== undefined) setGlobalBorderSize(preset.globalBorderSize);
-          if (preset.useBackgroundImage !== undefined) setUseBackgroundImage(preset.useBackgroundImage);
-          if (preset.backgroundImage) setBackgroundImage(preset.backgroundImage);
-          if (preset.useGradient !== undefined) setUseGradient(preset.useGradient);
-          if (preset.gradient) setGradient(preset.gradient);
-          alert(`${name} preset loaded!`);
-        }
 
-        // --- Render ---
-        return (
-          <div className="flex">
-            {/* Controls */}
-            <div className="w-80 p-4 bg-white overflow-y-auto h-screen border-r">
-              <h2 className="text-lg font-bold mb-2">Controls</h2>
+    return (
+      <div className="p-4 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Controls */}
+          <div className="w-full md:w-96 space-y-4">
+            <h2 className="text-xl font-semibold">Controls</h2>
 
-              {/* Global border */}
-              <div className="mb-4">
-                <label className="block">Border Color</label>
-                <input type="color" value={globalBorderColor} onChange={e => setGlobalBorderColor(e.target.value)} />
-                <label className="block">Border Size</label>
-                <input type="number" value={globalBorderSize} min="0" onChange={e => setGlobalBorderSize(parseInt(e.target.value))} />
-              </div>
+            {/* Background Controls */}
+            <div className="bg-white p-3 rounded shadow">
+              <h3 className="text-lg font-medium mb-2">Background</h3>
+              <select
+                value={background.type}
+                onChange={e => setBackground({ ...background, type: e.target.value })}
+                className="w-full border p-1 rounded mb-2"
+              >
+                <option value="solid">Solid Color</option>
+                <option value="image">Image from File</option>
+                <option value="gradient">Gradient</option>
+              </select>
 
-              {/* Background controls */}
-              <div className="mb-4">
-                <h3 className="font-semibold">Background</h3>
-                <label className="block">
-                  <input type="checkbox" checked={useBackgroundImage} onChange={e => setUseBackgroundImage(e.target.checked)} />
-                  Use background image
-                </label>
-                {useBackgroundImage && (
-                  <input type="file" accept="image/*" onChange={e => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      const url = URL.createObjectURL(file);
-                      setBackgroundImage(url);
-                    }
-                  }} />
-                )}
-                <label className="block mt-2">
-                  <input type="checkbox" checked={useGradient} onChange={e => setUseGradient(e.target.checked)} />
-                  Use gradient
-                </label>
-                {useGradient && (
-                  <div className="ml-4">
-                    <label>Color 1</label>
-                    <input type="color" value={gradient.color1} onChange={e => setGradient({ ...gradient, color1: e.target.value })} />
-                    <label>Color 2</label>
-                    <input type="color" value={gradient.color2} onChange={e => setGradient({ ...gradient, color2: e.target.value })} />
-                    <label>Direction</label>
-                    <select value={gradient.direction} onChange={e => setGradient({ ...gradient, direction: e.target.value })}>
-                      <option value="to bottom">Top → Bottom</option>
-                      <option value="to right">Left → Right</option>
+              {background.type === 'solid' && (
+                <div className="flex items-center gap-2">
+                  <label>Color:</label>
+                  <input
+                    type="color"
+                    value={background.color}
+                    onChange={e => setBackground({ ...background, color: e.target.value })}
+                    className="w-10 h-8 p-0 border rounded"
+                  />
+                </div>
+              )}
+
+              {background.type === 'image' && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">Upload Image (e.g., bg.png)</label>
+                  <input type="file" accept="image/png, image/jpeg" onChange={onBackgroundUpload} className="mt-2" />
+                </div>
+              )}
+
+              {background.type === 'gradient' && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <label>Color 1:</label>
+                    <input
+                      type="color"
+                      value={background.gradient.color1}
+                      onChange={e => setBackground({ ...background, gradient: { ...background.gradient, color1: e.target.value } })}
+                      className="w-10 h-8 p-0 border rounded"
+                    />
+                    <label className="ml-4">Color 2:</label>
+                    <input
+                      type="color"
+                      value={background.gradient.color2}
+                      onChange={e => setBackground({ ...background, gradient: { ...background.gradient, color2: e.target.value } })}
+                      className="w-10 h-8 p-0 border rounded"
+                    />
+                  </div>
+                  <div className="mt-2">
+                    <label className="block text-sm font-medium">Direction</label>
+                    <select
+                      value={background.gradient.direction}
+                      onChange={e => setBackground({ ...background, gradient: { ...background.gradient, direction: e.target.value } })}
+                      className="w-full border p-1 rounded mt-1"
+                    >
+                      <option value="to top">To Top</option>
+                      <option value="to bottom">To Bottom</option>
+                      <option value="to left">To Left</option>
+                      <option value="to right">To Right</option>
+                      <option value="to top left">To Top Left</option>
+                      <option value="to top right">To Top Right</option>
+                      <option value="to bottom left">To Bottom Left</option>
+                      <option value="to bottom right">To Bottom Right</option>
                     </select>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+            </div>
 
-              {/* Preset controls */}
-              <div className="mb-4">
-                <input id="presetName" type="text" placeholder="Preset name" className="border p-1 w-full mb-2" />
-                <button className="bg-blue-500 text-white px-2 py-1 mr-2" onClick={() => savePreset(document.getElementById("presetName").value)}>Save</button>
-                <button className="bg-green-500 text-white px-2 py-1" onClick={() => loadPreset(document.getElementById("presetName").value)}>Load</button>
+            {/* Multiple Headlines */}
+            <div className="bg-white p-3 rounded shadow">
+              <h3 className="text-lg font-medium mb-2">Headlines</h3>
+              <button onClick={addHeadline} className="w-full bg-green-500 text-white py-1 rounded mb-2">Add New Headline</button>
+              {headlines.map(headline => (
+                <div key={headline.id} className="border-b last:border-b-0 py-2">
+                  <div className="flex justify-between items-center cursor-pointer" onClick={() => setExpandedHeadlineId(expandedHeadlineId === headline.id ? null : headline.id)}>
+                    <span className="font-semibold">{headline.text.substring(0, 20)}...</span>
+                    <span>{expandedHeadlineId === headline.id ? '▲' : '▼'}</span>
+                  </div>
+                  {expandedHeadlineId === headline.id && (
+                    <div className="mt-2 space-y-2">
+                      <label className="block text-sm font-medium">Text</label>
+                      <textarea dir={headline.direction} value={headline.text} onChange={e => updateHeadline(headline.id, { text: e.target.value })} className="w-full border p-2 rounded" />
+                      <label className="block text-sm mt-2">Font size</label>
+                      <input type="number" value={headline.fontSize} onChange={e => updateHeadline(headline.id, { fontSize: parseInt(e.target.value) })} className="w-full border p-1 rounded" />
+                      <label className="block text-sm mt-2">Line height</label>
+                      <input type="number" step="0.1" value={headline.lineHeight} onChange={e => updateHeadline(headline.id, { lineHeight: parseFloat(e.target.value) })} className="w-full border p-1 rounded" />
+                      <label className="block text-sm mt-2">Text color</label>
+                      <input type="color" value={headline.textColor} onChange={e => updateHeadline(headline.id, { textColor: e.target.value })} />
+                      <label className="block text-sm mt-3">Font family</label>
+                      <select value={headline.fontFamily} onChange={e => updateHeadline(headline.id, { fontFamily: e.target.value })} className="w-full border p-1 rounded mt-2">
+                        <option value="Jameel Noori Nastaleeq">Jameel Noori Nastaleeq</option>
+                        <option value="JameelNooriNastaliq">Jameel Noori embed</option>
+                        <option value="Pangea Afrikan Trial">Pangea</option>
+                        <option value="Tahoma">Tahoma</option>
+                        <option value="Arial">Arial</option>
+                      </select>
+                      <label className="block text-sm mt-3">Text direction</label>
+                      <select value={headline.direction} onChange={e => updateHeadline(headline.id, { direction: e.target.value })} className="w-full border p-1 rounded mt-2">
+                        <option value="ltr">Left to Right</option>
+                        <option value="rtl">Right to Left</option>
+                      </select>
+
+                      {/* Shadow Controls */}
+                      <div className="mt-4">
+                        <label className="flex items-center">
+                          <input type="checkbox" checked={headline.shadow.enabled} onChange={e => updateHeadline(headline.id, { shadow: { ...headline.shadow, enabled: e.target.checked } })} />
+                          <span className="ml-2">Enable shadow</span>
+                        </label>
+                        {headline.shadow.enabled && <div className="mt-2 grid grid-cols-2 gap-2">
+                          <label className="text-sm">OffsetX<input type="number" value={headline.shadow.offsetX} onChange={e => updateHeadline(headline.id, { shadow: { ...headline.shadow, offsetX: parseInt(e.target.value) } })} className="w-full border p-1 rounded" /></label>
+                          <label className="text-sm">OffsetY<input type="number" value={headline.shadow.offsetY} onChange={e => updateHeadline(headline.id, { shadow: { ...headline.shadow, offsetY: parseInt(e.target.value) } })} className="w-full border p-1 rounded" /></label>
+                          <label className="text-sm">Blur<input type="number" value={headline.shadow.blur} onChange={e => updateHeadline(headline.id, { shadow: { ...headline.shadow, blur: parseInt(e.target.value) } })} className="w-full border p-1 rounded" /></label>
+                          <label className="text-sm">Color<input type="color" value={headline.shadow.color} onChange={e => updateHeadline(headline.id, { shadow: { ...headline.shadow, color: e.target.value } })} className="w-full border p-1 rounded" /></label>
+                        </div>}
+                      </div>
+
+                      {/* Stroke Controls */}
+                      <div className="mt-4">
+                        <label className="flex items-center">
+                          <input type="checkbox" checked={headline.stroke.enabled} onChange={e => updateHeadline(headline.id, { stroke: { ...headline.stroke, enabled: e.target.checked } })} />
+                          <span className="ml-2">Enable stroke</span>
+                        </label>
+                        {headline.stroke.enabled && <div className="mt-2 grid grid-cols-2 gap-2">
+                          <label className="text-sm">Width<input type="number" value={headline.stroke.width} onChange={e => updateHeadline(headline.id, { stroke: { ...headline.stroke, width: parseInt(e.target.value) } })} className="w-full border p-1 rounded" /></label>
+                          <label className="text-sm">Color<input type="color" value={headline.stroke.color} onChange={e => updateHeadline(headline.id, { stroke: { ...headline.stroke, color: e.target.value } })} className="w-full border p-1 rounded" /></label>
+                        </div>}
+                      </div>
+
+                      {/* Sideline Controls */}
+                      <div className="mt-4">
+                        <label className="flex items-center">
+                          <input type="checkbox" checked={headline.sideline.show} onChange={e => updateHeadline(headline.id, { sideline: { ...headline.sideline, show: e.target.checked } })} />
+                          <span className="ml-2">Show sideline</span>
+                        </label>
+                        {headline.sideline.show && <>
+                          <label className="block text-sm">Width<input type="number" value={headline.sideline.width} onChange={e => updateHeadline(headline.id, { sideline: { ...headline.sideline, width: parseInt(e.target.value) } })} className="w-full border p-1 rounded" /></label>
+                          <label className="block text-sm">Gap<input type="number" value={headline.sideline.gap} onChange={e => updateHeadline(headline.id, { sideline: { ...headline.sideline, gap: parseInt(e.target.value) } })} className="w-full border p-1 rounded" /></label>
+                          <label className="block text-sm">Height<input type="number" value={headline.sideline.height} onChange={e => updateHeadline(headline.id, { sideline: { ...headline.sideline, height: parseInt(e.target.value) } })} className="w-full border p-1 rounded" /></label>
+                          <label className="block text-sm">Color<input type="color" value={headline.sideline.color} onChange={e => updateHeadline(headline.id, { sideline: { ...headline.sideline, color: e.target.value } })} className="w-full border p-1 rounded" /></label>
+                          <label className="block text-sm">Transparency<input type="range" min="0" max="1" step="0.05" value={headline.sideline.opacity} onChange={e => updateHeadline(headline.id, { sideline: { ...headline.sideline, opacity: parseFloat(e.target.value) } })} className="w-full" /></label>
+                          <label className="block text-sm">Vertical offset<input type="number" value={headline.sidelineOffset} onChange={e => updateHeadline(headline.id, { sidelineOffset: parseInt(e.target.value) })} className="w-full border p-1 rounded mt-1" /></label>
+                        </>}
+                      </div>
+
+                      <button onClick={() => deleteHeadline(headline.id)} className="w-full bg-red-500 text-white py-1 rounded mt-2">Delete</button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-white p-3 rounded shadow space-y-1">
+              <label className="flex items-center">
+                <input type="checkbox" checked={vignette.show} onChange={e => setVignette({ ...vignette, show: e.target.checked })} />
+                <span className="ml-2">Show Vignette</span>
+              </label>
+              {vignette.show && <>
+                <label className="block text-sm">Zoom</label>
+                <input type="range" min="0.1" max="3" step="0.05" value={vignette.scale} onChange={e => setVignette({ ...vignette, scale: parseFloat(e.target.value) })} className="w-full" />
+              </>}
+            </div>
+
+            {/* Upload images */}
+            <div className="bg-white p-3 rounded shadow">
+              <label className="block text-sm font-medium">Upload images</label>
+              <input type="file" accept="image/*" multiple onChange={onImageUpload} className="mt-2" />
+            </div>
+
+            {/* Per-image controls */}
+            {images.map(img => (
+              <div key={img.id} className={`bg-white p-3 rounded shadow space-y-1 ${activeImageId === img.id ? 'border-2 border-blue-500' : ''}`}>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Image {img.id}</span>
+                  <button onClick={() => deleteImage(img.id)} className="text-red-500 text-sm">Delete</button>
+                </div>
+                <label className="block text-sm">Zoom</label>
+                <input type="range" min="0.1" max="3" step="0.05" value={img.scale} onChange={e => changeImageScale(img.id, parseFloat(e.target.value))}
+                  className={`w-full ${activeImageId === img.id ? 'border-blue-500' : ''}`} />
+
+                <div className="flex gap-2 mt-1">
+                  <button onClick={() => bringForward(img.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Bring Forward</button>
+                  <button onClick={() => sendBackward(img.id)} className="bg-gray-200 px-2 py-1 rounded text-sm">Send Backward</button>
+                </div>
+              </div>
+            ))}
+
+
+
+            <div className="flex items-center gap-2 mb-4">
+              <label className="text-sm">Border color:</label>
+              <input
+                type="color"
+                value={globalBorderColor}
+                onChange={(e) => setGlobalBorderColor(e.target.value)}
+                className="w-10 h-8 p-0 border rounded"
+              />
+              <label className="text-sm ml-2">Size:</label>
+              <input
+                type="number"
+                value={globalBorderSize}
+                onChange={(e) => setGlobalBorderSize(Number(e.target.value))}
+                className="w-16 px-2 py-1 border rounded"
+                min="0"
+              />
+            </div>
+
+            {activeImageId && (
+              <div className="flex items-center gap-2 mb-4">
+                <label className="text-sm">Show border</label>
+                <input
+                  type="checkbox"
+                  checked={
+                    images.find((img) => img.id === activeImageId)?.borderEnabled ?? false
+                  }
+                  onChange={(e) =>
+                    setImages((prev) =>
+                      prev.map((img) =>
+                        img.id === activeImageId
+                          ? { ...img, borderEnabled: e.target.checked }
+                          : img
+                      )
+                    )
+                  }
+                />
+              </div>
+            )}
+
+            {/* Logo */}
+            <div className="bg-white p-3 rounded shadow">
+              <label className="flex items-center">
+                <input type="checkbox" checked={logo.show} onChange={e => setLogo({ ...logo, show: e.target.checked })} />
+                <span className="ml-2">Show Logo</span>
+              </label>
+              {logo.show &&
+                <select value={logo.position} onChange={e => setLogo({ ...logo, position: e.target.value })} className="w-full border p-1 rounded mt-2">
+                  <option value="top-left">Top Left</option>
+                  <option value="top-right">Top Right</option>
+                  <option value="bottom-left">Bottom Left</option>
+                  <option value="bottom-right">Bottom Right</option>
+                </select>
+              }
+            </div>
+
+            {/* Canvas presets */}
+            <div className="bg-white p-3 rounded shadow">
+              <label className="block text-sm font-medium">Canvas size</label>
+              <div className="flex gap-2 mt-2 flex-wrap">
+                <button
+                  onClick={() => { setWidth(1080); setHeight(1080); }}
+                  className="bg-gray-200 px-3 py-1 rounded"
+                >
+                  Instagram Square
+                </button>
+                <button
+                  onClick={() => { setWidth(1080); setHeight(1920); }}
+                  className="bg-gray-200 px-3 py-1 rounded"
+                >
+                  Instagram Story
+                </button>
+                <button
+                  onClick={() => { setWidth(1200); setHeight(720); }}
+                  className="bg-gray-200 px-3 py-1 rounded"
+                >
+                  YouTube
+                </button>
               </div>
             </div>
 
-            {/* Canvas */}
-            <div className="flex-1 flex items-center justify-center">
-              <div
-                ref={containerRef}
-                style={{
-                  width: width,
-                  height: height,
-                  border: `${globalBorderSize}px solid ${globalBorderColor}`,
-                  ...backgroundStyle,
+            <div className="bg-white p-3 rounded shadow">
+              <h3 className="text-lg font-medium mb-2">Presets</h3>
+
+              {/* Load & Delete */}
+              <select id="presetSelect" className="w-full border p-1 rounded mb-2">
+                <option value="">Select a preset</option>
+                {Object.keys(presets).map(key => (
+                  <option key={key} value={key}>{key}</option>
+                ))}
+              </select>
+
+              <div className="flex space-x-2 mb-3">
+                <button
+                  onClick={() => {
+                    const select = document.getElementById("presetSelect");
+                    if (select && select.value) loadPreset(select.value);
+                  }}
+                  className="flex-1 bg-purple-500 text-white py-1 rounded"
+                >
+                  Load
+                </button>
+                <button
+                  onClick={() => {
+                    const select = document.getElementById("presetSelect");
+                    if (select && select.value) deletePreset(select.value);
+                  }}
+                  className="flex-1 bg-red-600 text-white py-1 rounded"
+                >
+                  Delete
+                </button>
+              </div>
+
+              {/* Save */}
+              <input
+                id="presetName"
+                type="text"
+                placeholder="Preset name"
+                className="w-full border p-1 rounded mb-2"
+              />
+              <button
+                onClick={() => {
+                  const input = document.getElementById("presetName");
+                  if (input && input.value) savePreset(input.value);
                 }}
-                className="relative"
+                className="w-full bg-green-600 text-white py-1 rounded mb-2"
               >
-                {/* Headlines */}
-                {headlines.map(h => (
+                Save Current Layout as Preset
+              </button>
+
+              {/* Reset */}
+              <button
+                onClick={resetPresets}
+                className="w-full bg-gray-600 text-white py-1 rounded mb-2"
+              >
+                Reset to Default Presets
+              </button>
+
+              {/* Export/Import */}
+              <button
+                onClick={exportPresets}
+                className="w-full bg-blue-600 text-white py-1 rounded mb-2"
+              >
+                Export All Presets (Copy JSON)
+              </button>
+              <button
+                onClick={importPresets}
+                className="w-full bg-yellow-500 text-white py-1 rounded"
+              >
+                Import Presets (Paste JSON)
+              </button>
+            </div>
+
+
+            {/* Canvas & File */}
+            <div className="bg-white p-3 rounded shadow space-y-2">
+              <label className="block text-sm">File name</label>
+              <input type="text" value={fileName} onChange={e => setFileName(e.target.value)} className="w-full border p-1 rounded" />
+              <label className="block text-sm">Fit mode</label>
+              <select value={fitMode} onChange={e => setFitMode(e.target.value)} className="w-full border p-1 rounded">
+                <option value="cover">Cover</option>
+                <option value="contain">Contain</option>
+                <option value="stretch">Stretch</option>
+              </select>
+              <button onClick={exportAsImage} className="w-full bg-blue-600 text-white py-2 rounded mt-2">Export PNG</button>
+            </div>
+          </div>
+
+
+
+          {/* Preview */}
+          {/* Preview */}
+          <div className="flex-1 max-w-full mt-6 md:mt-0">
+            <div className="sticky top-4">
+              <div className="mb-2">Preview (Output size: {width}×{height})</div>
+              <div ref={containerRef} className="relative mx-auto bg-black overflow-hidden" style={{ width, height, ...backgroundStyle }}>
+                {/* Images */}
+                {images.sort((a, b) => a.zIndex - b.zIndex).map(img => (
                   <div
-                    key={h.id}
+                    key={img.id}
+                    onMouseDown={e => startDragImage(e, img.id)}
+                    onTouchStart={e => startDragImage(e, img.id)}
+                    className="absolute"
                     style={{
-                      position: "absolute",
-                      left: h.textPos.x,
-                      top: h.textPos.y,
-                      fontSize: h.fontSize,
-                      lineHeight: h.lineHeight,
-                      fontFamily: h.fontFamily,
-                      color: h.textColor,
-                      textShadow: h.shadow.enabled ? `${h.shadow.offsetX}px ${h.shadow.offsetY}px ${h.shadow.blur}px ${h.shadow.color}` : "none",
-                      WebkitTextStroke: h.stroke.enabled ? `${h.stroke.width}px ${h.stroke.color}` : "none",
-                      direction: h.direction,
-                      cursor: "move",
+                      left: img.x,
+                      top: img.y,
+                      cursor: "grab",
+                      zIndex: img.zIndex, // Images have their own z-index
+                      border: activeImageId === img.id ? "2px solid #3b82f6" : "none",
                     }}
                   >
-                    {h.text}
+                    <img
+                      src={img.src}
+                      alt="Uploaded Image"
+                      style={{
+                        transform: `scale(${img.scale})`,
+                        transformOrigin: "center center",
+                        display: "block",
+                        width: fitMode === "stretch" ? "100%" : "auto",
+                        height: fitMode === "stretch" ? "100%" : "auto",
+                        maxWidth: fitMode !== "stretch" ? "none" : "100%",
+                        maxHeight: fitMode !== "stretch" ? "none" : "100%",
+                        border: img.borderEnabled
+                          ? `${globalBorderSize}px solid ${globalBorderColor}`
+                          : "none",
+                      }}
+                    />
                   </div>
+                ))}
+
+                {/* Vignette */}
+                {vignette.show && (
+                  <img
+                    src="Vignette.png"
+                    alt="Vignette"
+                    onMouseDown={startDragVignette}
+                    onTouchStart={startDragVignette}
+                    style={{
+                      position: "absolute",
+                      left: vignette.x,
+                      top: vignette.y,
+                      transform: `scale(${vignette.scale})`,
+                      cursor: "grab",
+                      width: "100%",
+                      height: "100%",
+                      zIndex: 100, // Vignette is above all images
+                    }}
+                  />
+                )}
+
+                {/* Logo */}
+                {logo.show && (
+                  <img
+                    src="sabah-logo.PNG"
+                    alt="Logo"
+                    style={{
+                      position: "absolute",
+                      width: 120,
+                      height: 60,
+                      ...(logo.position === "top-left" ? { left: 30, top: 150 } : {}),
+                      ...(logo.position === "top-right" ? { right: 30, top: 150 } : {}),
+                      ...(logo.position === "bottom-left" ? { left: 30, bottom: 150 } : {}),
+                      ...(logo.position === "bottom-right" ? { right: 30, bottom: 150 } : {}),
+                      zIndex: 300, // The highest z-index for the logo
+                    }}
+                  />
+                )}
+
+                {/* Multiple Headlines */}
+                {headlines.map(headline => (
+                  <React.Fragment key={headline.id}>
+                    {headline.sideline.show && (
+                      <div
+                        className="sideline-clone"
+                        style={{
+                          position: "absolute",
+                          left: headline.direction === "ltr" ? headline.sideline.gap : "auto",
+                          right: headline.direction === "rtl" ? headline.sideline.gap : "auto",
+                          top: headline.textPos.y + (headline.sidelineOffset || 0),
+                          height: headline.sideline.height || 0,
+                          width: headline.sideline.width,
+                          background: headline.sideline.color,
+                          opacity: headline.sideline.opacity,
+                          pointerEvents: "none",
+                          zIndex: 200, // Headlines are above images and vignette
+                        }}
+                      />
+                    )}
+                    <div
+                      ref={el => headlineRefs.current[headline.id] = el}
+                      onMouseDown={e => startDragText(e, headline.id)}
+                      onTouchStart={e => startDragText(e, headline.id)}
+                      dir={headline.direction}
+                      style={{
+                        position: "absolute",
+                        left: headline.textPos.x,
+                        top: headline.textPos.y,
+                        fontSize: headline.fontSize,
+                        lineHeight: headline.lineHeight,
+                        fontFamily: headline.fontFamily,
+                        color: headline.textColor,
+                        textShadow: headline.shadow.enabled ? `${headline.shadow.offsetX}px ${headline.shadow.offsetY}px ${headline.shadow.blur}px ${headline.shadow.color}` : "none",
+                        WebkitTextStroke: headline.stroke.enabled ? `${headline.stroke.width}px ${headline.stroke.color}` : "none",
+                        whiteSpace: "pre-wrap",
+                        textAlign: headline.direction === "rtl" ? "right" : "left",
+                        cursor: "move",
+                        zIndex: 200, // Headlines are above images and vignette
+                      }}
+                    >
+                      {headline.text}
+                    </div>
+                  </React.Fragment>
                 ))}
               </div>
             </div>
           </div>
-        );
-      }
+        </div>
+      </div>
+    )
+  }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<SocialCardGenerator />);
-    </script>
+  ReactDOM.createRoot(document.getElementById("root")).render(<SocialCardGenerator />);
+</script>
+
+		  
+
+                                              
+      
   </body>
 </html>
