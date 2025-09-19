@@ -2,207 +2,246 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Social Card Generator</title>
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Urdu font -->
-  <link href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css" rel="stylesheet">
-  <!-- html2canvas -->
+  <title>Social Media Image Generator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.css">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    input[type="text"], select, input[type="number"], input[type="range"] {
+      width: 90%;
+      font-size: 18px;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 6px;
+    }
     #cardContainer {
       width: 1080px;
       height: 1080px;
       position: relative;
-      background: url("bg.png") no-repeat center center / cover; /* Hard-coded background */
+      border: 2px solid #444;
+      margin-bottom: 20px;
       overflow: hidden;
+      background: url("bg.png") no-repeat center/cover;
     }
-    .draggable {
+    .main-image {
       position: absolute;
-      cursor: move;
-      user-select: none;
+      top: 0;
+      left: 0;
+      width: 1080px;
+      height: 648px;
+      object-fit: cover;
+      cursor: grab;
+    }
+    .logo {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 120px;
+      height: 100px;
+    }
+    .headline, .subheading {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      color: #fff403;
+      font-family: 'Jameel Noori Nastaleeq', serif;
+      text-shadow: 0px 0px 4px black;
+      white-space: pre-wrap;
+    }
+    .headline {
+      font-size: 80px;
+      top: 750px;
+    }
+    .subheading {
+      font-size: 50px;
+      top: 900px;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      width: 90%;
+    }
+    .control-group {
+      background: #222;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+    button {
+      padding: 12px;
+      margin-top: 20px;
+      background: #fff403;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 200px;
+    }
+    .border-box {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: calc(100% - 20px);
+      height: 648px;
+      border: 2px solid white;
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+    .border-box.inner {
+      top: 14px;
+      left: 14px;
+      width: calc(100% - 28px);
+      height: calc(648px - 8px);
+      border: 2px solid #ccc;
     }
   </style>
 </head>
-<body class="bg-gray-100 p-6 font-sans">
-  <div class="flex flex-col md:flex-row gap-6">
-    
-    <!-- Controls -->
-    <div class="w-full md:w-1/3 space-y-4">
-      <div>
-        <label class="block font-bold">Headline:</label>
-        <input id="headlineInput" type="text" class="w-full border rounded p-1">
-      </div>
-      <div>
-        <label class="block font-bold">Subheading:</label>
-        <input id="subheadingInput" type="text" class="w-full border rounded p-1">
-      </div>
-      <div>
-        <label class="block font-bold">Headline Size:</label>
-        <input id="headlineSize" type="range" min="30" max="120" value="80" class="w-full">
-      </div>
-      <div>
-        <label class="block font-bold">Line Height:</label>
-        <input id="lineHeight" type="range" min="30" max="150" value="90" class="w-full">
-      </div>
-      <div>
-        <label class="block font-bold">First Line Word:</label>
-        <input id="firstWordInput" type="text" placeholder="Highlight word">
-      </div>
-      <div>
-        <label class="block font-bold">Headline Y Position:</label>
-        <input id="headlineY" type="range" min="100" max="900" value="750" class="w-full">
-      </div>
-      <div>
-        <label class="block font-bold">Subheading Y Position:</label>
-        <input id="subheadingY" type="range" min="200" max="1000" value="900" class="w-full">
-      </div>
-      <div>
-        <label class="block font-bold">Logo Position:</label>
-        <select id="logoPosition" class="border rounded p-1">
-          <option value="top-right">Top Right</option>
-          <option value="top-left">Top Left</option>
-          <option value="bottom-right">Bottom Right</option>
-          <option value="bottom-left">Bottom Left</option>
-        </select>
-      </div>
-      <div>
-        <label class="block font-bold">Filename:</label>
-        <input id="filenameInput" type="text" placeholder="social-card" class="w-full border rounded p-1">
-      </div>
-      <button id="downloadBtn" class="bg-blue-600 text-white px-4 py-2 rounded">Download PNG</button>
-    </div>
-    
-    <!-- Card Preview -->
-    <div class="w-full md:w-2/3 flex justify-center items-center">
-      <div id="cardContainer">
-        <div id="headline" 
-             class="draggable w-full text-center font-[Jameel-Noori] text-[80px] text-[#fff403]" 
-             style="top:750px; line-height:90px;">
-        </div>
-        <div id="subheading" 
-             class="draggable w-full text-center font-[Jameel-Noori] text-[50px] text-[#fff403]" 
-             style="top:900px;">
-        </div>
-        <img id="logoImage" src="sabah-logo.PNG" class="absolute top-5 right-5 w-[120px] h-[100px]">
-        <div id="borderOverlay" class="absolute inset-0 border-8 border-white pointer-events-none"></div>
-      </div>
-    </div>
-    
+<body>
+<h2> Social Media Card Advanced </h2>
+
+  <input id="headlineInput" type="text" placeholder="Enter headline text here">
+  <input id="subheadingInput" type="text" placeholder="Enter subheading text here">
+
+  <select id="textSelector">
+    <option value="headline">Headline</option>
+    <option value="subheading">Subheading</option>
+  </select>
+
+  <!-- CARD OUTPUT AREA -->
+  <div id="cardContainer">
+    <img id="mainImage" class="main-image" />
+    <img id="logo" class="logo" src="sabah-logo.PNG">
+    <div id="borderOuter" class="border-box"></div>
+    <div id="borderInner" class="border-box inner"></div>
+    <div id="headline" class="headline"></div>
+    <div id="subheading" class="subheading"></div>
   </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Upload Main Image</label>
+      <input type="file" id="imageLoader" accept="image/*">
+    </div>
+    <div class="control-group">
+      <label>Image Zoom</label>
+      <input type="range" id="imageZoom" min="0.5" max="3" step="0.1" value="1">
+    </div>
+    <div class="control-group">
+      <label>Font Size</label>
+      <input type="range" id="fontSize" min="30" max="120" value="80">
+    </div>
+    <div class="control-group">
+      <label>Line Height</label>
+      <input type="range" id="lineHeight" min="40" max="150" value="100">
+    </div>
+    <div class="control-group">
+      <label>Word Spacing</label>
+      <input type="range" id="wordSpacing" min="0" max="40" value="0">
+    </div>
+    <div class="control-group">
+      <label>Stroke Width</label>
+      <input type="range" id="strokeWidth" min="0" max="10" value="2">
+    </div>
+    <div class="control-group">
+      <label>Shadow</label>
+      <input type="checkbox" id="shadow" checked>
+    </div>
+    <div class="control-group">
+      <label>First Line Word Count</label>
+      <input type="number" id="firstLineCount" min="1" max="30" value="15">
+    </div>
+    <div class="control-group">
+      <label>Text Y Position</label>
+      <input type="range" id="textY" min="500" max="1050" value="750">
+    </div>
+    <div class="control-group">
+      <label><input type="checkbox" id="toggleBorder" checked> Show Border</label>
+    </div>
+    <div class="control-group">
+      <label><input type="checkbox" id="toggleLogo" checked> Show Logo</label>
+    </div>
+  </div>
+
+  <!-- New input for filename -->
+  <input id="filenameInput" type="text" placeholder="Enter file name (without extension)">
+  <button id="downloadBtn">Download Final Image</button>
 
 <script>
   const headlineInput = document.getElementById("headlineInput");
   const subheadingInput = document.getElementById("subheadingInput");
-  const headlineSize = document.getElementById("headlineSize");
-  const lineHeight = document.getElementById("lineHeight");
-  const firstWordInput = document.getElementById("firstWordInput");
-  const headlineY = document.getElementById("headlineY");
-  const subheadingY = document.getElementById("subheadingY");
-  const logoPosition = document.getElementById("logoPosition");
-  const filenameInput = document.getElementById("filenameInput");
-  const downloadBtn = document.getElementById("downloadBtn");
-
+  const mainImage = document.getElementById("mainImage");
+  const logo = document.getElementById("logo");
+  const borderOuter = document.getElementById("borderOuter");
+  const borderInner = document.getElementById("borderInner");
   const headline = document.getElementById("headline");
   const subheading = document.getElementById("subheading");
-  const logoImage = document.getElementById("logoImage");
+  const cardContainer = document.getElementById("cardContainer");
 
-  // Headline text + first word highlight
-  function updateHeadline() {
-    const words = headlineInput.value.trim().split(" ");
-    if (firstWordInput.value && words[0] === firstWordInput.value) {
-      words[0] = `<span style="color:red;">${words[0]}</span>`;
-    }
-    headline.innerHTML = words.join(" ");
-  }
+  const imageLoader = document.getElementById("imageLoader");
+  const imageZoomControl = document.getElementById("imageZoom");
+  const fontSizeControl = document.getElementById("fontSize");
+  const lineHeightControl = document.getElementById("lineHeight");
+  const wordSpacingControl = document.getElementById("wordSpacing");
+  const shadowControl = document.getElementById("shadow");
+  const firstLineCountControl = document.getElementById("firstLineCount");
+  const textYControl = document.getElementById("textY");
+  const downloadBtn = document.getElementById("downloadBtn");
+  const filenameInput = document.getElementById("filenameInput");
+  const toggleBorder = document.getElementById("toggleBorder");
+  const toggleLogo = document.getElementById("toggleLogo");
 
-  headlineInput.addEventListener("input", updateHeadline);
-  firstWordInput.addEventListener("input", updateHeadline);
+  // Text updates
+  headlineInput.addEventListener("input", () => headline.textContent = headlineInput.value);
+  subheadingInput.addEventListener("input", () => subheading.textContent = subheadingInput.value);
 
-  // Subheading text
-  subheadingInput.addEventListener("input", () => {
-    subheading.textContent = subheadingInput.value;
+  // Image upload
+  imageLoader.addEventListener("change", e => {
+    const reader = new FileReader();
+    reader.onload = ev => mainImage.src = ev.target.result;
+    reader.readAsDataURL(e.target.files[0]);
   });
 
-  // Font size + line height
-  headlineSize.addEventListener("input", () => {
-    headline.style.fontSize = headlineSize.value + "px";
+  // Toggle border/logo
+  toggleBorder.addEventListener("input", () => {
+    borderOuter.style.display = borderInner.style.display = toggleBorder.checked ? "block" : "none";
   });
-  lineHeight.addEventListener("input", () => {
-    headline.style.lineHeight = lineHeight.value + "px";
-  });
-
-  // Y positions
-  headlineY.addEventListener("input", () => {
-    headline.style.top = headlineY.value + "px";
-  });
-  subheadingY.addEventListener("input", () => {
-    subheading.style.top = subheadingY.value + "px";
+  toggleLogo.addEventListener("input", () => {
+    logo.style.display = toggleLogo.checked ? "block" : "none";
   });
 
-  // Logo position
-  logoPosition.addEventListener("change", () => {
-    logoImage.classList.remove("top-5","right-5","left-5","bottom-5");
-    switch(logoPosition.value) {
-      case "top-left":
-        logoImage.style.top = "20px"; logoImage.style.left = "20px";
-        logoImage.style.right = "auto"; logoImage.style.bottom = "auto";
-        break;
-      case "top-right":
-        logoImage.style.top = "20px"; logoImage.style.right = "20px";
-        logoImage.style.left = "auto"; logoImage.style.bottom = "auto";
-        break;
-      case "bottom-left":
-        logoImage.style.bottom = "20px"; logoImage.style.left = "20px";
-        logoImage.style.top = "auto"; logoImage.style.right = "auto";
-        break;
-      case "bottom-right":
-        logoImage.style.bottom = "20px"; logoImage.style.right = "20px";
-        logoImage.style.top = "auto"; logoImage.style.left = "auto";
-        break;
-    }
+  // Font controls (headline only for demo, apply similarly for subheading if needed)
+  fontSizeControl.addEventListener("input", e => {
+    headline.style.fontSize = e.target.value + "px";
+  });
+  textYControl.addEventListener("input", e => {
+    headline.style.top = e.target.value + "px";
   });
 
-  // Dragging for headline + subheading
-  function makeDraggable(el) {
-    let offsetX, offsetY, isDragging = false;
-
-    el.addEventListener("mousedown", e => {
-      isDragging = true;
-      offsetX = e.clientX - el.offsetLeft;
-      offsetY = e.clientY - el.offsetTop;
-      el.style.zIndex = 1000;
-    });
-    document.addEventListener("mousemove", e => {
-      if (!isDragging) return;
-      el.style.left = e.clientX - offsetX + "px";
-      el.style.top = e.clientY - offsetY + "px";
-    });
-    document.addEventListener("mouseup", () => {
-      isDragging = false;
-      el.style.zIndex = "";
-    });
-  }
-  makeDraggable(headline);
-  makeDraggable(subheading);
-
-  // Export
-  function exportAsImage() {
-    const filename = filenameInput.value.trim() || "social-card";
-    html2canvas(document.getElementById("cardContainer"), {
-      useCORS: true,
-      scale: 1
-    }).then(canvas => {
+  // Download with html2canvas
+  downloadBtn.addEventListener("click", () => {
+    const filename = filenameInput.value.trim() || "final-image";
+    html2canvas(cardContainer, {useCORS: true}).then(canvas => {
       const link = document.createElement("a");
       link.download = filename + ".png";
       link.href = canvas.toDataURL("image/png");
       link.click();
-    }).catch(err => console.error("Export failed:", err));
-  }
-  downloadBtn.addEventListener("click", exportAsImage);
-
-  // Initial render
-  updateHeadline();
+    });
+  });
 </script>
 </body>
 </html>
