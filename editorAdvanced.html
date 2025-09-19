@@ -1353,19 +1353,15 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                         }}
                       >
                         <img
-  src={img.src}
-  alt="Uploaded Image"
-  style={{
-    display: "block",
-    width: img.stretchEnabled ? '100%' : 'auto',
-    height: img.stretchEnabled ? '100%' : 'auto',
-    objectFit: img.stretchEnabled ? 'cover' : 'none',
-    border: img.borderEnabled
-      ? `${globalBorderSize}px solid ${globalBorderColor}`
-      : "none",
-  }}
-/>
-						  
+                          src={img.src}
+                          alt="Uploaded Image"
+                          style={{
+                            display: "block",
+                            border: img.borderEnabled
+                              ? `${globalBorderSize}px solid ${globalBorderColor}`
+                              : "none",
+                          }}
+                        />
                       </div>
                     ))}
                     
