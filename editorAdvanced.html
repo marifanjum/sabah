@@ -335,6 +335,9 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           },
           imageSrc: 'bg.png'
         });
+
+		  const [vignette, setVignette] = useState({ show: false, x: 0, y: 0, scale: 1 });
+		  
 		  
         const [presets, setPresets] = React.useState(() => {
           const saved = localStorage.getItem("userPresets");
