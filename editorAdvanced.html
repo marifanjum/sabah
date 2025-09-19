@@ -316,15 +316,16 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         const [fitMode, setFitMode] = useState("cover");
         const [vignette, setVignette] = useState({ show: false, x: 0, y: 0, scale: 1 });
         const [background, setBackground] = useState({
-          type: 'solid',
+          type: 'image',
           color: '#000000',
           gradient: {
             color1: '#ffffff',
             color2: '#000000',
             direction: 'to bottom right'
           },
-          imageSrc: ''
+          imageSrc: 'bg.png'
         });
+		  
 
         const [presets, setPresets] = React.useState(() => {
           const saved = localStorage.getItem("userPresets");
