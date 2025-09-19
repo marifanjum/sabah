@@ -3,12 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <title>Social Card Generator</title>
-  <!-- Tailwind for layout -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Urdu font -->
   <link href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css" rel="stylesheet">
   <!-- html2canvas -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    #cardContainer {
+      width: 1080px;
+      height: 1080px;
+      position: relative;
+      background: url("bg.png") no-repeat center center / cover; /* Hard-coded background */
+      overflow: hidden;
+    }
+    .draggable {
+      position: absolute;
+      cursor: move;
+      user-select: none;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 p-6 font-sans">
   <div class="flex flex-col md:flex-row gap-6">
@@ -28,30 +42,29 @@
         <input id="headlineSize" type="range" min="30" max="120" value="80" class="w-full">
       </div>
       <div>
-        <label class="block font-bold">Subheading Size:</label>
-        <input id="subheadingSize" type="range" min="20" max="100" value="50" class="w-full">
+        <label class="block font-bold">Line Height:</label>
+        <input id="lineHeight" type="range" min="30" max="150" value="90" class="w-full">
       </div>
       <div>
-        <label class="block font-bold">Headline Color:</label>
-        <input id="headlineColor" type="color" value="#fff403">
+        <label class="block font-bold">First Line Word:</label>
+        <input id="firstWordInput" type="text" placeholder="Highlight word">
       </div>
       <div>
-        <label class="block font-bold">Subheading Color:</label>
-        <input id="subheadingColor" type="color" value="#fff403">
+        <label class="block font-bold">Headline Y Position:</label>
+        <input id="headlineY" type="range" min="100" max="900" value="750" class="w-full">
       </div>
       <div>
-        <label class="block font-bold">Background:</label>
-        <input id="bgInput" type="file" accept="image/*">
+        <label class="block font-bold">Subheading Y Position:</label>
+        <input id="subheadingY" type="range" min="200" max="1000" value="900" class="w-full">
       </div>
       <div>
-        <label class="block font-bold">Main Image:</label>
-        <input id="mainImageInput" type="file" accept="image/*">
-      </div>
-      <div>
-        <label class="inline-flex items-center"><input id="toggleLogo" type="checkbox" checked> <span class="ml-2">Show Logo</span></label>
-      </div>
-      <div>
-        <label class="inline-flex items-center"><input id="toggleBorder" type="checkbox" checked> <span class="ml-2">Show Border</span></label>
+        <label class="block font-bold">Logo Position:</label>
+        <select id="logoPosition" class="border rounded p-1">
+          <option value="top-right">Top Right</option>
+          <option value="top-left">Top Left</option>
+          <option value="bottom-right">Bottom Right</option>
+          <option value="bottom-left">Bottom Left</option>
+        </select>
       </div>
       <div>
         <label class="block font-bold">Filename:</label>
@@ -62,11 +75,15 @@
     
     <!-- Card Preview -->
     <div class="w-full md:w-2/3 flex justify-center items-center">
-      <div id="cardContainer" class="relative" style="width:1080px; height:1080px; background:#000; overflow:hidden;">
-        <img id="bgImage" class="absolute top-0 left-0 w-full h-full object-cover">
-        <img id="mainImage" class="absolute top-0 left-0 w-full h-3/5 object-cover hidden">
-        <div id="headline" class="absolute w-full text-center font-[Jameel-Noori] text-[80px] top-[750px] text-[#fff403]"></div>
-        <div id="subheading" class="absolute w-full text-center font-[Jameel-Noori] text-[50px] top-[900px] text-[#fff403]"></div>
+      <div id="cardContainer">
+        <div id="headline" 
+             class="draggable w-full text-center font-[Jameel-Noori] text-[80px] text-[#fff403]" 
+             style="top:750px; line-height:90px;">
+        </div>
+        <div id="subheading" 
+             class="draggable w-full text-center font-[Jameel-Noori] text-[50px] text-[#fff403]" 
+             style="top:900px;">
+        </div>
         <img id="logoImage" src="sabah-logo.PNG" class="absolute top-5 right-5 w-[120px] h-[100px]">
         <div id="borderOverlay" class="absolute inset-0 border-8 border-white pointer-events-none"></div>
       </div>
@@ -78,59 +95,96 @@
   const headlineInput = document.getElementById("headlineInput");
   const subheadingInput = document.getElementById("subheadingInput");
   const headlineSize = document.getElementById("headlineSize");
-  const subheadingSize = document.getElementById("subheadingSize");
-  const headlineColor = document.getElementById("headlineColor");
-  const subheadingColor = document.getElementById("subheadingColor");
-  const bgInput = document.getElementById("bgInput");
-  const mainImageInput = document.getElementById("mainImageInput");
-  const toggleLogo = document.getElementById("toggleLogo");
-  const toggleBorder = document.getElementById("toggleBorder");
+  const lineHeight = document.getElementById("lineHeight");
+  const firstWordInput = document.getElementById("firstWordInput");
+  const headlineY = document.getElementById("headlineY");
+  const subheadingY = document.getElementById("subheadingY");
+  const logoPosition = document.getElementById("logoPosition");
   const filenameInput = document.getElementById("filenameInput");
   const downloadBtn = document.getElementById("downloadBtn");
 
   const headline = document.getElementById("headline");
   const subheading = document.getElementById("subheading");
-  const bgImage = document.getElementById("bgImage");
-  const mainImage = document.getElementById("mainImage");
   const logoImage = document.getElementById("logoImage");
-  const borderOverlay = document.getElementById("borderOverlay");
 
-  // Headline & Subheading
-  headlineInput.addEventListener("input", () => { headline.textContent = headlineInput.value; });
-  subheadingInput.addEventListener("input", () => { subheading.textContent = subheadingInput.value; });
+  // Headline text + first word highlight
+  function updateHeadline() {
+    const words = headlineInput.value.trim().split(" ");
+    if (firstWordInput.value && words[0] === firstWordInput.value) {
+      words[0] = `<span style="color:red;">${words[0]}</span>`;
+    }
+    headline.innerHTML = words.join(" ");
+  }
 
-  // Font sizes
-  headlineSize.addEventListener("input", () => { headline.style.fontSize = headlineSize.value + "px"; });
-  subheadingSize.addEventListener("input", () => { subheading.style.fontSize = subheadingSize.value + "px"; });
+  headlineInput.addEventListener("input", updateHeadline);
+  firstWordInput.addEventListener("input", updateHeadline);
 
-  // Colors
-  headlineColor.addEventListener("input", () => { headline.style.color = headlineColor.value; });
-  subheadingColor.addEventListener("input", () => { subheading.style.color = subheadingColor.value; });
-
-  // Background
-  bgInput.addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (file) bgImage.src = URL.createObjectURL(file);
+  // Subheading text
+  subheadingInput.addEventListener("input", () => {
+    subheading.textContent = subheadingInput.value;
   });
 
-  // Main Image
-  mainImageInput.addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (file) {
-      mainImage.src = URL.createObjectURL(file);
-      mainImage.classList.remove("hidden");
+  // Font size + line height
+  headlineSize.addEventListener("input", () => {
+    headline.style.fontSize = headlineSize.value + "px";
+  });
+  lineHeight.addEventListener("input", () => {
+    headline.style.lineHeight = lineHeight.value + "px";
+  });
+
+  // Y positions
+  headlineY.addEventListener("input", () => {
+    headline.style.top = headlineY.value + "px";
+  });
+  subheadingY.addEventListener("input", () => {
+    subheading.style.top = subheadingY.value + "px";
+  });
+
+  // Logo position
+  logoPosition.addEventListener("change", () => {
+    logoImage.classList.remove("top-5","right-5","left-5","bottom-5");
+    switch(logoPosition.value) {
+      case "top-left":
+        logoImage.style.top = "20px"; logoImage.style.left = "20px";
+        logoImage.style.right = "auto"; logoImage.style.bottom = "auto";
+        break;
+      case "top-right":
+        logoImage.style.top = "20px"; logoImage.style.right = "20px";
+        logoImage.style.left = "auto"; logoImage.style.bottom = "auto";
+        break;
+      case "bottom-left":
+        logoImage.style.bottom = "20px"; logoImage.style.left = "20px";
+        logoImage.style.top = "auto"; logoImage.style.right = "auto";
+        break;
+      case "bottom-right":
+        logoImage.style.bottom = "20px"; logoImage.style.right = "20px";
+        logoImage.style.top = "auto"; logoImage.style.left = "auto";
+        break;
     }
   });
 
-  // Logo toggle
-  toggleLogo.addEventListener("change", () => {
-    logoImage.style.display = toggleLogo.checked ? "block" : "none";
-  });
+  // Dragging for headline + subheading
+  function makeDraggable(el) {
+    let offsetX, offsetY, isDragging = false;
 
-  // Border toggle
-  toggleBorder.addEventListener("change", () => {
-    borderOverlay.style.display = toggleBorder.checked ? "block" : "none";
-  });
+    el.addEventListener("mousedown", e => {
+      isDragging = true;
+      offsetX = e.clientX - el.offsetLeft;
+      offsetY = e.clientY - el.offsetTop;
+      el.style.zIndex = 1000;
+    });
+    document.addEventListener("mousemove", e => {
+      if (!isDragging) return;
+      el.style.left = e.clientX - offsetX + "px";
+      el.style.top = e.clientY - offsetY + "px";
+    });
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+      el.style.zIndex = "";
+    });
+  }
+  makeDraggable(headline);
+  makeDraggable(subheading);
 
   // Export
   function exportAsImage() {
@@ -146,6 +200,9 @@
     }).catch(err => console.error("Export failed:", err));
   }
   downloadBtn.addEventListener("click", exportAsImage);
+
+  // Initial render
+  updateHeadline();
 </script>
 </body>
 </html>
