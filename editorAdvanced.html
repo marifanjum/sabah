@@ -29,10 +29,49 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
     <div id="root"></div>
 
     <script type="text/babel">
+
+// Built-in presets
+const DEFAULT_PRESETS = {
+  instagramSquare: {
+    width: 1080,
+    height: 1080,
+    fileName: "instagram_post.png",
+    fitMode: "cover",
+    vignette: true,
+    globalBorderColor: "#000000",
+    globalBorderSize: 5,
+    headlines: [
+      { id: 1, text: "Instagram Headline", x: 100, y: 200, fontSize: 48, fontFamily: "Arial", color: "#ffffff" }
+    ],
+    images: [
+      { id: 1, src: "https://picsum.photos/600", x: 0, y: 0, scale: 1 }
+    ],
+    logo: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Example.jpg"
+  },
+  youtubeThumbnail: {
+    width: 1280,
+    height: 720,
+    fileName: "youtube_thumbnail.png",
+    fitMode: "contain",
+    vignette: false,
+    globalBorderColor: "#ff0000",
+    globalBorderSize: 10,
+    headlines: [
+      { id: 1, text: "YouTube Title Here", x: 150, y: 300, fontSize: 60, fontFamily: "Arial", color: "#ff0000" }
+    ],
+    images: [
+      { id: 1, src: "https://picsum.photos/800", x: 50, y: 50, scale: 1.2 }
+    ],
+    logo: ""
+  }
+};
+		
       function SocialCardGenerator() {
         const { useState, useRef, useEffect } = React;
         const containerRef = useRef(null);
 
+
+		  
 		  // New global border settings
 const [globalBorderColor, setGlobalBorderColor] = useState("#ffffff"); // default white
 const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
@@ -46,7 +85,111 @@ const [globalBorderSize, setGlobalBorderSize] = useState(4); // default 4px
         const [fitMode, setFitMode] = useState("cover");
 		    const [vignette, setVignette] = useState({ show: false, x: 0, y: 0, scale: 1 });
 
-		 
+		 // Presets state (merge defaults + saved ones from localStorage)
+const [presets, setPresets] = React.useState(() => {
+  const saved = localStorage.getItem("userPresets");
+  return { ...DEFAULT_PRESETS, ...(saved ? JSON.parse(saved) : {}) };
+});
+
+// Load preset
+function loadPreset(name) {
+  const preset = presets[name];
+  if (!preset) {
+    alert("Preset not found");
+    return;
+  }
+
+  setHeadlines(preset.headlines || []);
+  setImages(preset.images || []);
+  if (preset.width) setWidth(preset.width);
+  if (preset.height) setHeight(preset.height);
+  if (preset.logo) setLogo(preset.logo);
+  if (preset.fileName) setFileName(preset.fileName);
+  if (preset.fitMode) setFitMode(preset.fitMode);
+  if (preset.vignette !== undefined) setVignette(preset.vignette);
+  if (preset.globalBorderColor) setGlobalBorderColor(preset.globalBorderColor);
+  if (preset.globalBorderSize !== undefined) setGlobalBorderSize(preset.globalBorderSize);
+
+  alert(`${name} preset loaded!`);
+}
+
+// Save current layout as preset
+function savePreset(name) {
+  if (!name) {
+    alert("Please enter a preset name");
+    return;
+  }
+
+  const newPreset = {
+    headlines, images, width, height, logo, fileName, fitMode, vignette,
+    globalBorderColor, globalBorderSize
+  };
+
+  const updatedPresets = { ...presets, [name]: newPreset };
+  setPresets(updatedPresets);
+  localStorage.setItem("userPresets", JSON.stringify(updatedPresets));
+
+  alert(`Preset "${name}" saved!`);
+}
+
+// Delete preset
+function deletePreset(name) {
+  if (!name) {
+    alert("Please select a preset to delete");
+    return;
+  }
+  if (DEFAULT_PRESETS[name]) {
+    alert("Default presets cannot be deleted");
+    return;
+  }
+
+  const updatedPresets = { ...presets };
+  delete updatedPresets[name];
+  setPresets(updatedPresets);
+  localStorage.setItem("userPresets", JSON.stringify(updatedPresets));
+
+  alert(`Preset "${name}" deleted!`);
+}
+
+// Reset to defaults only
+function resetPresets() {
+  if (!window.confirm("This will delete all your saved presets and restore only the defaults. Continue?")) {
+    return;
+  }
+  setPresets(DEFAULT_PRESETS);
+  localStorage.removeItem("userPresets");
+  alert("Presets reset to default!");
+}
+
+// Export presets
+function exportPresets() {
+  const json = JSON.stringify(presets, null, 2);
+  navigator.clipboard.writeText(json)
+    .then(() => alert("All presets copied to clipboard!"))
+    .catch(err => console.error("Clipboard copy failed", err));
+}
+
+// Import presets
+function importPresets() {
+  const json = prompt("Paste presets JSON here:");
+  if (!json) return;
+  try {
+    const parsed = JSON.parse(json);
+    if (typeof parsed !== "object") throw new Error("Invalid format");
+
+    const updatedPresets = { ...DEFAULT_PRESETS, ...parsed };
+    setPresets(updatedPresets);
+    localStorage.setItem("userPresets", JSON.stringify(parsed));
+
+    alert("Presets imported successfully!");
+  } catch (e) {
+    alert("Invalid presets JSON");
+    console.error("Import failed:", e);
+  }
+}
+
+
+		  
 
         // --- NEW: Multiple Headlines & Collapsible Logic ---
         const [headlines, setHeadlines] = useState([{
@@ -159,40 +302,7 @@ useEffect(() => {
 }, [headlines, updateHeadline]);
 
 
-function exportLayout() {
-  const dataToExport = {
-    headlines, images, width, height, logo, fileName, fitMode, vignette,
-    globalBorderColor, globalBorderSize
-  };
-  const json = JSON.stringify(dataToExport, null, 2);
-  
-  // Copy to clipboard
-  navigator.clipboard.writeText(json)
-    .then(() => alert("Layout copied to clipboard!"))
-    .catch(err => console.error("Clipboard copy failed", err));
-}
 
-function importLayout() {
-  const json = prompt("Paste layout JSON here:");
-  if (!json) return;
-  try {
-    const parsed = JSON.parse(json);
-    if (parsed.headlines) setHeadlines(parsed.headlines);
-    if (parsed.images) setImages(parsed.images);
-    if (parsed.width) setWidth(parsed.width);
-    if (parsed.height) setHeight(parsed.height);
-    if (parsed.logo) setLogo(parsed.logo);
-    if (parsed.fileName) setFileName(parsed.fileName);
-    if (parsed.fitMode) setFitMode(parsed.fitMode);
-    if (parsed.vignette) setVignette(parsed.vignette);
-    if (parsed.globalBorderColor) setGlobalBorderColor(parsed.globalBorderColor);
-    if (parsed.globalBorderSize) setGlobalBorderSize(parsed.globalBorderSize);
-    alert("Layout loaded!");
-  } catch (e) {
-    alert("Invalid layout JSON");
-    console.error("Import failed:", e);
-  }
-}
 
 		  
 
@@ -531,6 +641,78 @@ function importLayout() {
   </div>
 </div>
 
+				  <div className="bg-white p-3 rounded shadow">
+  <h3 className="text-lg font-medium mb-2">Presets</h3>
+  
+  {/* Load & Delete */}
+  <select id="presetSelect" className="w-full border p-1 rounded mb-2">
+    <option value="">Select a preset</option>
+    {Object.keys(presets).map(key => (
+      <option key={key} value={key}>{key}</option>
+    ))}
+  </select>
+  
+  <div className="flex space-x-2 mb-3">
+    <button
+      onClick={() => {
+        const select = document.getElementById("presetSelect");
+        if (select && select.value) loadPreset(select.value);
+      }}
+      className="flex-1 bg-purple-500 text-white py-1 rounded"
+    >
+      Load
+    </button>
+    <button
+      onClick={() => {
+        const select = document.getElementById("presetSelect");
+        if (select && select.value) deletePreset(select.value);
+      }}
+      className="flex-1 bg-red-600 text-white py-1 rounded"
+    >
+      Delete
+    </button>
+  </div>
+
+  {/* Save */}
+  <input 
+    id="presetName" 
+    type="text" 
+    placeholder="Preset name" 
+    className="w-full border p-1 rounded mb-2"
+  />
+  <button
+    onClick={() => {
+      const input = document.getElementById("presetName");
+      if (input && input.value) savePreset(input.value);
+    }}
+    className="w-full bg-green-600 text-white py-1 rounded mb-2"
+  >
+    Save Current Layout as Preset
+  </button>
+
+  {/* Reset */}
+  <button
+    onClick={resetPresets}
+    className="w-full bg-gray-600 text-white py-1 rounded mb-2"
+  >
+    Reset to Default Presets
+  </button>
+
+  {/* Export/Import */}
+  <button
+    onClick={exportPresets}
+    className="w-full bg-blue-600 text-white py-1 rounded mb-2"
+  >
+    Export All Presets (Copy JSON)
+  </button>
+  <button
+    onClick={importPresets}
+    className="w-full bg-yellow-500 text-white py-1 rounded"
+  >
+    Import Presets (Paste JSON)
+  </button>
+</div>
+
 
                 {/* Canvas & File */}
                 <div className="bg-white p-3 rounded shadow space-y-2">
@@ -546,19 +728,7 @@ function importLayout() {
                 </div>
               </div>
 
-				<div className="bg-white p-3 rounded shadow">
-  <h3 className="text-lg font-medium mb-2">Save / Load Layout</h3>
-  <button 
-    onClick={exportLayout} 
-    className="w-full bg-blue-500 text-white py-1 rounded mb-2">
-    Export Layout (Copy JSON)
-  </button>
-  <button 
-    onClick={importLayout} 
-    className="w-full bg-green-500 text-white py-1 rounded">
-    Import Layout (Paste JSON)
-  </button>
-</div>
+				
 
               {/* Preview */}
       {/* Preview */}
