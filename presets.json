@@ -1,0 +1,570 @@
+{
+  "Single Line": {
+    "headlines": [
+      {
+        "id": 1758252239236,
+        "text": "یہ ایک نئی ہیڈلائن ",
+        "fontSize": 90,
+        "lineHeight": 1.2,
+        "fontFamily": "JameelNooriNastaliq",
+        "textColor": "#ffffff",
+        "textPos": {
+          "x": 559.46728515625,
+          "y": 687.0537414550781
+        },
+        "direction": "rtl",
+        "sidelineOffset": 0,
+        "shadow": {
+          "enabled": true,
+          "offsetX": 2,
+          "offsetY": 2,
+          "blur": 6,
+          "color": "rgba(0,0,0,0.6)"
+        },
+        "stroke": {
+          "enabled": false,
+          "width": 1,
+          "color": "#000000"
+        },
+        "sideline": {
+          "show": true,
+          "width": 30,
+          "gap": 100,
+          "height": 108,
+          "color": "#ff0000",
+          "opacity": 1
+        },
+        "isCollapsed": false
+      }
+    ],
+    "images": [
+      {
+        "id": 1758252358755,
+        "src": "blob:https://marifanjum.github.io/0a9a49ae-89e5-43f0-adf4-aa3dcc060349",
+        "x": -762.9685821533203,
+        "y": 288.6867980957031,
+        "scale": 1,
+        "zIndex": 7,
+        "borderEnabled": false
+      }
+    ],
+    "width": 1080,
+    "height": 1080,
+    "logo": {
+      "show": true,
+      "position": "top-right"
+    },
+    "fileName": "social-card",
+    "fitMode": "cover",
+    "vignette": {
+      "show": false,
+      "x": 0,
+      "y": 0,
+      "scale": 1
+    },
+    "globalBorderColor": "#ffffff",
+    "globalBorderSize": 4
+  },
+  "Twoline normal": {
+    "headlines": [
+      {
+        "id": 1758256662235,
+        "text": "سب ہیڈنگ",
+        "fontSize": 60,
+        "lineHeight": 1.2,
+        "fontFamily": "Tahoma",
+        "textColor": "#ffff00",
+        "textPos": {
+          "x": 730.349853515625,
+          "y": 835.5854797363281
+        },
+        "direction": "rtl",
+        "sidelineOffset": 0,
+        "shadow": {
+          "enabled": true,
+          "offsetX": 2,
+          "offsetY": 2,
+          "blur": 6,
+          "color": "rgba(0,0,0,0.6)"
+        },
+        "stroke": {
+          "enabled": true,
+          "width": 1,
+          "color": "#ffff00"
+        },
+        "sideline": {
+          "show": false,
+          "width": 30,
+          "gap": 60,
+          "height": 72,
+          "color": "#ff0000",
+          "opacity": 1
+        },
+        "isCollapsed": false
+      },
+      {
+        "id": 1758256736357,
+        "text": "نئی ہیڈلائن",
+        "fontSize": 120,
+        "lineHeight": 1.2,
+        "fontFamily": "JameelNooriNastaliq",
+        "textColor": "#ffffff",
+        "textPos": {
+          "x": 671.0325927734375,
+          "y": 654.4373474121094
+        },
+        "direction": "rtl",
+        "sidelineOffset": 0,
+        "shadow": {
+          "enabled": true,
+          "offsetX": 2,
+          "offsetY": 2,
+          "blur": 6,
+          "color": "rgba(0,0,0,0.6)"
+        },
+        "stroke": {
+          "enabled": false,
+          "width": 1,
+          "color": "#000000"
+        },
+        "sideline": {
+          "show": true,
+          "width": 30,
+          "gap": 60,
+          "height": 144,
+          "color": "#ff0000",
+          "opacity": 1
+        },
+        "isCollapsed": false
+      }
+    ],
+    "images": [],
+    "width": 1080,
+    "height": 1080,
+    "logo": {
+      "show": true,
+      "position": "top-right"
+    },
+    "fileName": "social-card",
+    "fitMode": "cover",
+    "vignette": {
+      "show": false,
+      "x": 0,
+      "y": 0,
+      "scale": 1
+    },
+    "globalBorderColor": "#ffffff",
+    "globalBorderSize": 4
+  },
+  "Bold Two Lines": {
+    "headlines": [
+      {
+        "id": 1758256736357,
+        "text": "نئی ہیڈلائن",
+        "fontSize": 140,
+        "lineHeight": 1.2,
+        "fontFamily": "JameelNooriNastaliq",
+        "textColor": "#ffffff",
+        "textPos": {
+          "x": 628.6456298828125,
+          "y": 623.6142883300781
+        },
+        "direction": "rtl",
+        "sidelineOffset": 0,
+        "shadow": {
+          "enabled": true,
+          "offsetX": 2,
+          "offsetY": 2,
+          "blur": 6,
+          "color": "rgba(0,0,0,0.6)"
+        },
+        "stroke": {
+          "enabled": false,
+          "width": 1,
+          "color": "#000000"
+        },
+        "sideline": {
+          "show": true,
+          "width": 30,
+          "gap": 60,
+          "height": 168,
+          "color": "#ff0000",
+          "opacity": 1
+        },
+        "isCollapsed": false
+      },
+      {
+        "id": 1758256845811,
+        "text": "سب ہیڈنگ",
+        "fontSize": 80,
+        "lineHeight": 1.2,
+        "fontFamily": "Tahoma",
+        "textColor": "#ffff00",
+        "textPos": {
+          "x": 703.7202758789062,
+          "y": 813.2811584472656
+        },
+        "direction": "rtl",
+        "sidelineOffset": 0,
+        "shadow": {
+          "enabled": true,
+          "offsetX": 2,
+          "offsetY": 2,
+          "blur": 6,
+          "color": "rgba(0,0,0,0.6)"
+        },
+        "stroke": {
+          "enabled": true,
+          "width": 1,
+          "color": "#ffff00"
+        },
+        "sideline": {
+          "show": false,
+          "width": 30,
+          "gap": 60,
+          "height": 96,
+          "color": "#ff0000",
+          "opacity": 1
+        },
+        "isCollapsed": false
+      }
+    ],
+    "images": [],
+    "width": 1080,
+    "height": 1080,
+    "logo": {
+      "show": true,
+      "position": "top-right"
+    },
+    "fileName": "social-card",
+    "fitMode": "cover",
+    "vignette": {
+      "show": false,
+      "x": 0,
+      "y": 0,
+      "scale": 1
+    },
+    "globalBorderColor": "#ffffff",
+    "globalBorderSize": 4
+  },
+  "NewsSocialShare": {
+    "headlines": [
+      {
+        "id": 1758256736357,
+        "text": "اسرائیلی فوج نے پرانی گاڑیوں کو بموں میں \nتبدیل کردیا، غزہ میں ہولناک تباہی",
+        "fontSize": 98,
+        "lineHeight": 1.2,
+        "fontFamily": "JameelNooriNastaliq",
+        "textColor": "#ffff00",
+        "textPos": {
+          "x": 94.08349609375,
+          "y": 690.3282318115234
+        },
+        "direction": "rtl",
+        "sidelineOffset": 0,
+        "shadow": {
+          "enabled": true,
+          "offsetX": 2,
+          "offsetY": 2,
+          "blur": 6,
+          "color": "rgba(0,0,0,0.6)"
+        },
+        "stroke": {
+          "enabled": true,
+          "width": 2,
+          "color": "#ffff00"
+        },
+        "sideline": {
+          "show": false,
+          "width": 30,
+          "gap": 60,
+          "height": 235,
+          "color": "#ff0000",
+          "opacity": 1
+        },
+        "isCollapsed": false,
+        "textAlign": "center"
+      }
+    ],
+    "images": [
+      {
+        "id": 1758280028487,
+        "src": "blob:https://marifanjum.github.io/71528eb0-fc96-4202-844e-0df2e9154c95",
+        "x": 0,
+        "y": 0,
+        "scale": 0.9,
+        "zIndex": 5,
+        "borderEnabled": false,
+        "fitMode": {
+          "top": true,
+          "right": true,
+          "bottom": false,
+          "left": true
+        }
+      }
+    ],
+    "width": 1080,
+    "height": 1080,
+    "logo": {
+      "show": false,
+      "position": "top-right"
+    },
+    "fileName": "social-card",
+    "vignette": {
+      "show": false,
+      "x": 0,
+      "y": 0,
+      "scale": 1
+    },
+    "globalBorderColor": "#ffffff",
+    "globalBorderSize": 4,
+    "background": {
+      "type": "image",
+      "color": "#000000",
+      "gradient": {
+        "color1": "#ffff00",
+        "color2": "#0000ff",
+        "direction": "to top right"
+      },
+      "imageSrc": "bg.png"
+    }
+  },
+  "YouTubeBold": {
+    "headlines": [
+      {
+        "id": 1758252239236,
+        "text": "یوٹیوب ٹائٹل",
+        "fontSize": 160,
+        "lineHeight": 1.2,
+        "fontFamily": "JameelNooriNastaliq",
+        "textColor": "#ffffff",
+        "textPos": {
+          "x": 395.46728515625,
+          "y": 353.0537414550781
+        },
+        "direction": "rtl",
+        "textAlign": "right",
+        "sidelineOffset": 0,
+        "shadow": {
+          "enabled": true,
+          "offsetX": 2,
+          "offsetY": 2,
+          "blur": 6,
+          "color": "rgba(0,0,0,0.6)"
+        },
+        "stroke": {
+          "enabled": false,
+          "width": 1,
+          "color": "#000000"
+        },
+        "sideline": {
+          "show": true,
+          "width": 30,
+          "gap": 250,
+          "height": 192,
+          "color": "#ff0000",
+          "opacity": 1
+        },
+        "isCollapsed": false
+      }
+    ],
+    "images": [],
+    "width": 1200,
+    "height": 720,
+    "logo": {
+      "show": true,
+      "position": "top-left"
+    },
+    "fileName": "social-card",
+    "vignette": {
+      "show": false,
+      "x": 0,
+      "y": 0,
+      "scale": 1
+    },
+    "globalBorderColor": "#ffffff",
+    "globalBorderSize": 4,
+    "background": {
+      "type": "solid",
+      "color": "#000000"
+    }
+  },
+  "YTTwoLines": {
+    "headlines": [
+      {
+        "id": 1758252239236,
+        "text": "یہ یوٹیوب کی اوپر کیلئے لائن ہے جس میں ٹائٹل ",
+        "fontSize": 120,
+        "lineHeight": 1.6,
+        "fontFamily": "JameelNooriNastaliq",
+        "textColor": "#ffffff",
+        "textPos": {
+          "x": 23.46728515625,
+          "y": -36.946258544921875
+        },
+        "direction": "rtl",
+        "textAlign": "center",
+        "sidelineOffset": 30,
+        "shadow": {
+          "enabled": true,
+          "offsetX": 2,
+          "offsetY": 2,
+          "blur": 6,
+          "color": "rgba(0,0,0,0.6)"
+        },
+        "stroke": {
+          "enabled": false,
+          "width": 1,
+          "color": "#000000"
+        },
+        "sideline": {
+          "show": true,
+          "width": 1200,
+          "gap": 0,
+          "height": 192,
+          "color": "#ff0000",
+          "opacity": 1
+        },
+        "isCollapsed": false
+      },
+      {
+        "id": 1758356961336,
+        "text": "یہ نیچے کی لائن ہے جس میں مزید تفصیل شامل کی جائے گی",
+        "fontSize": 90,
+        "lineHeight": 1.6,
+        "fontFamily": "JameelNooriNastaliq",
+        "textColor": "#ffffff",
+        "textPos": {
+          "x": 76,
+          "y": 548
+        },
+        "direction": "rtl",
+        "textAlign": "right",
+        "sidelineOffset": 25,
+        "shadow": {
+          "enabled": true,
+          "offsetX": 2,
+          "offsetY": 2,
+          "blur": 6,
+          "color": "rgba(0,0,0,0.6)"
+        },
+        "stroke": {
+          "enabled": false,
+          "width": 1,
+          "color": "#000000"
+        },
+        "sideline": {
+          "show": true,
+          "width": 1200,
+          "gap": 0,
+          "height": 144,
+          "color": "#008000",
+          "opacity": 1
+        },
+        "isCollapsed": false
+      }
+    ],
+    "images": [],
+    "width": 1200,
+    "height": 720,
+    "logo": {
+      "show": false,
+      "position": "top-left"
+    },
+    "fileName": "social-card",
+    "vignette": {
+      "show": false,
+      "x": 0,
+      "y": 0,
+      "scale": 1
+    },
+    "globalBorderColor": "#ffffff",
+    "globalBorderSize": 4,
+    "background": {
+      "type": "solid",
+      "color": "#000000"
+    }
+  },
+  "YouTubeBoldSingle": {
+    "headlines": [
+      {
+        "id": 1758256736357,
+        "text": "طارق جمیل کی \nخیمہ بستی",
+        "fontSize": 160,
+        "lineHeight": 1.2,
+        "fontFamily": "JameelNooriNastaliq",
+        "textColor": "#ffff00",
+        "textPos": {
+          "x": 335.49456787109375,
+          "y": 143.4333038330078
+        },
+        "direction": "rtl",
+        "sidelineOffset": 0,
+        "shadow": {
+          "enabled": true,
+          "offsetX": 2,
+          "offsetY": 2,
+          "blur": 6,
+          "color": "rgba(0,0,0,0.6)"
+        },
+        "stroke": {
+          "enabled": true,
+          "width": 2,
+          "color": "#ffff00"
+        },
+        "sideline": {
+          "show": true,
+          "width": 30,
+          "gap": 300,
+          "height": 384,
+          "color": "#ff0000",
+          "opacity": 1
+        },
+        "isCollapsed": false,
+        "textAlign": "right"
+      }
+    ],
+    "images": [
+      {
+        "id": 1758281088093,
+        "src": "blob:https://marifanjum.github.io/77796b8c-1be3-4205-8769-6c085197bddb",
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "zIndex": 0,
+        "borderEnabled": false,
+        "fitMode": {
+          "top": false,
+          "right": false,
+          "bottom": false,
+          "left": false
+        }
+      }
+    ],
+    "width": 1200,
+    "height": 720,
+    "logo": {
+      "show": true,
+      "position": "bottom-left"
+    },
+    "fileName": "social-card",
+    "vignette": {
+      "show": true,
+      "x": 0,
+      "y": 0,
+      "scale": 1
+    },
+    "globalBorderColor": "#ffffff",
+    "globalBorderSize": 40,
+    "background": {
+      "type": "solid",
+      "color": "#000000",
+      "gradient": {
+        "color1": "#ffff00",
+        "color2": "#0000ff",
+        "direction": "to top right"
+      },
+      "imageSrc": "bg.png"
+    }
+  }
+}
