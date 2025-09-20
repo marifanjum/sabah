@@ -72,11 +72,45 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
 
 
         function loadPreset(name) {
-          const preset = presets[name];
-          if (!preset) {
-            alert("Preset not found");
-            return;
-          }
+  const preset = presets[name];
+  if (!preset) {
+    alert("Preset not found");
+    return;
+  }
+
+  setHeadlines(preset.headlines || []);
+  setImages(preset.images.map(img => ({
+      ...img,
+      scale: img.scale !== undefined ? img.scale : 1,
+      fitMode: img.fitMode || { top: false, right: false, bottom: false, left: false },
+      stretchEnabled: img.stretchEnabled || false,
+  })) || []);
+  if (preset.width) setWidth(preset.width);
+  if (preset.height) setHeight(preset.height);
+  if (preset.logo) setLogo(preset.logo);
+  if (preset.fileName) setFileName(preset.fileName);
+  if (preset.vignette !== undefined) setVignette(preset.vignette);
+  if (preset.globalBorderColor) setGlobalBorderColor(preset.globalBorderColor);
+  if (preset.globalBorderSize !== undefined) setGlobalBorderSize(preset.globalBorderSize);
+  if (preset.background) {
+    setBackground(preset.background);
+  }
+  
+  // This is the key fix
+  if (preset.draggableHeadlines !== undefined) {
+      // Correctly set the state based on the value from the preset.
+      // The saved value is already a boolean because of the fix in `savePreset`.
+      setDraggableHeadlines(preset.draggableHeadlines);
+  } else {
+      // Default to true if the property doesn't exist in the preset
+      setDraggableHeadlines(true);
+  }
+  
+  setCurrentPresetName(name);
+
+  alert(`${name} preset loaded!`);
+		}
+		  
 
           setHeadlines(preset.headlines || []);
           setImages(preset.images.map(img => ({
@@ -101,40 +135,43 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         }
 
         function savePreset(name) {
-          if (!name) {
-            alert("Please enter a preset name");
-            return;
-          }
+  if (!name) {
+    alert("Please enter a preset name");
+    return;
+  }
 
-          const newPreset = {
-            headlines, 
-            images: images.map(img => ({
-                id: img.id,
-                src: img.src,
-                x: img.x,
-                y: img.y,
-                scale: img.scale,
-                zIndex: img.zIndex,
-                borderEnabled: img.borderEnabled,
-                stretchEnabled: img.stretchEnabled,
-                fitMode: img.fitMode,
-            })),
-            width, height, logo, fileName, vignette,
-            globalBorderColor, globalBorderSize, background,
-            draggableHeadlines: true
-          };
+  const newPreset = {
+    headlines,
+    images: images.map(img => ({
+      id: img.id,
+      src: img.src,
+      x: img.x,
+      y: img.y,
+      scale: img.scale,
+      zIndex: img.zIndex,
+      borderEnabled: img.borderEnabled,
+      stretchEnabled: img.stretchEnabled,
+      fitMode: img.fitMode,
+    })),
+    width, height, logo, fileName, vignette,
+    globalBorderColor, globalBorderSize, background,
+    // Use the state variable here instead of hardcoding 'true'
+    draggableHeadlines
+  };
 
-          const updatedPresets = { ...presets, [name]: newPreset };
-          setPresets(updatedPresets);
-          localStorage.setItem("userPresets", JSON.stringify(updatedPresets));
+  const updatedPresets = { ...presets, [name]: newPreset };
+  setPresets(updatedPresets);
+  localStorage.setItem("userPresets", JSON.stringify(updatedPresets));
 
-          alert(`Preset "${name}" saved!`);
-        }
+  alert(`Preset "${name}" saved!`);
+}
 
+
+          
         function deletePreset(name) {
           if (!name) {
             alert("Please select a preset to delete");
-            return;
+        return;
           }
           if (DEFAULT_PRESETS[name]) {
             alert("Default presets cannot be deleted");
