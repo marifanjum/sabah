@@ -52,520 +52,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         const [isFileNameCollapsed, setIsFileNameCollapsed] = useState(false);
         const [vignette, setVignette] = useState({ show: false, x: 0, y: 0, scale: 1 });
         
-        const DEFAULT_PRESETS = {
-          "Single Line": {
-            "headlines": [
-              {
-                "id": 1758252239236,
-                "text": "یہ ایک نئی ہیڈلائن ",
-                "fontSize": 90,
-                "lineHeight": 1.2,
-                "fontFamily": "JameelNooriNastaliq",
-                "textColor": "#ffffff",
-                "textPos": {
-                  "x": 559.46728515625,
-                  "y": 687.0537414550781
-                },
-                "direction": "rtl",
-                "textAlign": "right",
-                "sidelineOffset": 0,
-                "shadow": {
-                  "enabled": true,
-                  "offsetX": 2,
-                  "offsetY": 2,
-                  "blur": 6,
-                  "color": "rgba(0,0,0,0.6)"
-                },
-                "stroke": {
-                  "enabled": false,
-                  "width": 1,
-                  "color": "#000000"
-                },
-                "sideline": {
-                  "show": true,
-                  "width": 30,
-                  "gap": 100,
-                  "height": 108,
-                  "color": "#ff0000",
-                  "opacity": 1
-                },
-                "isCollapsed": false
-              }
-            ],
-            "images": [
-              {
-                "id": 1758252358755,
-                "src": "https://marifanjum.github.io/socialcard/bg.png",
-                "x": 0,
-                "y": 0,
-                "scale": 1,
-                "zIndex": 7,
-                "borderEnabled": false,
-                "stretchEnabled": false,
-                "fitMode": {
-                  "top": true,
-                  "right": true,
-                  "bottom": true,
-                  "left": true
-                }
-              }
-            ],
-            "width": 1080,
-            "height": 1080,
-            "logo": {
-              "show": true,
-              "position": "top-right"
-            },
-            "fileName": "social-card",
-            "background": {
-              "type": "solid",
-              "color": "#000000"
-            },
-            "fitMode": "cover",
-            "vignette": {
-              "show": false,
-              "x": 0,
-              "y": 0,
-              "scale": 1
-            },
-            "globalBorderColor": "#ffffff",
-            "globalBorderSize": 4,
-          },
-          "Twoline normal": {
-            "headlines": [
-              {
-                "id": 1758256662235,
-                "text": "سب ہیڈنگ",
-                "fontSize": 60,
-                "lineHeight": 1.2,
-                "fontFamily": "Tahoma",
-                "textColor": "#ffff00",
-                "textPos": {
-                  "x": 730.349853515625,
-                  "y": 835.5854797363281
-                },
-                "direction": "rtl",
-                "textAlign": "right",
-                "sidelineOffset": 0,
-                "shadow": {
-                  "enabled": true,
-                  "offsetX": 2,
-                  "offsetY": 2,
-                  "blur": 6,
-                  "color": "rgba(0,0,0,0.6)"
-                },
-                "stroke": {
-                  "enabled": true,
-                  "width": 1,
-                  "color": "#ffff00"
-                },
-                "sideline": {
-                  "show": false,
-                  "width": 30,
-                  "gap": 60,
-                  "height": 72,
-                  "color": "#ff0000",
-                  "opacity": 1
-                },
-                "isCollapsed": false
-              },
-              {
-                "id": 1758256736357,
-                "text": "نئی ہیڈلائن",
-                "fontSize": 120,
-                "lineHeight": 1.2,
-                "fontFamily": "JameelNooriNastaliq",
-                "textColor": "#ffffff",
-                "textPos": {
-                  "x": 671.0325927734375,
-                  "y": 654.4373474121094
-                },
-                "direction": "rtl",
-                "textAlign": "right",
-                "sidelineOffset": 0,
-                "shadow": {
-                  "enabled": true,
-                  "offsetX": 2,
-                  "offsetY": 2,
-                  "blur": 6,
-                  "color": "rgba(0,0,0,0.6)"
-                },
-                "stroke": {
-                  "enabled": false,
-                  "width": 1,
-                  "color": "#000000"
-                },
-                "sideline": {
-                  "show": true,
-                  "width": 30,
-                  "gap": 60,
-                  "height": 144,
-                  "color": "#ff0000",
-                  "opacity": 1
-                },
-                "isCollapsed": false
-              }
-            ],
-            "images": [],
-            "width": 1080,
-            "height": 1080,
-            "logo": {
-              "show": true,
-              "position": "top-right"
-            },
-            "fileName": "social-card",
-            "fitMode": "cover",
-            "vignette": {
-              "show": false,
-              "x": 0,
-              "y": 0,
-              "scale": 1
-            },
-            "globalBorderColor": "#ffffff",
-            "globalBorderSize": 4,
-            "background": {
-              "type": "solid",
-              "color": "#000000"
-            }
-          },
-          "Bold Two Lines": {
-            "headlines": [
-              {
-                "id": 1758256736357,
-                "text": "نئی ہیڈلائن",
-                "fontSize": 140,
-                "lineHeight": 1.2,
-                "fontFamily": "JameelNooriNastaliq",
-                "textColor": "#ffffff",
-                "textPos": {
-                  "x": 628.6456298828125,
-                  "y": 623.6142883300781
-                },
-                "direction": "rtl",
-                "textAlign": "right",
-                "sidelineOffset": 0,
-                "shadow": {
-                  "enabled": true,
-                  "offsetX": 2,
-                  "offsetY": 2,
-                  "blur": 6,
-                  "color": "rgba(0,0,0,0.6)"
-                },
-                "stroke": {
-                  "enabled": false,
-                  "width": 1,
-                  "color": "#000000"
-                },
-                "sideline": {
-                  "show": true,
-                  "width": 30,
-                  "gap": 60,
-                  "height": 168,
-                  "color": "#ff0000",
-                  "opacity": 1
-                },
-                "isCollapsed": false
-              },
-              {
-                "id": 1758256845811,
-                "text": "سب ہیڈنگ",
-                "fontSize": 80,
-                "lineHeight": 1.2,
-                "fontFamily": "Tahoma",
-                "textColor": "#ffff00",
-                "textPos": {
-                  "x": 703.7202758789062,
-                  "y": 813.2811584472656
-                },
-                "direction": "rtl",
-                "textAlign": "right",
-                "sidelineOffset": 0,
-                "shadow": {
-                  "enabled": true,
-                  "offsetX": 2,
-                  "offsetY": 2,
-                  "blur": 6,
-                  "color": "rgba(0,0,0,0.6)"
-                },
-                "stroke": {
-                  "enabled": true,
-                  "width": 1,
-                  "color": "#ffff00"
-                },
-                "sideline": {
-                  "show": false,
-                  "width": 30,
-                  "gap": 60,
-                  "height": 96,
-                  "color": "#ff0000",
-                  "opacity": 1
-                },
-                "isCollapsed": false
-              }
-            ],
-            "images": [],
-            "width": 1080,
-            "height": 1080,
-            "logo": {
-              "show": true,
-              "position": "top-right"
-            },
-            "fileName": "social-card",
-            "fitMode": "cover",
-            "vignette": {
-              "show": false,
-              "x": 0,
-              "y": 0,
-              "scale": 1
-            },
-            "globalBorderColor": "#ffffff",
-            "globalBorderSize": 4,
-            "background": {
-              "type": "solid",
-              "color": "#000000"
-            }
-          },
-			"NewsSocialShare": {
-    "headlines": [
-      {
-        "id": 1758256736357,
-        "text": "اسرائیلی فوج نے پرانی گاڑیوں کو بموں میں \nتبدیل کردیا، غزہ میں ہولناک تباہی",
-        "fontSize": 98,
-        "lineHeight": 1.2,
-        "fontFamily": "JameelNooriNastaliq",
-        "textColor": "#ffff00",
-        "textPos": {
-          "x": 94.08349609375,
-          "y": 690.3282318115234
-        },
-        "direction": "rtl",
-        "sidelineOffset": 0,
-        "shadow": {
-          "enabled": true,
-          "offsetX": 2,
-          "offsetY": 2,
-          "blur": 6,
-          "color": "rgba(0,0,0,0.6)"
-        },
-        "stroke": {
-          "enabled": true,
-          "width": 2,
-          "color": "#ffff00"
-        },
-        "sideline": {
-          "show": false,
-          "width": 30,
-          "gap": 60,
-          "height": 235,
-          "color": "#ff0000",
-          "opacity": 1
-        },
-        "isCollapsed": false,
-        "textAlign": "center"
-      }
-    ],
-    "images": [
-      {
-        "id": 1758280028487,
-        "src": "blob:https://marifanjum.github.io/71528eb0-fc96-4202-844e-0df2e9154c95",
-        "x": 0,
-        "y": 0,
-        "scale": 0.9,
-        "zIndex": 5,
-        "borderEnabled": false,
-        "fitMode": {
-          "top": true,
-          "right": true,
-          "bottom": false,
-          "left": true
-        }
-      }
-    ],
-    "width": 1080,
-    "height": 1080,
-    "logo": {
-      "show": false,
-      "position": "top-right"
-    },
-    "fileName": "social-card",
-    "vignette": {
-      "show": false,
-      "x": 0,
-      "y": 0,
-      "scale": 1
-    },
-    "globalBorderColor": "#ffffff",
-    "globalBorderSize": 4,
-    "background": {
-      "type": "image",
-      "color": "#000000",
-      "gradient": {
-        "color1": "#ffff00",
-        "color2": "#0000ff",
-        "direction": "to top right"
-      },
-      "imageSrc": "bg.png"
-    }
-		}, 
-	  "YouTubeBold": {
-    "headlines": [
-      {
-        "id": 1758252239236,
-        "text": "یوٹیوب ٹائٹل",
-        "fontSize": 160,
-        "lineHeight": 1.2,
-        "fontFamily": "JameelNooriNastaliq",
-        "textColor": "#ffffff",
-        "textPos": {
-          "x": 395.46728515625,
-          "y": 353.0537414550781
-        },
-        "direction": "rtl",
-        "textAlign": "right",
-        "sidelineOffset": 0,
-        "shadow": {
-          "enabled": true,
-          "offsetX": 2,
-          "offsetY": 2,
-          "blur": 6,
-          "color": "rgba(0,0,0,0.6)"
-        },
-        "stroke": {
-          "enabled": false,
-          "width": 1,
-          "color": "#000000"
-        },
-        "sideline": {
-          "show": true,
-          "width": 30,
-          "gap": 250,
-          "height": 192,
-          "color": "#ff0000",
-          "opacity": 1
-        },
-        "isCollapsed": false
-      }
-    ],
-    "images": [],
-    "width": 1200,
-    "height": 720,
-    "logo": {
-      "show": true,
-      "position": "top-left"
-    },
-    "fileName": "social-card",
-    "vignette": {
-      "show": false,
-      "x": 0,
-      "y": 0,
-      "scale": 1
-    },
-    "globalBorderColor": "#ffffff",
-    "globalBorderSize": 4,
-    "background": {
-      "type": "solid",
-      "color": "#000000"
-    }
-  },
-  "YTTwoLines": {
-    "headlines": [
-      {
-        "id": 1758252239236,
-        "text": "یہ یوٹیوب کی اوپر کیلئے لائن ہے جس میں ٹائٹل ",
-        "fontSize": 120,
-        "lineHeight": 1.6,
-        "fontFamily": "JameelNooriNastaliq",
-        "textColor": "#ffffff",
-        "textPos": {
-          "x": 23.46728515625,
-          "y": -36.946258544921875
-        },
-        "direction": "rtl",
-        "textAlign": "center",
-        "sidelineOffset": 30,
-        "shadow": {
-          "enabled": true,
-          "offsetX": 2,
-          "offsetY": 2,
-          "blur": 6,
-          "color": "rgba(0,0,0,0.6)"
-        },
-        "stroke": {
-          "enabled": false,
-          "width": 1,
-          "color": "#000000"
-        },
-        "sideline": {
-          "show": true,
-          "width": 1200,
-          "gap": 0,
-          "height": 192,
-          "color": "#ff0000",
-          "opacity": 1
-        },
-        "isCollapsed": false
-      },
-      {
-        "id": 1758356961336,
-        "text": "یہ نیچے کی لائن ہے جس میں مزید تفصیل شامل کی جائے گی",
-        "fontSize": 90,
-        "lineHeight": 1.6,
-        "fontFamily": "JameelNooriNastaliq",
-        "textColor": "#ffffff",
-        "textPos": {
-          "x": 76,
-          "y": 548
-        },
-        "direction": "rtl",
-        "textAlign": "right",
-        "sidelineOffset": 25,
-        "shadow": {
-          "enabled": true,
-          "offsetX": 2,
-          "offsetY": 2,
-          "blur": 6,
-          "color": "rgba(0,0,0,0.6)"
-        },
-        "stroke": {
-          "enabled": false,
-          "width": 1,
-          "color": "#000000"
-        },
-        "sideline": {
-          "show": true,
-          "width": 1200,
-          "gap": 0,
-          "height": 144,
-          "color": "#008000",
-          "opacity": 1
-        },
-        "isCollapsed": false
-      }
-    ],
-    "images": [],
-    "width": 1200,
-    "height": 720,
-    "logo": {
-      "show": false,
-      "position": "top-left"
-    },
-    "fileName": "social-card",
-    "vignette": {
-      "show": false,
-      "x": 0,
-      "y": 0,
-      "scale": 1
-    },
-    "globalBorderColor": "#ffffff",
-    "globalBorderSize": 4,
-    "background": {
-      "type": "solid",
-      "color": "#000000"
-    }
-  }
-
-        };
-
+        
         const [globalBorderColor, setGlobalBorderColor] = useState("#ffffff");
         const [globalBorderSize, setGlobalBorderSize] = useState(4);
         const [images, setImages] = useState([]);
@@ -585,10 +72,25 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           imageSrc: 'bg.png'
         });
 		  
-        const [presets, setPresets] = React.useState(() => {
-          const saved = localStorage.getItem("userPresets");
-          return { ...DEFAULT_PRESETS, ...(saved ? JSON.parse(saved) : {}) };
-        });
+        const [presets, setPresets] = useState(null); // Initialize with null
+        const [isDraggingEnabled, setIsDraggingEnabled] = useState(true);
+
+        useEffect(() => {
+          fetch('presets.json')
+            .then(response => response.json())
+            .then(data => {
+              const savedUserPresets = localStorage.getItem("userPresets");
+              const userPresets = savedUserPresets ? JSON.parse(savedUserPresets) : {};
+              const combinedPresets = { ...data, ...userPresets };
+              setPresets(combinedPresets);
+            })
+            .catch(error => {
+              console.error("Failed to load presets from presets.json", error);
+              // Fallback to an empty object if fetch fails
+              setPresets({});
+            });
+        }, []);
+
 
         function loadPreset(name) {
           const preset = presets[name];
@@ -615,6 +117,9 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           if (preset.background) {
             setBackground(preset.background);
           }
+
+          // Update drag state based on preset
+          setIsDraggingEnabled(preset.canDrag !== undefined ? preset.canDrag : true);
 
           alert(`${name} preset loaded!`);
         }
@@ -654,7 +159,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             alert("Please select a preset to delete");
             return;
           }
-          if (DEFAULT_PRESETS[name]) {
+          if (presets[name] && presets[name].isDefault) { // Assuming a property to identify default presets
             alert("Default presets cannot be deleted");
             return;
           }
@@ -671,9 +176,13 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           if (!window.confirm("This will delete all your saved presets and restore only the defaults. Continue?")) {
             return;
           }
-          setPresets(DEFAULT_PRESETS);
-          localStorage.removeItem("userPresets");
-          alert("Presets reset to default!");
+          fetch('presets.json')
+            .then(response => response.json())
+            .then(data => {
+              setPresets(data);
+              localStorage.removeItem("userPresets");
+              alert("Presets reset to default!");
+            });
         }
 
         function exportPresets() {
@@ -690,7 +199,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             const parsed = JSON.parse(json);
             if (typeof parsed !== "object") throw new Error("Invalid format");
 
-            const updatedPresets = { ...DEFAULT_PRESETS, ...parsed };
+            const updatedPresets = { ...presets, ...parsed };
             setPresets(updatedPresets);
             localStorage.setItem("userPresets", JSON.stringify(parsed));
 
@@ -716,6 +225,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           stroke: { enabled: false, width: 1, color: "#000000" },
           sideline: { show: true, width: 30, gap: 60, height: 0, color: "#ff0000", opacity: 1 },
           isCollapsed: false,
+          isLocked: false,
         }]);
         const [expandedHeadlineId, setExpandedHeadlineId] = useState(null);
         const headlineRefs = useRef({});
@@ -736,6 +246,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             stroke: { enabled: false, width: 1, color: "#000000" },
             sideline: { show: true, width: 30, gap: 60, height: 0, color: "#ff0000", opacity: 1 },
             isCollapsed: false,
+            isLocked: false,
           };
           setHeadlines([...headlines, newHeadline]);
         }
@@ -765,7 +276,10 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             const savedData = localStorage.getItem('socialCardData');
             if (savedData) {
               const parsedData = JSON.parse(savedData);
-              if (parsedData.headlines) setHeadlines(parsedData.headlines);
+              if (parsedData.headlines) setHeadlines(parsedData.headlines.map(h => ({
+                ...h,
+                isLocked: h.isLocked !== undefined ? h.isLocked : false, // Ensure isLocked exists
+              })));
               if (parsedData.images) setImages(parsedData.images.map(img => ({
                 ...img,
                 fitMode: img.fitMode || { top: false, right: false, bottom: false, left: false },
@@ -871,6 +385,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         }
 
         function startDragImage(e, id) {
+          if (!isDraggingEnabled) return; // New check
           e.preventDefault();
           e.stopPropagation();
           setActiveImageId(id);
@@ -898,6 +413,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         }
 
         function startDragText(e, id) {
+          if (!isDraggingEnabled) return; // New check
           e.preventDefault();
           e.stopPropagation();
           const { x: startX, y: startY } = getCoords(e);
@@ -922,6 +438,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         }
 
         function startDragVignette(e) {
+          if (!isDraggingEnabled) return; // New check
           e.preventDefault();
           e.stopPropagation();
           const { x: startX, y: startY } = getCoords(e);
@@ -976,7 +493,8 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           setImages(current => current.map(im => im.id === id ? { ...im, ...updatedProps } : im));
         }
 
-        function updateImageFitMode(id, corner) {
+                      return {
+                backgroundImage: `lifunction updateImageFitMode(id, corner) {
           setImages(current => current.map(im => {
             if (im.id === id) {
               const newFitMode = { ...im.fitMode, [corner]: !im.fitMode[corner] };
@@ -1082,8 +600,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             case 'solid':
               return { backgroundColor: background.color };
             case 'gradient':
-              return {
-                backgroundImage: `linear-gradient(${background.gradient.direction}, ${background.gradient.color1}, ${background.gradient.color2})`
+near-gradient(${background.gradient.direction}, ${background.gradient.color1}, ${background.gradient.color2})`
               };
             case 'image':
               return {
@@ -1097,6 +614,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           }
         }, [background]);
 
+        
         function getImageStyle(img) {
           return {
             left: img.x,
@@ -1147,6 +665,15 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
     );
   }
 
+  if (!presets) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-200">
+        <div className="text-lg font-bold">Loading presets...</div>
+      </div>
+    );
+  }
+
+  // 
 
         return (
           <div className="p-4 max-w-7xl mx-auto">
