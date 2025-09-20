@@ -30,18 +30,18 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
 
     <script type="text/babel">
       function SocialCardGenerator() {
-      const { useState, useRef, useEffect } = React;
+        const { useState, useRef, useEffect } = React;
         const containerRef = useRef(null);
 	 
 		  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-  try {
-    const savedAuth = localStorage.getItem('socialCardAuth');
-    return savedAuth ? JSON.parse(savedAuth) : false;
-  } catch (e) {
-    console.error("Failed to load authentication status from localStorage", e);
-    return false;
-  }
-});
+            try {
+              const savedAuth = localStorage.getItem('socialCardAuth');
+              return savedAuth ? JSON.parse(savedAuth) : false;
+            } catch (e) {
+              console.error("Failed to load authentication status from localStorage", e);
+              return false;
+            }
+          });
         // State variables for collapsing sections
         const [isBackgroundCollapsed, setIsBackgroundCollapsed] = useState(false);
         const [isPresetsCollapsed, setIsPresetsCollapsed] = useState(false);
@@ -263,12 +263,12 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         }
 
 		  useEffect(() => {
-  try {
-    localStorage.setItem('socialCardAuth', JSON.stringify(isAuthenticated));
-  } catch (e) {
-    console.error("Failed to save authentication status to localStorage", e);
-  }
-}, [isAuthenticated]);
+            try {
+              localStorage.setItem('socialCardAuth', JSON.stringify(isAuthenticated));
+            } catch (e) {
+              console.error("Failed to save authentication status to localStorage", e);
+            }
+          }, [isAuthenticated]);
 		  
 
         useEffect(() => {
@@ -493,8 +493,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           setImages(current => current.map(im => im.id === id ? { ...im, ...updatedProps } : im));
         }
 
-                      return {
-                backgroundImage: `lifunction updateImageFitMode(id, corner) {
+        function updateImageFitMode(id, corner) {
           setImages(current => current.map(im => {
             if (im.id === id) {
               const newFitMode = { ...im.fitMode, [corner]: !im.fitMode[corner] };
@@ -600,7 +599,8 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             case 'solid':
               return { backgroundColor: background.color };
             case 'gradient':
-near-gradient(${background.gradient.direction}, ${background.gradient.color1}, ${background.gradient.color2})`
+              return {
+                backgroundImage: `linear-gradient(${background.gradient.direction}, ${background.gradient.color1}, ${background.gradient.color2})`
               };
             case 'image':
               return {
@@ -631,179 +631,181 @@ near-gradient(${background.gradient.direction}, ${background.gradient.color1}, $
         };
 
 		  // Password submission handler
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault();
-    const password = e.target.elements.password.value;
-    // ⚠️ Replace "YOUR_PASSWORD" with your actual password
-    if (password === "sabah123") {
-      setIsAuthenticated(true);
-    } else {
-      alert("Incorrect password.");
-    }
-  };
+      const handlePasswordSubmit = (e) => {
+        e.preventDefault();
+        const password = e.target.elements.password.value;
+        if (password === "sabah123") {
+          setIsAuthenticated(true);
+        } else {
+          alert("Incorrect password.");
+        }
+      };
 
-  // Conditional render based on isAuthenticated state
-  if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-200">
-        <form onSubmit={handlePasswordSubmit} className="p-8 bg-white rounded-lg shadow-md">
-          <h2 className="text-xl font-bold mb-4">Enter Password to Access</h2>
-          <inpu            type="password"
-            name="password"
-            placeholder="Enter password"
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-          />
-          <button
-            type="submit"
-            className="mt-4 w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring"
-          >
-            Submit
-          </button>
-        </form>
-      </div>
-    );
-  }
+      // Conditional render based on isAuthenticated state
+      if (!isAuthenticated) {
+        return (
+          <div className="flex items-center justify-center min-h-screen bg-gray-200">
+            <form onSubmit={handlePasswordSubmit} className="p-8 bg-white rounded-lg shadow-md">
+              <h2 className="text-xl font-bold mb-4">Enter Password to Access</h2>
+              <input
+                type="password"
+                name="password"
+                placeholder="Enter password"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+              />
+              <button
+                type="submit"
+                className="mt-4 w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring"
+              >
+                Submit
+              </button>
+            </form>
+          </div>
+        );
+      }
 
-  if (!presets) {
-    return (
-      <div cassName="flex items-center justify-center min-h-screen bg-gray-200">
-        <div className="text-lg font-bold">Loading presets...</div>
-      </div>
-    );
-  }
-
-  // 
-// ... (all your existing state variables and functions should be above this point)
-
+      if (!presets) {
+        return (
+          <div className="flex items-center justify-center min-h-screen bg-gray-200">
+            <div className="text-lg font-bold">Loading presets...</div>
+          </div>
+        );
+      }
+      
+      // Corrected return statement for the main component
       return (
-        <div className="flex-1 max-w-full mt-6 md:mt-0">
-          <div className="sticky top-4">
-            <div className="mb-2">Preview (Output size: {width}×{height})</div>
-            <div ref={containerRef} className="relative mx-auto bg-black overflow-hidden" style={{ width, height, ...backgroundStyle }}>
-              {/* Images */}
-              {images.sort((a, b) => a.zIndex - b.zIndex).map(img => (
-                <div
-                  key={img.id}
-                  onMouseDown={e => startDragImage(e, img.id)}
-                  onTouchStart={e => startDragImage(e, img.id)}
-                  className="absolute"
-                  style={{
-                    zIndex: img.zIndex,
-                    cursor: "grab",
-                    ...getImageStyle(img),
-                  }}
-                >
-                  <img
-                    src={img.src}
-                    alt="Uploaded Image"
-                    style={{
-                      display: "block",
-                      width: "100%",
-                      height: "100%",
-                      objectFit: isStretched(img) ? 'cover' : 'none',
-                      border: img.borderEnabled
-                        ? `${globalBorderSize}px solid ${globalBorderColor}`
-                        : "none",
-                    }}
-                  />
-                </div>
-              ))}
-              
+        <div className="flex justify-between items-center bg-gray-200">
+          <div className="p-4 w-1/3 overflow-y-auto h-screen custom-scrollbar">
+            {/* ... (Your sidebar JSX should be here) ... */}
+          </div>
 
-              {/* Vignette */}
-              {vignette.show && (
-                <img
-                  src="Vignette.png"
-                  alt="Vignette"
-                  onMouseDown={startDragVignette}
-                  onTouchStart={startDragVignette}
-                  style={{
-                    position: "absolute",
-                    left: vignette.x,
-                    top: vignette.y,
-                    transform: `scale(${vignette.scale})`,
-                    cursor: "grab",
-                    width: "100%",
-                    height: "100%",
-                    zIndex: 100,
-                  }}
-                />
-              )}
-
-              {/* Logo */}
-              {logo.show && (
-                <img
-                  src="sabah-logo.PNG"
-                  alt="Logo"
-                  style={{
-                    position: "absolute",
-                    width: 120,
-                    height: 60,
-                    ...(logo.position === "top-left" ? { left: 30, top: 150 } : {}),
-                    ...(logo.position === "top-right" ? { right: 30, top: 150 } : {}),
-                    ...(logo.position === "bottom-left" ? { left: 30, bottom: 150 } : {}),
-                    ...(logo.position === "bottom-right" ? { right: 30, bottom: 150 } : {}),
-                    zIndex: 300,
-                  }}
-                />
-              )}
-
-              {/* Multiple Headlines */}
-              {headlines.map(headline => (
-                <React.Fragment key={headline.id}>
-                  {headline.sideline.show && (
+          <div className="flex-1 p-4 flex items-center justify-center">
+            <div className="flex-1 max-w-full mt-6 md:mt-0">
+              <div className="sticky top-4">
+                <div className="mb-2">Preview (Output size: {width}×{height})</div>
+                <div ref={containerRef} className="relative mx-auto bg-black overflow-hidden" style={{ width, height, ...backgroundStyle }}>
+                  {/* Images */}
+                  {images.sort((a, b) => a.zIndex - b.zIndex).map(img => (
                     <div
-                      className="sideline-clone"
+                      key={img.id}
+                      onMouseDown={e => startDragImage(e, img.id)}
+                      onTouchStart={e => startDragImage(e, img.id)}
+                      className="absolute"
+                      style={{
+                        zIndex: img.zIndex,
+                        cursor: "grab",
+                        ...getImageStyle(img),
+                      }}
+                    >
+                      <img
+                        src={img.src}
+                        alt="Uploaded Image"
+                        style={{
+                          display: "block",
+                          width: "100%",
+                          height: "100%",
+                          objectFit: isStretched(img) ? 'cover' : 'none',
+                          border: img.borderEnabled
+                            ? `${globalBorderSize}px solid ${globalBorderColor}`
+                            : "none",
+                        }}
+                      />
+                    </div>
+                  ))}
+                  
+
+                  {/* Vignette */}
+                  {vignette.show && (
+                    <img
+                      src="Vignette.png"
+                      alt="Vignette"
+                      onMouseDown={startDragVignette}
+                      onTouchStart={startDragVignette}
                       style={{
                         position: "absolute",
-                        left: headline.direction === "ltr" ? headline.sideline.gap : "auto",
-                        right: headline.direction === "rtl" ? headline.sideline.gap : "auto",
-                        top: headline.textPos.y + (headline.sidelineOffset || 0),
-                        height: headline.sideline.height || 0,
-                        width: headline.sideline.width,
-                        background: headline.sideline.color,
-                        opacity: headline.sideline.opacity,
-                        pointerEvents: "none",
-                        zIndex: 200,
+                        left: vignette.x,
+                        top: vignette.y,
+                        transform: `scale(${vignette.scale})`,
+                        cursor: "grab",
+                        width: "100%",
+                        height: "100%",
+                        zIndex: 100,
                       }}
                     />
                   )}
-                  <div
-                    ref={el => headlineRefs.current[headline.id] = el}
-                    onMouseDown={e => startDragText(e, headline.id)}
-                    onTouchStart={e => startDragText(e, headline.id)}
-                    dir={headline.direction}
-                    style={{
-                      position: "absolute",
-                      left: headline.textPos.x,
-                      top: headline.textPos.y,
-                      fontSize: headline.fontSize,
-                      lineHeight: headline.lineHeight,
-                      fontFamily: headline.fontFamily,
-                      color: headline.textColor,
-                      textShadow: headline.shadow.enabled ? `${headline.shadow.offsetX}px ${headline.shadow.offsetY}px ${headline.shadow.blur}px ${headline.shadow.color}` : "none",
-                      WebkitTextStroke: headline.stroke.enabled ? `${headline.stroke.width}px ${headline.stroke.color}` : "none",
-                      whiteSpace: "pre-wrap",
-                      textAlign: headline.textAlign,
-                      cursor: "move",
-                      zIndex: 200,
-                    }}
-                  >
-                    {headline.text}
-                  </div>
-                </React.Fragment>
-              ))}
+
+                  {/* Logo */}
+                  {logo.show && (
+                    <img
+                      src="sabah-logo.PNG"
+                      alt="Logo"
+                      style={{
+                        position: "absolute",
+                        width: 120,
+                        height: 60,
+                        ...(logo.position === "top-left" ? { left: 30, top: 150 } : {}),
+                        ...(logo.position === "top-right" ? { right: 30, top: 150 } : {}),
+                        ...(logo.position === "bottom-left" ? { left: 30, bottom: 150 } : {}),
+                        ...(logo.position === "bottom-right" ? { right: 30, bottom: 150 } : {}),
+                        zIndex: 300,
+                      }}
+                    />
+                  )}
+
+                  {/* Multiple Headlines */}
+                  {headlines.map(headline => (
+                    <React.Fragment key={headline.id}>
+                      {headline.sideline.show && (
+                        <div
+                          className="sideline-clone"
+                          style={{
+                            position: "absolute",
+                            left: headline.direction === "ltr" ? headline.sideline.gap : "auto",
+                            right: headline.direction === "rtl" ? headline.sideline.gap : "auto",
+                            top: headline.textPos.y + (headline.sidelineOffset || 0),
+                            height: headline.sideline.height || 0,
+                            width: headline.sideline.width,
+                            background: headline.sideline.color,
+                            opacity: headline.sideline.opacity,
+                            pointerEvents: "none",
+                            zIndex: 200,
+                          }}
+                        />
+                      )}
+                      <div
+                        ref={el => headlineRefs.current[headline.id] = el}
+                        onMouseDown={e => startDragText(e, headline.id)}
+                        onTouchStart={e => startDragText(e, headline.id)}
+                        dir={headline.direction}
+                        style={{
+                          position: "absolute",
+                          left: headline.textPos.x,
+                          top: headline.textPos.y,
+                          fontSize: headline.fontSize,
+                          lineHeight: headline.lineHeight,
+                          fontFamily: headline.fontFamily,
+                          color: headline.textColor,
+                          textShadow: headline.shadow.enabled ? `${headline.shadow.offsetX}px ${headline.shadow.offsetY}px ${headline.shadow.blur}px ${headline.shadow.color}` : "none",
+                          WebkitTextStroke: headline.stroke.enabled ? `${headline.stroke.width}px ${headline.stroke.color}` : "none",
+                          whiteSpace: "pre-wrap",
+                          textAlign: headline.textAlign,
+                          cursor: "move",
+                          zIndex: 200,
+                        }}
+                      >
+                        {headline.text}
+                      </div>
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       );
     }
       
-    // This part should be outside the component function
     ReactDOM.createRoot(document.getElementById("root")).render(<SocialCardGenerator />);
-
 	</script>
   </body>
 </html>
-		
-                                                                            
