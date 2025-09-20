@@ -432,7 +432,7 @@
         },
         "draggableHeadlines": false
     },
-      "SocialShareFixed": {
+      "SocialSharedFixed1": {
     "headlines": [
       {
         "id": 1758256736357,
@@ -442,8 +442,8 @@
         "fontFamily": "JameelNooriNastaliq",
         "textColor": "#ffff00",
         "textPos": {
-          "x": 134.02606201171875,
-          "y": 697.4299163818359
+          "x": 110.94793701171875,
+          "y": 653.9004974365234
         },
         "direction": "rtl",
         "sidelineOffset": 0,
@@ -473,14 +473,13 @@
     ],
     "images": [
       {
-        "id": 1758280028487,
-        "src": "blob:https://marifanjum.github.io/71528eb0-fc96-4202-844e-0df2e9154c95",
+        "id": 1758402396206,
+        "src": "blob:https://marifanjum.github.io/185c177e-a081-4fe3-8a84-9029e1e1f5d8",
         "x": 0,
         "y": 0,
         "scale": 0.9,
-        "zIndex": 5,
+        "zIndex": 0,
         "borderEnabled": false,
-        "stretchEnabled": false,
         "fitMode": {
           "top": true,
           "right": true,
@@ -515,5 +514,5 @@
       "imageSrc": "bg.png"
     },
     "draggableHeadlines": false
-  }
+      }
 }
