@@ -220,6 +220,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         }]);
         const [expandedHeadlineId, setExpandedHeadlineId] = useState(null);
         const headlineRefs = useRef({});
+        const [draggableHeadlines, setDraggableHeadlines] = useState(true);
 
         function addHeadline() {
           const newHeadline = {
@@ -648,7 +649,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
     );
   }
 
-        const canDragHeadlines = currentPresetName && presets[currentPresetName] && presets[currentPresetName].draggableHeadlines;
+        const canDragHeadlines = draggableHeadlines;
 
 
         return (
@@ -756,6 +757,15 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                 <div className="bg-white p-3 rounded shadow">
                   <h3 className="text-lg font-medium mb-2">Headlines</h3>
                   <button onClick={addHeadline} className="w-full bg-green-500 text-white py-1 rounded mb-2">Add New Headline</button>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <input
+                      type="checkbox"
+                      id="dragToggle"
+                      checked={draggableHeadlines}
+                      onChange={(e) => setDraggableHeadlines(e.target.checked)}
+                    />
+                    <label htmlFor="dragToggle" className="text-sm font-medium">Enable drag for headlines</label>
+                  </div>
                   {headlines.map(headline => (
                     <div key={headline.id} className="border-b last:border-b-0 py-2">
                       <div className="flex justify-between items-center cursor-pointer" onClick={() => setExpandedHeadlineId(expandedHeadlineId === headline.id ? null : headline.id)}>
