@@ -4,7 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Social Card Generator</title>
-	  <link href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css" rel="stylesheet">
+	  <link href="
+https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
+" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -211,7 +213,7 @@
           text: "Headline here",
           fontSize: 90,
           lineHeight: 1.2,
-          fontFamily: "Jameel Noori Nastaleeq",
+          fontFamily: "JameelNooriNastaliq",
           textColor: "#ffffff",
           textPos: { x: 100, y: 200 },
           direction: "rtl",
@@ -221,58 +223,33 @@
           stroke: { enabled: false, width: 1, color: "#000000" },
           sideline: { show: true, width: 30, gap: 60, height: 0, color: "#ff0000", opacity: 1 },
           isCollapsed: false,
-          wordStyles: [{ color: "#ffffff", stroke: { enabled: false, width: 1, color: "#000000" } }, { color: "#ffffff", stroke: { enabled: false, width: 1, color: "#000000" } }],
         }]);
         const [expandedHeadlineId, setExpandedHeadlineId] = useState(null);
-        const [selectedWordIndex, setSelectedWordIndex] = useState(0);
         const headlineRefs = useRef({});
         const [draggableHeadlines, setDraggableHeadlines] = useState(true);
 
-        // Helper function to update the word styles array
-        const updateStyledWordsFromText = (text, currentWordStyles) => {
-            const words = text.split(/\s+/);
-            const newWordStyles = words.map((word, index) => {
-                // If a style for this word already exists, keep it. Otherwise, use defaults.
-                if (currentWordStyles && currentWordStyles[index]) {
-                    return currentWordStyles[index];
-                }
-                return {
-                    color: "#ffffff",
-                    stroke: { enabled: false, width: 1, color: "#000000" },
-                };
-            });
-            return newWordStyles;
-        };
-
-        // Update headline function to handle word-based changes
-        function updateHeadline(id, updatedProps) {
-            setHeadlines(current => current.map(h => {
-                if (h.id === id) {
-                    const newHeadline = { ...h, ...updatedProps };
-                    // If text changes, regenerate the word styles array
-                    if (updatedProps.text !== undefined) {
-                        newHeadline.wordStyles = updateStyledWordsFromText(newHeadline.text, newHeadline.wordStyles);
-                    }
-                    return newHeadline;
-                }
-                return h;
-            }));
+        function addHeadline() {
+          const newHeadline = {
+            id: Date.now(),
+            text: "New Headline",
+            fontSize: 60,
+            lineHeight: 1.2,
+            fontFamily: "JameelNooriNastaliq",
+            textColor: "#ffffff",
+            textPos: { x: 100, y: 300 },
+            direction: "rtl",
+            textAlign: "right",
+            sidelineOffset: 0,
+            shadow: { enabled: true, offsetX: 2, offsetY: 2, blur: 6, color: "rgba(0,0,0,0.6)" },
+            stroke: { enabled: false, width: 1, color: "#000000" },
+            sideline: { show: true, width: 30, gap: 60, height: 0, color: "#ff0000", opacity: 1 },
+            isCollapsed: false,
+          };
+          setHeadlines([...headlines, newHeadline]);
         }
 
-        // Function to update style of a specific word
-        function updateWordStyle(headlineId, wordIndex, updatedWordProps) {
-            setHeadlines(current => current.map(h => {
-                if (h.id === headlineId) {
-                    const newWordStyles = h.wordStyles.map((wordStyle, index) => {
-                        if (index === wordIndex) {
-                            return { ...wordStyle, ...updatedWordProps };
-                        }
-                        return wordStyle;
-                    });
-                    return { ...h, wordStyles: newWordStyles };
-                }
-                return h;
-            }));
+        function updateHeadline(id, updatedProps) {
+          setHeadlines(current => current.map(h => h.id === id ? { ...h, ...updatedProps } : h));
         }
 
         function deleteHeadline(id) {
@@ -296,11 +273,7 @@
             const savedData = localStorage.getItem('socialCardData');
             if (savedData) {
               const parsedData = JSON.parse(savedData);
-              if (parsedData.headlines) setHeadlines(parsedData.headlines.map(h => ({
-                ...h,
-                // Ensure wordStyles is initialized
-                wordStyles: h.wordStyles || updateStyledWordsFromText(h.text),
-              })));
+              if (parsedData.headlines) setHeadlines(parsedData.headlines);
               if (parsedData.images) setImages(parsedData.images.map(img => ({
                 ...img,
                 fitMode: img.fitMode || { top: false, right: false, bottom: false, left: false },
@@ -866,75 +839,6 @@
                             </div>}
                           </div>
 
-                          {/* Individual Word Styling Controls */}
-                          {headline.text.split(/\s+/).length > 1 && (
-                            <div className="mt-4">
-                              <h4 className="font-semibold text-sm">Individual Word Style</h4>
-                              <label className="block text-sm">Select word:</label>
-                              <select
-                                value={selectedWordIndex}
-                                onChange={(e) => setSelectedWordIndex(parseInt(e.target.value))}
-                                className="w-full border p-1 rounded"
-                              >
-                                {headline.text.split(/\s+/).map((word, index) => (
-                                  <option key={index} value={index}>
-                                    {word}
-                                  </option>
-                                ))}
-                              </select>
-                              {headline.wordStyles[selectedWordIndex] && (
-                                <div className="mt-2 space-y-2">
-                                  <label className="block text-sm">Word Color</label>
-                                  <input
-                                    type="color"
-                                    value={headline.wordStyles[selectedWordIndex].color}
-                                    onChange={(e) =>
-                                      updateWordStyle(headline.id, selectedWordIndex, { color: e.target.value })
-                                    }
-                                  />
-
-                                  <label className="block text-sm flex items-center">
-                                    <input
-                                      type="checkbox"
-                                      checked={headline.wordStyles[selectedWordIndex].stroke.enabled}
-                                      onChange={(e) =>
-                                        updateWordStyle(headline.id, selectedWordIndex, {
-                                          stroke: { ...headline.wordStyles[selectedWordIndex].stroke, enabled: e.target.checked },
-                                        })
-                                      }
-                                    />
-                                    <span className="ml-2">Enable Word Stroke</span>
-                                  </label>
-                                  {headline.wordStyles[selectedWordIndex].stroke.enabled && (
-                                    <>
-                                      <label className="block text-sm">Stroke Width</label>
-                                      <input
-                                        type="number"
-                                        value={headline.wordStyles[selectedWordIndex].stroke.width}
-                                        onChange={(e) =>
-                                          updateWordStyle(headline.id, selectedWordIndex, {
-                                            stroke: { ...headline.wordStyles[selectedWordIndex].stroke, width: parseInt(e.target.value) },
-                                          })
-                                        }
-                                        className="w-full border p-1 rounded"
-                                      />
-                                      <label className="block text-sm">Stroke Color</label>
-                                      <input
-                                        type="color"
-                                        value={headline.wordStyles[selectedWordIndex].stroke.color}
-                                        onChange={(e) =>
-                                          updateWordStyle(headline.id, selectedWordIndex, {
-                                            stroke: { ...headline.wordStyles[selectedWordIndex].stroke, color: e.target.value },
-                                          })
-                                        }
-                                      />
-                                    </>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-
                           {/* Sideline Controls */}
                           <div className="mt-4">
                             <label className="flex items-center">
@@ -1366,26 +1270,16 @@
                             fontSize: headline.fontSize,
                             lineHeight: headline.lineHeight,
                             fontFamily: headline.fontFamily,
+                            color: headline.textColor,
                             textShadow: headline.shadow.enabled ? `${headline.shadow.offsetX}px ${headline.shadow.offsetY}px ${headline.shadow.blur}px ${headline.shadow.color}` : "none",
+                            WebkitTextStroke: headline.stroke.enabled ? `${headline.stroke.width}px ${headline.stroke.color}` : "none",
                             whiteSpace: "pre-wrap",
                             textAlign: headline.textAlign,
                             cursor: canDragHeadlines ? "move" : "default",
                             zIndex: 200,
                           }}
                         >
-                          {headline.text.split(/\s+/).map((word, index) => (
-                            <span
-                              key={index}
-                              style={{
-                                color: headline.wordStyles[index]?.color || headline.textColor,
-                                WebkitTextStroke: headline.wordStyles[index]?.stroke.enabled
-                                  ? `${headline.wordStyles[index].stroke.width}px ${headline.wordStyles[index].stroke.color}`
-                                  : 'none',
-                              }}
-                            >
-                              {word}{" "}
-                            </span>
-                          ))}
+                          {headline.text}
                         </div>
                       </React.Fragment>
                     ))}
