@@ -16,6 +16,22 @@
       padding: 30px;
       background: #f9f9f9;
     }
+    .status {
+      font-size: 16px;
+      margin-bottom: 20px;
+      padding: 10px 15px;
+      border-radius: 6px;
+      color: #fff;
+    }
+    .status.loading {
+      background: #999;
+    }
+    .status.loaded {
+      background: #28a745;
+    }
+    .status.failed {
+      background: #dc3545;
+    }
     textarea {
       font-family: "BBC Reith Sans", sans-serif;
       font-size: 18px;
@@ -57,6 +73,8 @@
   </style>
 </head>
 <body>
+  <div id="fontStatus" class="status loading">Loading BBC Reith Sans font...</div>
+
   <textarea id="inputText" placeholder="Type here to test BBC Reith Sans font..."></textarea>
 
   <div class="preview-container">
@@ -67,10 +85,30 @@
   <script>
     const input = document.getElementById("inputText");
     const preview = document.getElementById("previewText");
+    const fontStatus = document.getElementById("fontStatus");
 
     input.addEventListener("input", () => {
       preview.textContent = input.value;
     });
+
+    // Check font loading status
+    if (document.fonts) {
+      document.fonts.load('1em "BBC Reith Sans"').then((loaded) => {
+        if (loaded.length > 0) {
+          fontStatus.textContent = "BBC Reith Sans font loaded successfully!";
+          fontStatus.className = "status loaded";
+        } else {
+          fontStatus.textContent = "Failed to load BBC Reith Sans font.";
+          fontStatus.className = "status failed";
+        }
+      }).catch(() => {
+        fontStatus.textContent = "Font loading failed (error).";
+        fontStatus.className = "status failed";
+      });
+    } else {
+      fontStatus.textContent = "Font loading check not supported in this browser.";
+      fontStatus.className = "status failed";
+    }
   </script>
 </body>
 </html>
