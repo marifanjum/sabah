@@ -2,11 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Font Test - BBC Reith Sans</title>
-  <link href="https://db.onlinewebfonts.com/c/a1d0120b37754be8e80e39ab6ab95130?family=BBC+Reith+Sans" rel="stylesheet" type="text/css"/>
+  <title>Font Test - Pangea Afrikan Text Trial</title>
+  <!-- Option 1: Direct link -->
+  <link href="https://db.onlinewebfonts.com/c/6f6e9eae429a5691afbd2444621e2d36?family=Pangea+Afrikan+Text+Trial" rel="stylesheet" type="text/css"/>
+
+  <!-- Option 2 (alternative): @import or @font-face, but link is simpler -->
+
   <style>
     body {
-      font-family: "BBC Reith Sans", sans-serif;
+      font-family: "Pangea Afrikan Text Trial", sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -33,7 +37,7 @@
       background: #dc3545;
     }
     textarea {
-      font-family: "BBC Reith Sans", sans-serif;
+      font-family: "Pangea Afrikan Text Trial", sans-serif;
       font-size: 18px;
       width: 80%;
       height: 200px;
@@ -63,7 +67,7 @@
       color: #444;
     }
     .preview-text {
-      font-family: "BBC Reith Sans", sans-serif;
+      font-family: "Pangea Afrikan Text Trial", sans-serif;
       font-size: 18px;
       line-height: 1.6;
       color: #000;
@@ -73,9 +77,9 @@
   </style>
 </head>
 <body>
-  <div id="fontStatus" class="status loading">Loading BBC Reith Sans font...</div>
+  <div id="fontStatus" class="status loading">Loading Pangea Afrikan Text Trial font...</div>
 
-  <textarea id="inputText" placeholder="Type here to test BBC Reith Sans font..."></textarea>
+  <textarea id="inputText" placeholder="Type here to test Pangea Afrikan Text Trial font..."></textarea>
 
   <div class="preview-container">
     <div class="preview-title">Live Preview:</div>
@@ -93,12 +97,12 @@
 
     // Check font loading status
     if (document.fonts) {
-      document.fonts.load('1em "BBC Reith Sans"').then((loaded) => {
+      document.fonts.load('1em "Pangea Afrikan Text Trial"').then((loaded) => {
         if (loaded.length > 0) {
-          fontStatus.textContent = "BBC Reith Sans font loaded successfully!";
+          fontStatus.textContent = "Pangea Afrikan Text Trial font loaded successfully!";
           fontStatus.className = "status loaded";
         } else {
-          fontStatus.textContent = "Failed to load BBC Reith Sans font.";
+          fontStatus.textContent = "Failed to load Pangea Afrikan Text Trial font.";
           fontStatus.className = "status failed";
         }
       }).catch(() => {
