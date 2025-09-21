@@ -8,17 +8,19 @@
     body {
       font-family: "BBC Reith Sans", sans-serif;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      height: 100vh;
+      justify-content: flex-start;
+      min-height: 100vh;
       margin: 0;
+      padding: 30px;
       background: #f9f9f9;
     }
     textarea {
       font-family: "BBC Reith Sans", sans-serif;
       font-size: 18px;
       width: 80%;
-      height: 300px;
+      height: 200px;
       padding: 15px;
       border: 2px solid #ccc;
       border-radius: 8px;
@@ -30,9 +32,45 @@
       border-color: #0078d7;
       box-shadow: 0 0 8px rgba(0,120,215,0.4);
     }
+    .preview-container {
+      margin-top: 30px;
+      width: 80%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    .preview-title {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: #444;
+    }
+    .preview-text {
+      font-family: "BBC Reith Sans", sans-serif;
+      font-size: 18px;
+      line-height: 1.6;
+      color: #000;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
   </style>
 </head>
 <body>
-  <textarea placeholder="Type here to test BBC Reith Sans font..."></textarea>
+  <textarea id="inputText" placeholder="Type here to test BBC Reith Sans font..."></textarea>
+
+  <div class="preview-container">
+    <div class="preview-title">Live Preview:</div>
+    <div class="preview-text" id="previewText"></div>
+  </div>
+
+  <script>
+    const input = document.getElementById("inputText");
+    const preview = document.getElementById("previewText");
+
+    input.addEventListener("input", () => {
+      preview.textContent = input.value;
+    });
+  </script>
 </body>
 </html>
