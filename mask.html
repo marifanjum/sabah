@@ -15,6 +15,7 @@ body {
   height: 400px;
   overflow: hidden;
   cursor: pointer;
+  touch-action: none; /* added so touch dragging doesn't scroll the page */
 }
 
 .masked-image, .background-image {
@@ -282,6 +283,42 @@ container.addEventListener('mousemove', (e) => {
     updateMaskDisplay(currentX, currentY);
   }
 });
+
+// --- Touch support (added) ---
+container.addEventListener('touchstart', (e) => {
+  // prevent page from scrolling when touching the container
+  e.preventDefault();
+  isDragging = true;
+  const touch = e.touches[0];
+  const containerRect = container.getBoundingClientRect();
+  currentX = touch.clientX - containerRect.left;
+  currentY = touch.clientY - containerRect.top;
+  currentX = Math.max(maskSize / 2, Math.min(currentX, containerRect.width - maskSize / 2));
+  currentY = Math.max(maskSize / 2, Math.min(currentY, containerRect.height - maskSize / 2));
+  updateMaskDisplay(currentX, currentY);
+});
+
+container.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  e.preventDefault();
+  const touch = e.touches[0];
+  const containerRect = container.getBoundingClientRect();
+  currentX = touch.clientX - containerRect.left;
+  currentY = touch.clientY - containerRect.top;
+  currentX = Math.max(maskSize / 2, Math.min(currentX, containerRect.width - maskSize / 2));
+  currentY = Math.max(maskSize / 2, Math.min(currentY, containerRect.height - maskSize / 2));
+  updateMaskDisplay(currentX, currentY);
+});
+
+container.addEventListener('touchend', (e) => {
+  isDragging = false;
+});
+
+container.addEventListener('touchcancel', (e) => {
+  isDragging = false;
+});
+// --- end touch support ---
+
 maskSelector.addEventListener('change', (e) => {
     maskShape = e.target.value;
     updateMaskDisplay(currentX, currentY);
