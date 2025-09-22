@@ -586,24 +586,33 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
         }
 
         const backgroundStyle = React.useMemo(() => {
-          switch (background.type) {
-            case 'solid':
-              return { backgroundColor: background.color };
-            case 'gradient':
-              return {
-                backgroundImage: `linear-gradient(${background.gradient.direction}, ${background.gradient.color1}, ${background.gradient.color2})`
-              };
-            case 'image':
-              return {
-                backgroundImage: `url('${background.imageSrc}')`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
-              };
-            default:
-              return {};
-          }
-        }, [background]);
+  switch (background.type) {
+    case 'solid':
+      return { 
+        backgroundColor: background.color 
+      };
+
+    case 'gradient':
+      return {
+        backgroundImage: `linear-gradient(${background.gradient.direction}, ${background.gradient.color1}, ${background.gradient.color2})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      };
+
+    case 'image':
+      return {
+        backgroundImage: `url('${background.imageSrc}')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      };
+
+    default:
+      return {};
+  }
+}, [background]);
+
 
         function getImageStyle(img) {
           return {
@@ -718,43 +727,53 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                       )}
 
 
-                      {background.type === 'gradient' && (
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <label>Color 1:</label>
-                            <input
-                              type="color"
-                              value={background.gradient.color1}
-                              onChange={e => setBackground({ ...background, gradient: { ...background.gradient, color1: e.target.value } })}
-                              className="w-10 h-8 p-0 border rounded"
-                            />
-                            <label className="ml-4">Color 2:</label>
-                            <input
-                              type="color"
-                              value={background.gradient.color2}
-                              onChange={e => setBackground({ ...background, gradient: { ...background.gradient, color2: e.target.value } })}
-                              className="w-10 h-8 p-0 border rounded"
-                            />
-                          </div>
-                          <div className="mt-2">
-                            <label className="block text-sm font-medium">Direction</label>
-                            <select
-                              value={background.gradient.direction}
-                              onChange={e => setBackground({ ...background, gradient: { ...background.gradient, direction: e.target.value } })}
-                              className="w-full border p-1 rounded mt-1"
-                            >
-                              <option value="to top">To Top</option>
-                              <option value="to bottom">To Bottom</option>
-                              <option value="to left">To Left</option>
-                              <option value="to right">To Right</option>
-                              <option value="to top left">To Top Left</option>
-                              <option value="to top right">To Top Right</option>
-                              <option value="to bottom left">To Bottom Left</option>
-                              <option value="to bottom right">To Bottom Right</option>
-                            </select>
-                          </div>
-                        </div>
-                      )}
+                     {background.type === 'gradient' && (
+  <div className="space-y-2">
+    <div className="flex items-center gap-2">
+      <label>Color 1:</label>
+      <input
+        type="color"
+        value={background.gradient.color1}
+        onChange={e => setBackground({
+          ...background, 
+          gradient: { ...background.gradient, color1: e.target.value }
+        })}
+        className="w-10 h-8 p-0 border rounded"
+      />
+      <label className="ml-4">Color 2:</label>
+      <input
+        type="color"
+        value={background.gradient.color2}
+        onChange={e => setBackground({
+          ...background, 
+          gradient: { ...background.gradient, color2: e.target.value }
+        })}
+        className="w-10 h-8 p-0 border rounded"
+      />
+    </div>
+
+    <div className="mt-2">
+      <label className="block text-sm font-medium">Direction</label>
+      <select
+        value={background.gradient.direction}
+        onChange={e => setBackground({
+          ...background, 
+          gradient: { ...background.gradient, direction: e.target.value }
+        })}
+        className="w-full border p-1 rounded mt-1"
+      >
+        <option value="to top">To Top</option>
+        <option value="to bottom">To Bottom</option>
+        <option value="to left">To Left</option>
+        <option value="to right">To Right</option>
+        <option value="to top left">To Top Left</option>
+        <option value="to top right">To Top Right</option>
+        <option value="to bottom left">To Bottom Left</option>
+        <option value="to bottom right">To Bottom Right</option>
+      </select>
+    </div>
+  </div>
+)}
                     </div>
                   )}
                 </div>
