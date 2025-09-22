@@ -29,16 +29,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
     <div id="root"></div>
 
     <script type="text/babel">
-const defaultBackground = {
-  type: "solid",
-  color: "#000000",
-  gradient: {
-    color1: "#ffffff",
-    color2: "#000000",
-    direction: "to bottom right",
-  },
-  imageSrc: "",
-};
+
 
 		
 		function SocialCardGenerator() {
@@ -68,6 +59,17 @@ const defaultBackground = {
         const [presets, setPresets] = React.useState({});
         const [currentPresetName, setCurrentPresetName] = useState(null);
 
+		const defaultBackground = {
+		  type: "solid",
+		  color: "#000000",
+		  gradient: {
+		    color1: "#ffffff",
+		    color2: "#000000",
+		    direction: "to bottom right",
+		  },
+		  imageSrc: "",
+		};
+			
         // Load presets from JSON file
         useEffect(() => {
           fetch('presets.json')
