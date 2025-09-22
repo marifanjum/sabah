@@ -29,7 +29,19 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
     <div id="root"></div>
 
     <script type="text/babel">
-      function SocialCardGenerator() {
+const defaultBackground = {
+  type: "solid",
+  color: "#000000",
+  gradient: {
+    color1: "#ffffff",
+    color2: "#000000",
+    direction: "to bottom right",
+  },
+  imageSrc: "",
+};
+
+		
+		function SocialCardGenerator() {
         const { useState, useRef, useEffect } = React;
         const containerRef = useRef(null);
 	 
@@ -93,8 +105,16 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           if (preset.globalBorderColor) setGlobalBorderColor(preset.globalBorderColor);
           if (preset.globalBorderSize !== undefined) setGlobalBorderSize(preset.globalBorderSize);
           if (preset.background) {
-            setBackground(preset.background);
-          }
+  setBackground({
+    ...defaultBackground,
+    ...preset.background,
+    gradient: {
+      ...defaultBackground.gradient,
+      ...(preset.background.gradient || {})
+    }
+  });
+}
+			
           if (preset.draggableHeadlines !== undefined) {
               setDraggableHeadlines(preset.draggableHeadlines);
           } else {
@@ -106,36 +126,32 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           alert(`${name} preset loaded!`);
         }
 
-        function savePreset(name) {
-          if (!name) {
-            alert("Please enter a preset name");
-            return;
-          }
+      const newPreset = {
+  headlines, 
+  images: images.map(img => ({
+    id: img.id,
+    src: img.src,
+    x: img.x,
+    y: img.y,
+    scale: img.scale,
+    zIndex: img.zIndex,
+    borderEnabled: img.borderEnabled,
+    stretchEnabled: img.stretchEnabled,
+    fitMode: img.fitMode,
+  })),
+  width, height, logo, fileName, vignette,
+  globalBorderColor, globalBorderSize,
+  background: {
+    ...defaultBackground,
+    ...background,
+    gradient: {
+      ...defaultBackground.gradient,
+      ...(background.gradient || {})
+    }
+  },
+  draggableHeadlines
+};
 
-          const newPreset = {
-            headlines, 
-            images: images.map(img => ({
-                id: img.id,
-                src: img.src,
-                x: img.x,
-                y: img.y,
-                scale: img.scale,
-                zIndex: img.zIndex,
-                borderEnabled: img.borderEnabled,
-                stretchEnabled: img.stretchEnabled,
-                fitMode: img.fitMode,
-            })),
-            width, height, logo, fileName, vignette,
-            globalBorderColor, globalBorderSize, background,
-            draggableHeadlines
-          };
-
-          const updatedPresets = { ...presets, [name]: newPreset };
-          setPresets(updatedPresets);
-          localStorage.setItem("userPresets", JSON.stringify(updatedPresets));
-
-          alert(`Preset "${name}" saved!`);
-        }
 
         function deletePreset(name) {
           if (!name) {
