@@ -102,6 +102,10 @@ body {
   <label>
     <input type="checkbox" id="soft-edge-toggle"> Soft Edge
   </label>
+  
+  <label>
+    <input type="checkbox" id="invert-toggle"> Invert Mask
+  </label>
 </div>
 
 <button id="save-btn">Save Masked Image</button>
@@ -122,6 +126,7 @@ const zoomValue = document.querySelector('#zoom-value');
 const maskUpload = document.querySelector('#mask-upload');
 const maskPreview = document.querySelector('#mask-preview');
 const softEdgeToggle = document.querySelector('#soft-edge-toggle');
+const invertToggle = document.querySelector('#invert-toggle');
 const mainImageUpload = document.querySelector('#main-image-upload');
 const mainImagePreview = document.querySelector('#main-image-preview');
 const maskCanvas = document.querySelector('#mask-canvas');
@@ -133,6 +138,7 @@ let currentY = 200;
 let maskSize = 150;
 let maskShape = 'square';
 let isSoftEdge = false;
+let isInverted = false;
 const imagesLoaded = {};
 
 const maskShapes = {
@@ -165,108 +171,92 @@ function createSoftSquareMask(size) {
     maskCanvas.width = size;
     maskCanvas.height = size;
     maskCtx.clearRect(0, 0, size, size);
-    
-    // Draw the opaque inner square
+    maskCtx.fillStyle = 'rgba(0,0,0,1)';
     const innerSize = size * 0.8;
     const margin = (size - innerSize) / 2;
-    maskCtx.fillStyle = 'rgba(0,0,0,1)';
     maskCtx.fillRect(margin, margin, innerSize, innerSize);
-
-    // Apply soft edge gradients on all sides
     maskCtx.globalCompositeOperation = 'destination-out';
-    
-    // Top gradient
     const topGradient = maskCtx.createLinearGradient(0, 0, 0, margin);
     topGradient.addColorStop(0, 'rgba(0,0,0,1)');
     topGradient.addColorStop(1, 'rgba(0,0,0,0)');
     maskCtx.fillStyle = topGradient;
     maskCtx.fillRect(0, 0, size, margin);
-    
-    // Bottom gradient
     const bottomGradient = maskCtx.createLinearGradient(0, size, 0, size - margin);
     bottomGradient.addColorStop(0, 'rgba(0,0,0,1)');
     bottomGradient.addColorStop(1, 'rgba(0,0,0,0)');
     maskCtx.fillStyle = bottomGradient;
     maskCtx.fillRect(0, size - margin, size, margin);
-    
-    // Left gradient
     const leftGradient = maskCtx.createLinearGradient(0, 0, margin, 0);
     leftGradient.addColorStop(0, 'rgba(0,0,0,1)');
     leftGradient.addColorStop(1, 'rgba(0,0,0,0)');
     maskCtx.fillStyle = leftGradient;
     maskCtx.fillRect(0, 0, margin, size);
-    
-    // Right gradient
     const rightGradient = maskCtx.createLinearGradient(size, 0, size - margin, 0);
     rightGradient.addColorStop(0, 'rgba(0,0,0,1)');
     rightGradient.addColorStop(1, 'rgba(0,0,0,0)');
     maskCtx.fillStyle = rightGradient;
     maskCtx.fillRect(size - margin, 0, margin, size);
-    
     maskCtx.globalCompositeOperation = 'source-over';
-    
-    // Corner gradients for smoother look
-    // Top-left
     let tlGradient = maskCtx.createRadialGradient(margin, margin, 0, margin, margin, margin);
     tlGradient.addColorStop(0, 'rgba(0,0,0,1)');
     tlGradient.addColorStop(1, 'rgba(0,0,0,0)');
     maskCtx.globalCompositeOperation = 'destination-out';
     maskCtx.fillStyle = tlGradient;
     maskCtx.fillRect(0,0,margin,margin);
-    
-    // Top-right
     let trGradient = maskCtx.createRadialGradient(size-margin, margin, 0, size-margin, margin, margin);
     trGradient.addColorStop(0, 'rgba(0,0,0,1)');
     trGradient.addColorStop(1, 'rgba(0,0,0,0)');
     maskCtx.fillStyle = trGradient;
     maskCtx.fillRect(size-margin,0,margin,margin);
-    
-    // and so on for all 4 corners...
-    
     maskCtx.globalCompositeOperation = 'source-over';
-    
     return maskCanvas;
 }
 
 function getMaskSource(shape) {
+    let originalMask = maskImages[shape];
     if (shape === 'square' && isSoftEdge) {
-        return createSoftSquareMask(maskSize);
-    }
-    const originalMask = maskImages[shape];
-    if (!originalMask) return null;
-    if (!isSoftEdge) {
-        return originalMask;
+        originalMask = createSoftSquareMask(maskSize);
+    } else if (isSoftEdge) {
+        maskCanvas.width = maskSize;
+        maskCanvas.height = maskSize;
+        maskCtx.clearRect(0, 0, maskSize, maskSize);
+        maskCtx.drawImage(originalMask, 0, 0, maskSize, maskSize);
+        maskCtx.globalCompositeOperation = 'source-in';
+        const gradient = maskCtx.createRadialGradient(
+            maskSize / 2, maskSize / 2, 0, 
+            maskSize / 2, maskSize / 2, maskSize / 2
+        );
+        gradient.addColorStop(0.7, 'rgba(0,0,0,1)');
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        maskCtx.fillStyle = gradient;
+        maskCtx.fillRect(0, 0, maskSize, maskSize);
+        maskCtx.globalCompositeOperation = 'source-over';
+        originalMask = maskCanvas;
     }
 
-    maskCanvas.width = maskSize;
-    maskCanvas.height = maskSize;
-    maskCtx.clearRect(0, 0, maskSize, maskSize);
-    maskCtx.drawImage(originalMask, 0, 0, maskSize, maskSize);
-    maskCtx.globalCompositeOperation = 'source-in';
-    const gradient = maskCtx.createRadialGradient(
-        maskSize / 2, maskSize / 2, 0, 
-        maskSize / 2, maskSize / 2, maskSize / 2
-    );
-    gradient.addColorStop(0.7, 'rgba(0,0,0,1)');
-    gradient.addColorStop(1, 'rgba(0,0,0,0)');
-    maskCtx.fillStyle = gradient;
-    maskCtx.fillRect(0, 0, maskSize, maskSize);
-    maskCtx.globalCompositeOperation = 'source-over';
-    return maskCanvas;
+    if (isInverted) {
+        const invertedMaskCanvas = document.createElement('canvas');
+        invertedMaskCanvas.width = maskSize;
+        invertedMaskCanvas.height = maskSize;
+        const invertedMaskCtx = invertedMaskCanvas.getContext('2d');
+        invertedMaskCtx.fillStyle = 'rgba(0,0,0,1)';
+        invertedMaskCtx.fillRect(0, 0, maskSize, maskSize);
+        invertedMaskCtx.globalCompositeOperation = 'destination-out';
+        invertedMaskCtx.drawImage(originalMask, 0, 0, maskSize, maskSize);
+        return invertedMaskCanvas;
+    }
+
+    return originalMask;
 }
 
 function updateMaskDisplay(x, y) {
   const maskImage = getMaskSource(maskShape);
   const fullImage = imagesLoaded['img_5terre.jpg'];
-
   if (!fullImage || !maskImage) return;
-
   const containerWidth = container.offsetWidth;
   const containerHeight = container.offsetHeight;
-
   tempCanvas.width = containerWidth;
   tempCanvas.height = containerHeight;
-
   ctx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
   ctx.drawImage(fullImage, 0, 0, containerWidth, containerHeight);
   ctx.globalCompositeOperation = 'destination-in';
@@ -279,11 +269,9 @@ function updateMaskDisplay(x, y) {
 container.addEventListener('mousedown', (e) => {
   isDragging = true;
 });
-
 document.addEventListener('mouseup', () => {
   isDragging = false;
 });
-
 container.addEventListener('mousemove', (e) => {
   if (isDragging) {
     const containerRect = container.getBoundingClientRect();
@@ -294,23 +282,23 @@ container.addEventListener('mousemove', (e) => {
     updateMaskDisplay(currentX, currentY);
   }
 });
-
 maskSelector.addEventListener('change', (e) => {
     maskShape = e.target.value;
     updateMaskDisplay(currentX, currentY);
 });
-
 zoomSlider.addEventListener('input', (e) => {
     maskSize = parseInt(e.target.value);
     zoomValue.textContent = `${maskSize}px`;
     updateMaskDisplay(currentX, currentY);
 });
-
 softEdgeToggle.addEventListener('change', (e) => {
     isSoftEdge = e.target.checked;
     updateMaskDisplay(currentX, currentY);
 });
-
+invertToggle.addEventListener('change', (e) => {
+    isInverted = e.target.checked;
+    updateMaskDisplay(currentX, currentY);
+});
 maskUpload.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -330,7 +318,6 @@ maskUpload.addEventListener('change', (e) => {
         reader.readAsDataURL(file);
     }
 });
-
 mainImageUpload.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -349,12 +336,11 @@ mainImageUpload.addEventListener('change', (e) => {
         reader.readAsDataURL(file);
     }
 });
-
 saveBtn.addEventListener('click', () => {
   const dataURL = tempCanvas.toDataURL('image/png');
   const link = document.createElement('a');
   link.href = dataURL;
-  link.download = `masked-transparent-${maskShape}-${maskSize}${isSoftEdge ? '-soft-edge' : ''}.png`;
+  link.download = `masked-${isInverted ? 'inverted-' : ''}${maskShape}-${maskSize}${isSoftEdge ? '-soft-edge' : ''}.png`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
