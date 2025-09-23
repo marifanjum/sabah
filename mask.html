@@ -15,7 +15,7 @@ body {
   height: 400px;
   overflow: hidden;
   cursor: pointer;
-  touch-action: none;
+  touch-action: none; /* added so touch dragging doesn't scroll the page */
 }
 
 .masked-image, .background-image {
@@ -107,17 +107,6 @@ body {
   <label>
     <input type="checkbox" id="invert-toggle"> Invert Mask
   </label>
-  
-  <label for="border-color-picker">Border Color:</label>
-  <input type="color" id="border-color-picker" value="#ffffff">
-  
-  <label for="border-size-slider">Border Size:</label>
-  <input type="range" id="border-size-slider" min="0" max="10" value="2">
-  <span id="border-size-value">2px</span>
-  
-  <label>
-    <input type="checkbox" id="border-toggle"> Show Border
-  </label>
 </div>
 
 <button id="save-btn">Save Masked Image</button>
@@ -126,7 +115,273 @@ body {
 <canvas id="mask-canvas"></canvas>
 
 <script>
-// JavaScript will be placed here
+const container = document.querySelector('.container');
+const maskedImageDiv = document.querySelector('.masked-image');
+const backgroundDiv = document.querySelector('.background-image');
+const saveBtn = document.querySelector('#save-btn');
+const tempCanvas = document.querySelector('#temp-canvas');
+const ctx = tempCanvas.getContext('2d');
+const maskSelector = document.querySelector('#mask-selector');
+const zoomSlider = document.querySelector('#zoom-slider');
+const zoomValue = document.querySelector('#zoom-value');
+const maskUpload = document.querySelector('#mask-upload');
+const maskPreview = document.querySelector('#mask-preview');
+const softEdgeToggle = document.querySelector('#soft-edge-toggle');
+const invertToggle = document.querySelector('#invert-toggle');
+const mainImageUpload = document.querySelector('#main-image-upload');
+const mainImagePreview = document.querySelector('#main-image-preview');
+const maskCanvas = document.querySelector('#mask-canvas');
+const maskCtx = maskCanvas.getContext('2d');
+
+let isDragging = false;
+let currentX = 300;
+let currentY = 200;
+let maskSize = 150;
+let maskShape = 'square';
+let isSoftEdge = false;
+let isInverted = false;
+const imagesLoaded = {};
+
+const maskShapes = {
+    'square': 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100" fill="black"/></svg>',
+    'circle': 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="black"/></svg>',
+    'oval-horizontal': 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="50" ry="35" fill="black"/></svg>',
+    'oval-vertical': 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="35" ry="50" fill="black"/></svg>'
+};
+
+['img_5terre.jpg', 'image-bg.png'].forEach(src => {
+  const img = new Image();
+  img.crossOrigin = "Anonymous";
+  img.src = src;
+  img.onload = () => {
+    imagesLoaded[src] = img;
+    if (Object.keys(imagesLoaded).length === 2) {
+      updateMaskDisplay(currentX, currentY);
+    }
+  };
+});
+
+const maskImages = {};
+Object.keys(maskShapes).forEach(shape => {
+    const img = new Image();
+    img.src = maskShapes[shape];
+    maskImages[shape] = img;
+});
+
+function createSoftSquareMask(size) {
+    maskCanvas.width = size;
+    maskCanvas.height = size;
+    maskCtx.clearRect(0, 0, size, size);
+    maskCtx.fillStyle = 'rgba(0,0,0,1)';
+    const innerSize = size * 0.8;
+    const margin = (size - innerSize) / 2;
+    maskCtx.fillRect(margin, margin, innerSize, innerSize);
+    maskCtx.globalCompositeOperation = 'destination-out';
+    const topGradient = maskCtx.createLinearGradient(0, 0, 0, margin);
+    topGradient.addColorStop(0, 'rgba(0,0,0,1)');
+    topGradient.addColorStop(1, 'rgba(0,0,0,0)');
+    maskCtx.fillStyle = topGradient;
+    maskCtx.fillRect(0, 0, size, margin);
+    const bottomGradient = maskCtx.createLinearGradient(0, size, 0, size - margin);
+    bottomGradient.addColorStop(0, 'rgba(0,0,0,1)');
+    bottomGradient.addColorStop(1, 'rgba(0,0,0,0)');
+    maskCtx.fillStyle = bottomGradient;
+    maskCtx.fillRect(0, size - margin, size, margin);
+    const leftGradient = maskCtx.createLinearGradient(0, 0, margin, 0);
+    leftGradient.addColorStop(0, 'rgba(0,0,0,1)');
+    leftGradient.addColorStop(1, 'rgba(0,0,0,0)');
+    maskCtx.fillStyle = leftGradient;
+    maskCtx.fillRect(0, 0, margin, size);
+    const rightGradient = maskCtx.createLinearGradient(size, 0, size - margin, 0);
+    rightGradient.addColorStop(0, 'rgba(0,0,0,1)');
+    rightGradient.addColorStop(1, 'rgba(0,0,0,0)');
+    maskCtx.fillStyle = rightGradient;
+    maskCtx.fillRect(size - margin, 0, margin, size);
+    maskCtx.globalCompositeOperation = 'source-over';
+    let tlGradient = maskCtx.createRadialGradient(margin, margin, 0, margin, margin, margin);
+    tlGradient.addColorStop(0, 'rgba(0,0,0,1)');
+    tlGradient.addColorStop(1, 'rgba(0,0,0,0)');
+    maskCtx.globalCompositeOperation = 'destination-out';
+    maskCtx.fillStyle = tlGradient;
+    maskCtx.fillRect(0,0,margin,margin);
+    let trGradient = maskCtx.createRadialGradient(size-margin, margin, 0, size-margin, margin, margin);
+    trGradient.addColorStop(0, 'rgba(0,0,0,1)');
+    trGradient.addColorStop(1, 'rgba(0,0,0,0)');
+    maskCtx.fillStyle = trGradient;
+    maskCtx.fillRect(size-margin,0,margin,margin);
+    maskCtx.globalCompositeOperation = 'source-over';
+    return maskCanvas;
+}
+
+function getMaskSource(shape) {
+    let originalMask = maskImages[shape];
+    if (shape === 'square' && isSoftEdge) {
+        originalMask = createSoftSquareMask(maskSize);
+    } else if (isSoftEdge) {
+        maskCanvas.width = maskSize;
+        maskCanvas.height = maskSize;
+        maskCtx.clearRect(0, 0, maskSize, maskSize);
+        maskCtx.drawImage(originalMask, 0, 0, maskSize, maskSize);
+        maskCtx.globalCompositeOperation = 'source-in';
+        const gradient = maskCtx.createRadialGradient(
+            maskSize / 2, maskSize / 2, 0, 
+            maskSize / 2, maskSize / 2, maskSize / 2
+        );
+        gradient.addColorStop(0.7, 'rgba(0,0,0,1)');
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        maskCtx.fillStyle = gradient;
+        maskCtx.fillRect(0, 0, maskSize, maskSize);
+        maskCtx.globalCompositeOperation = 'source-over';
+        originalMask = maskCanvas;
+    }
+
+    if (isInverted) {
+        const invertedMaskCanvas = document.createElement('canvas');
+        invertedMaskCanvas.width = maskSize;
+        invertedMaskCanvas.height = maskSize;
+        const invertedMaskCtx = invertedMaskCanvas.getContext('2d');
+        invertedMaskCtx.fillStyle = 'rgba(0,0,0,1)';
+        invertedMaskCtx.fillRect(0, 0, maskSize, maskSize);
+        invertedMaskCtx.globalCompositeOperation = 'destination-out';
+        invertedMaskCtx.drawImage(originalMask, 0, 0, maskSize, maskSize);
+        return invertedMaskCanvas;
+    }
+
+    return originalMask;
+}
+
+function updateMaskDisplay(x, y) {
+  const maskImage = getMaskSource(maskShape);
+  const fullImage = imagesLoaded['img_5terre.jpg'];
+  if (!fullImage || !maskImage) return;
+  const containerWidth = container.offsetWidth;
+  const containerHeight = container.offsetHeight;
+  tempCanvas.width = containerWidth;
+  tempCanvas.height = containerHeight;
+  ctx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+  ctx.drawImage(fullImage, 0, 0, containerWidth, containerHeight);
+  ctx.globalCompositeOperation = 'destination-in';
+  ctx.drawImage(maskImage, x - maskSize / 2, y - maskSize / 2, maskSize, maskSize);
+  ctx.globalCompositeOperation = 'source-over';
+  maskedImageDiv.style.backgroundImage = `url(${tempCanvas.toDataURL()})`;
+  maskedImageDiv.style.backgroundSize = 'cover';
+}
+
+container.addEventListener('mousedown', (e) => {
+  isDragging = true;
+});
+document.addEventListener('mouseup', () => {
+  isDragging = false;
+});
+container.addEventListener('mousemove', (e) => {
+  if (isDragging) {
+    const containerRect = container.getBoundingClientRect();
+    currentX = e.clientX - containerRect.left;
+    currentY = e.clientY - containerRect.top;
+    currentX = Math.max(maskSize / 2, Math.min(currentX, containerRect.width - maskSize / 2));
+    currentY = Math.max(maskSize / 2, Math.min(currentY, containerRect.height - maskSize / 2));
+    updateMaskDisplay(currentX, currentY);
+  }
+});
+
+// --- Touch support (added) ---
+container.addEventListener('touchstart', (e) => {
+  // prevent page from scrolling when touching the container
+  e.preventDefault();
+  isDragging = true;
+  const touch = e.touches[0];
+  const containerRect = container.getBoundingClientRect();
+  currentX = touch.clientX - containerRect.left;
+  currentY = touch.clientY - containerRect.top;
+  currentX = Math.max(maskSize / 2, Math.min(currentX, containerRect.width - maskSize / 2));
+  currentY = Math.max(maskSize / 2, Math.min(currentY, containerRect.height - maskSize / 2));
+  updateMaskDisplay(currentX, currentY);
+});
+
+container.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  e.preventDefault();
+  const touch = e.touches[0];
+  const containerRect = container.getBoundingClientRect();
+  currentX = touch.clientX - containerRect.left;
+  currentY = touch.clientY - containerRect.top;
+  currentX = Math.max(maskSize / 2, Math.min(currentX, containerRect.width - maskSize / 2));
+  currentY = Math.max(maskSize / 2, Math.min(currentY, containerRect.height - maskSize / 2));
+  updateMaskDisplay(currentX, currentY);
+});
+
+container.addEventListener('touchend', (e) => {
+  isDragging = false;
+});
+
+container.addEventListener('touchcancel', (e) => {
+  isDragging = false;
+});
+// --- end touch support ---
+
+maskSelector.addEventListener('change', (e) => {
+    maskShape = e.target.value;
+    updateMaskDisplay(currentX, currentY);
+});
+zoomSlider.addEventListener('input', (e) => {
+    maskSize = parseInt(e.target.value);
+    zoomValue.textContent = `${maskSize}px`;
+    updateMaskDisplay(currentX, currentY);
+});
+softEdgeToggle.addEventListener('change', (e) => {
+    isSoftEdge = e.target.checked;
+    updateMaskDisplay(currentX, currentY);
+});
+invertToggle.addEventListener('change', (e) => {
+    isInverted = e.target.checked;
+    updateMaskDisplay(currentX, currentY);
+});
+maskUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const uploadedImage = new Image();
+            uploadedImage.onload = () => {
+                maskImages['custom'] = uploadedImage;
+                maskSelector.value = 'custom';
+                maskPreview.src = event.target.result;
+                maskPreview.style.display = 'block';
+                maskShape = 'custom';
+                updateMaskDisplay(currentX, currentY);
+            };
+            uploadedImage.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+mainImageUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const uploadedImage = new Image();
+            uploadedImage.onload = () => {
+                imagesLoaded['img_5terre.jpg'] = uploadedImage;
+                mainImagePreview.src = event.target.result;
+                mainImagePreview.style.display = 'block';
+                maskedImageDiv.style.backgroundImage = `url(${event.target.result})`;
+                updateMaskDisplay(currentX, currentY);
+            };
+            uploadedImage.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+saveBtn.addEventListener('click', () => {
+  const dataURL = tempCanvas.toDataURL('image/png');
+  const link = document.createElement('a');
+  link.href = dataURL;
+  link.download = `masked-${isInverted ? 'inverted-' : ''}${maskShape}-${maskSize}${isSoftEdge ? '-soft-edge' : ''}.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+});
 </script>
 </body>
 </html>
