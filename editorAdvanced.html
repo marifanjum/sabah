@@ -223,6 +223,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           stroke: { enabled: false, width: 1, color: "#000000" },
           sideline: { show: true, width: 30, gap: 60, height: 0, color: "#ff0000", opacity: 1 },
           isCollapsed: false,
+		  width: 800,
         }]);
         const [expandedHeadlineId, setExpandedHeadlineId] = useState(null);
         const headlineRefs = useRef({});
@@ -244,6 +245,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
             stroke: { enabled: false, width: 1, color: "#000000" },
             sideline: { show: true, width: 30, gap: 60, height: 0, color: "#ff0000", opacity: 1 },
             isCollapsed: false,
+			width: 800,
           };
           setHeadlines([...headlines, newHeadline]);
         }
@@ -405,29 +407,42 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
           window.addEventListener("touchend", onUp);
         }
 
-        function startDragText(e, id) {
-          e.preventDefault();
-          e.stopPropagation();
-          const { x: startX, y: startY } = getCoords(e);
-          const headline = headlines.find(h => h.id === id);
-          const initPos = { ...headline.textPos };
+     function startDragText(e, id) {
+  e.preventDefault();
+  e.stopPropagation();
 
-          function onMove(ev) {
-            const { x: currentX, y: currentY } = getCoords(ev);
-            updateHeadline(id, { textPos: { x: initPos.x + currentX - startX, y: initPos.y + currentY - startY } });
-          }
-          
-          function onUp() {
-            window.removeEventListener("mousemove", onMove);
-            window.removeEventListener("mouseup", onUp);
-            window.removeEventListener("touchmove", onMove);
-            window.removeEventListener("touchend", onUp);
-          }
-          window.addEventListener("mousemove", onMove);
-          window.addEventListener("mouseup", onUp);
-          window.addEventListener("touchmove", onMove);
-          window.addEventListener("touchend", onUp);
-        }
+  const { x: startX, y: startY } = getCoords(e);
+  const headline = headlines.find(h => h.id === id);
+  const initPos = { ...headline.textPos };
+  const isRTL = headline.direction === "rtl";
+
+  function onMove(ev) {
+    const { x: currentX, y: currentY } = getCoords(ev);
+    const dx = currentX - startX;
+    const dy = currentY - startY;
+
+    updateHeadline(id, {
+      textPos: {
+        x: isRTL ? initPos.x - dx : initPos.x + dx, // 👈 invert movement for RTL
+        y: initPos.y + dy,
+      },
+    });
+  }
+
+  function onUp() {
+    window.removeEventListener("mousemove", onMove);
+    window.removeEventListener("mouseup", onUp);
+    window.removeEventListener("touchmove", onMove);
+    window.removeEventListener("touchend", onUp);
+  }
+
+  window.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+  window.addEventListener("touchmove", onMove);
+  window.addEventListener("touchend", onUp);
+}
+
+
 
         function startDragVignette(e) {
           e.preventDefault();
@@ -625,7 +640,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
     e.preventDefault();
     const password = e.target.elements.password.value;
     // ⚠️ Replace "YOUR_PASSWORD" with your actual password
-    if (password === "sabah123") {
+    if (password === "ummat123") {
       setIsAuthenticated(true);
     } else {
       alert("Incorrect password.");
@@ -812,6 +827,13 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                           <input type="number" value={headline.textPos.x} onChange={e => updateHeadline(headline.id, { textPos: { ...headline.textPos, x: parseFloat(e.target.value) } })} className="w-full border p-1 rounded" />
                           <label className="block text-sm mt-3">Y position</label>
                           <input type="number" value={headline.textPos.y} onChange={e => updateHeadline(headline.id, { textPos: { ...headline.textPos, y: parseFloat(e.target.value) } })} className="w-full border p-1 rounded" />
+							<label className="block text-sm mt-3">Headline width</label>
+							<input 
+							  type="number"
+							  value={headline.width || 800}
+							  onChange={e => updateHeadline(headline.id, { width: parseInt(e.target.value) })}
+							  className="w-full border p-1 rounded"
+							/>
 
                           {/* Shadow Controls */}
                           <div className="mt-4">
@@ -975,15 +997,57 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                     className="flex justify-between items-center cursor-pointer"
                     onClick={() => setIsVignetteCollapsed(!isVignetteCollapsed)}
                   >
-                    <h3 className="text-lg font-medium">Vignette</h3>
+                    <h3 className="text-lg font-medium">Finalize</h3>
                     <span>{isVignetteCollapsed ? '▼' : '▲'}</span>
                   </div>
                   {!isVignetteCollapsed && (
                     <div className="mt-2 space-y-1">
-                      <label className="flex items-center">
-                        <input type="checkbox" checked={vignette.show} onChange={e => setVignette({ ...vignette, show: e.target.checked })} />
-                        <span className="ml-2">Show Vignette</span>
-                      </label>
+                   <label className="flex items-center">
+  <input
+    type="checkbox"
+    checked={vignette.show}
+    onChange={e => {
+      const checked = e.target.checked;
+
+      // when turning ON vignette, set it to same Base64 as background
+      if (checked && backgroundStyle?.backgroundImage) {
+        const base64Src = backgroundStyle.backgroundImage
+          .replace(/^url\(["']?/, "")
+          .replace(/["']?\)$/, "");
+        setVignette({
+          ...vignette,
+          show: true,
+          src: base64Src,
+          locked: true, // auto-lock when using base64
+          x: 0,
+          y: 0,
+          scale: 1,
+        });
+      } else {
+        // turning OFF vignette
+        setVignette({ ...vignette, show: false, locked: false });
+      }
+    }}
+  />
+  <span className="ml-2">Finalize SM Card</span>
+</label>
+
+{/* Lock position option */}
+{vignette.show && (
+  <label className="flex items-center mt-1">
+    <input
+      type="checkbox"
+      checked={vignette.locked}
+      disabled={!!vignette.src} // auto-locked if using base64
+      onChange={e =>
+        setVignette({ ...vignette, locked: e.target.checked })
+      }
+    />
+    <span className="ml-2">
+      Lock Position {vignette.src ? "(auto-locked)" : ""}
+    </span>
+  </label>
+)}
                       {vignette.show && <>
                         <label className="block text-sm">Zoom</label>
                         <div className="flex items-center gap-2 mt-1">
@@ -1023,6 +1087,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                           <select value={logo.position} onChange={e => setLogo({ ...logo, position: e.target.value })} className="w-full border p-1 rounded mt-2">
                             <option value="top-left">Top Left</option>
                             <option value="top-right">Top Right</option>
+							<option value="top-center">Top Center</option>
                             <option value="bottom-left">Bottom Left</option>
                             <option value="bottom-right">Bottom Right</option>
                           </select>
@@ -1202,28 +1267,29 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
 
                     {/* Vignette */}
                     {vignette.show && (
-                      <img
-                        src="Vignette.png"
-                        alt="Vignette"
-                        onMouseDown={startDragVignette}
-                        onTouchStart={startDragVignette}
-                        style={{
-                          position: "absolute",
-                          left: vignette.x,
-                          top: vignette.y,
-                          transform: `scale(${vignette.scale})`,
-                          cursor: "grab",
-                          width: "100%",
-                          height: "100%",
-                          zIndex: 100,
-                        }}
-                      />
-                    )}
+  <img
+    src={vignette.src || "Vignette.png"}
+    alt="Vignette"
+    onMouseDown={!vignette.locked ? startDragVignette : undefined}
+    onTouchStart={!vignette.locked ? startDragVignette : undefined}
+    style={{
+      position: "absolute",
+      left: vignette.x,
+      top: vignette.y,
+      transform: `scale(${vignette.scale})`,
+      cursor: vignette.locked ? "default" : "grab",
+      width: "100%",
+      height: "100%",
+      zIndex: 100,
+    }}
+  />
+)}
+
 
                     {/* Logo */}
                     {logo.show && (
                       <img
-                        src="sabah-logo.PNG"
+                        src="logo.png"
                         alt="Logo"
                         style={{
                           position: "absolute",
@@ -1231,6 +1297,7 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                           height: 60,
                           ...(logo.position === "top-left" ? { left: 30, top: 150 } : {}),
                           ...(logo.position === "top-right" ? { right: 30, top: 150 } : {}),
+						  ...(logo.position === "top-center" ? { right: 500, top: 50 } : {}),
                           ...(logo.position === "bottom-left" ? { left: 30, bottom: 150 } : {}),
                           ...(logo.position === "bottom-right" ? { right: 30, bottom: 150 } : {}),
                           zIndex: 300,
@@ -1265,7 +1332,8 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                           dir={headline.direction}
                           style={{
                             position: "absolute",
-                            left: headline.textPos.x,
+                           left: headline.direction === "ltr" ? headline.textPos.x : "auto",
+							right: headline.direction === "rtl" ? headline.textPos.x : "auto",	
                             top: headline.textPos.y,
                             fontSize: headline.fontSize,
                             lineHeight: headline.lineHeight,
@@ -1274,6 +1342,8 @@ https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css
                             textShadow: headline.shadow.enabled ? `${headline.shadow.offsetX}px ${headline.shadow.offsetY}px ${headline.shadow.blur}px ${headline.shadow.color}` : "none",
                             WebkitTextStroke: headline.stroke.enabled ? `${headline.stroke.width}px ${headline.stroke.color}` : "none",
                             whiteSpace: "pre-wrap",
+							width: headline.width ? `${headline.width}px` : "80%",
+							maxWidth: "100%",
                             textAlign: headline.textAlign,
                             cursor: canDragHeadlines ? "move" : "default",
                             zIndex: 200,
